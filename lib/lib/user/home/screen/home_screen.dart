@@ -1,9 +1,13 @@
+import 'package:badges/badges.dart' as badges;
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 import '../../../admin/home/service/adminhome_service.dart';
 import '../../../auth/screen/login_screen.dart';
 import '../../../cachehelper/chechehelper.dart';
+import '../../notification/screen/notification_screen.dart';
+import '../../notification/service/notification_service.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -14,17 +18,76 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
-  final AdminHomeService _adminHomeService = AdminHomeService();
+  final NotificationService _notificationService = NotificationService();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Admin Home'),
+        title: Text('User Home'),
 
         centerTitle: true,
         actions: [
-          IconButton(onPressed: (){}, icon: Icon(Icons.notifications)),
+          /*StreamBuilder(
+            stream: _notificationService.getAllAdminNotifications(),
+            builder: (context, snapshot) {
+              int count = 0;
+              if (snapshot.hasData) {
+                count = (snapshot.data! as List).length;
+              }
+
+              return badges.Badge(
+                position: badges.BadgePosition.topEnd(top: -5, end: -5),
+                showBadge: count > 0,
+                badgeContent: Text(
+                  count.toString(),
+                  style: TextStyle(color: Colors.white, fontSize: 10),
+                ),
+                child: IconButton(
+                  icon: Icon(Icons.notifications),
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => NotificationScreen(),
+                      ),
+                    );
+                  },
+                ),
+              );
+            },
+          ),*/
+          FutureBuilder<List<String>>(
+            future: _notificationService.getAdminDocIds(),
+            builder: (context, snapshot) {
+              if (!snapshot.hasData) return Icon(Icons.notifications);
+              final adminDocIds = snapshot.data!;
+              return StreamBuilder<int>(
+                stream: _notificationService.getTotalUnreadCount(adminDocIds),
+                builder: (context, snapshot) {
+                  int count = snapshot.data ?? 0;
+                  return badges.Badge(
+                    showBadge: count > 0,
+                    badgeContent: Text('$count',
+                        style: TextStyle(color: Colors.white, fontSize: 10)),
+                    child: IconButton(
+                      icon: Icon(Icons.notifications),
+                      onPressed: () {
+                        // Navigate to NotificationScreen
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => NotificationScreen(adminDocIds: adminDocIds),
+                          ),
+                        );
+                      },
+                    ),
+                  );
+                },
+              );
+            },
+          ),
+
           PopupMenuButton<int>(
               onSelected: (item)=>onSelected(item,context),
               itemBuilder: (context)=>[
@@ -55,7 +118,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
       body: Column(
         children: [
-          Padding(
+          /*Padding(
             padding: const EdgeInsets.all(14.0),
             child: Card(
               elevation: 5,
@@ -89,7 +152,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
             ),
-          )
+          )*/
         ],
       ),
     );

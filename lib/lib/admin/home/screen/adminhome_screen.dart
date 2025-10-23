@@ -8,7 +8,7 @@ import '../../../auth/screen/login_screen.dart';
 import '../../../cachehelper/chechehelper.dart';
 import '../../log/screen/log_screen.dart';
 import '../../moneydelete/screen/moneydelete_screen.dart';
-import '../../note/screen/note_screen.dart';
+import '../../notification/screen/note_screen.dart';
 import '../../save_money/screen/saving_money_screen.dart';
 import '../../userlist/screen/userlist_screen.dart';
 import '../service/adminhome_service.dart';

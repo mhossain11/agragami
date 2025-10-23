@@ -65,7 +65,7 @@ class LogScreen extends StatelessWidget {
                       final userid = log['user_id'] ?? '';
                       final oldData = log['oldData'] ?? '';
                       final newData = log['newData'] ?? '';
-                      final message = log['note'] ?? '';
+                      final message = log['notification'] ?? '';
                       final datetime = (log['datetime'] as Timestamp).toDate();
           
                       return Card(

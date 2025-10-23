@@ -51,7 +51,7 @@ class LogService{
         'user_id': userid,
         'oldData': oldData,
         'newData': newData,
-        'note': note,
+        'notification': note,
         'datetime': Timestamp.now(),
       });
       await CacheHelper().setString('moneyDocRef', docRef.id);

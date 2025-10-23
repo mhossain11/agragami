@@ -16,12 +16,13 @@ class NoteService{
       final docRef= await _firestore
           .collection('users')
           .doc(userDocId)
-          .collection('note')
+          .collection('notification')
 
           .add({
         'title': title,
         'message': message,
         'datetime': Timestamp.now(),
+        'seen':false,
       });
       await CacheHelper().setString('moneyDocRef', docRef.id);
       print('Money added successfully!');
