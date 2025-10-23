@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "561600031747",
+    "project_id": "agragamiapp",
+    "storage_bucket": "agragamiapp.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:561600031747:android:0e681d95947a67b4e0b236",
+        "android_client_info": {
+          "package_name": "com.faysal.agragami"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD8ARDtBYA6Ur_TaZ_Ustb1W8BvsWx9B8s"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
