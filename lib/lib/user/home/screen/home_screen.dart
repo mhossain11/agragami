@@ -6,8 +6,10 @@ import 'package:flutter/material.dart';
 import '../../../admin/home/service/adminhome_service.dart';
 import '../../../auth/screen/login_screen.dart';
 import '../../../cachehelper/chechehelper.dart';
+import '../../money record/screen/user_money_record_screen.dart';
 import '../../notification/screen/notification_screen.dart';
 import '../../notification/service/notification_service.dart';
+import '../service/home_service.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -19,44 +21,34 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final NotificationService _notificationService = NotificationService();
+    final HomeService _homeService = HomeService();
+    String userDocId = '';
 
+    @override
+  void initState() {
+    super.initState();
+    getUserDocId();
+  }
+
+  Future<String?> getUserDocId() async {
+    final id =  await CacheHelper().getString('userDocId');
+    if (id == null || id.isEmpty) {
+      debugPrint('Error: userDocId not found in cache!');
+      return null;
+    }
+    setState(() {
+      userDocId = id;
+    });
+    }
   @override
   Widget build(BuildContext context) {
+      debugPrint('User Doc ID: $userDocId');
     return Scaffold(
       appBar: AppBar(
         title: Text('User Home'),
 
         centerTitle: true,
         actions: [
-          /*StreamBuilder(
-            stream: _notificationService.getAllAdminNotifications(),
-            builder: (context, snapshot) {
-              int count = 0;
-              if (snapshot.hasData) {
-                count = (snapshot.data! as List).length;
-              }
-
-              return badges.Badge(
-                position: badges.BadgePosition.topEnd(top: -5, end: -5),
-                showBadge: count > 0,
-                badgeContent: Text(
-                  count.toString(),
-                  style: TextStyle(color: Colors.white, fontSize: 10),
-                ),
-                child: IconButton(
-                  icon: Icon(Icons.notifications),
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => NotificationScreen(),
-                      ),
-                    );
-                  },
-                ),
-              );
-            },
-          ),*/
           FutureBuilder<List<String>>(
             future: _notificationService.getAdminDocIds(),
             builder: (context, snapshot) {
@@ -118,20 +110,20 @@ class _HomeScreenState extends State<HomeScreen> {
 
       body: Column(
         children: [
-          /*Padding(
+          Padding(
             padding: const EdgeInsets.all(14.0),
             child: Card(
               elevation: 5,
               child: Container(
                 height: 100,
-                width: 300,
+                width: double.infinity,
                 decoration: BoxDecoration(
                   color: Colors.green.shade100,
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Center(
-                  child: StreamBuilder<int>(
-                    stream: _adminHomeService.getAllUsersTotalAmountStream(),
+                  child: FutureBuilder<int?>(
+                    future: _homeService.getUserTotalMoney(userDocId),
                     builder: (context, snapshot) {
                       if (snapshot.connectionState == ConnectionState.waiting) {
                         return const CircularProgressIndicator();
@@ -139,20 +131,97 @@ class _HomeScreenState extends State<HomeScreen> {
                       if (snapshot.hasError) {
                         return Text('Error: ${snapshot.error}');
                       }
-                      final totalAmount = snapshot.data ?? 0;
+
+                      final totalAmount = snapshot.data?.toInt() ?? 0; // double to int
+
                       return Text(
                         '$totalAmount Tk',
-                        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
                       );
                     },
-                  )
-
-
-                  ,
+                  ),
                 ),
               ),
             ),
-          )*/
+          ),
+          Row(
+            children: [
+              Expanded(
+                child: GestureDetector(
+                  onTap: (){
+                    Navigator.push(context, MaterialPageRoute(
+                        builder: (context)=>UserMoneyRecordScreen()));
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.all(14.0),
+                    child: Container(
+                      height: 150,
+                      width: 150,
+                      decoration: BoxDecoration(
+                          color: Colors.blue.shade300,
+                          borderRadius: BorderRadius.circular(10)
+                      ),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Image.asset('assets/images/userlist.png',
+                              color: Colors.white,
+                              width: 80,
+                              height: 50,),
+                          ),
+                          SizedBox(height: 5,),
+                          Text('User List',style: TextStyle(
+                              fontSize: 16,color: Colors.white
+                          ),)
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              SizedBox(width: 10,),
+              Expanded(
+                child: GestureDetector(
+                  onTap: (){
+                    Navigator.push(context, MaterialPageRoute(
+                        builder: (context)=>UserMoneyRecordScreen()));
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.all(14.0),
+                    child: Container(
+                      height: 150,
+                      width: 150,
+                      decoration: BoxDecoration(
+                          color: Colors.blue.shade300,
+                          borderRadius: BorderRadius.circular(10)
+                      ),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Image.asset('assets/images/profile.png',
+                              color: Colors.white,
+                              width: 80,
+                              height: 50,),
+                          ),
+                          SizedBox(height: 5,),
+                          Text('Profile',style: TextStyle(
+                              fontSize: 16,color: Colors.white
+                          ),)
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          )
         ],
       ),
     );

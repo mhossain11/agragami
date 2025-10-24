@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../../../../auth/widgets/text_field.dart';
-import '../../../log/service/log_service.dart';
+import '../../../auth/widgets/text_field.dart';
+import '../../log/service/log_service.dart';
 import '../service/editdata_service.dart';
 
 class EditDataScreen extends StatefulWidget {

@@ -1,7 +1,7 @@
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-import '../../../../cachehelper/chechehelper.dart';
+import '../../../cachehelper/chechehelper.dart';
 
 class EditDataService{
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;

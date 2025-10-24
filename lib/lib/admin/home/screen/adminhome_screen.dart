@@ -138,7 +138,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                     ),
                   ),
                 ),
-                Expanded(
+                /*Expanded(
                   child: Padding(
                     padding: const EdgeInsets.all(14.0),
                     child: Card(
@@ -165,7 +165,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                       ),
                     ),
                   ),
-                ),
+                ),*/
               ],
             ),
 
@@ -206,10 +206,9 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
               ),
             )
             ,
-
+            //Saving Money & List user Button
             Row(
               children: [
-                //Saving Money Button
                 GestureDetector(
                   onTap: (){
                     Navigator.push(context, MaterialPageRoute(
@@ -277,9 +276,10 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                 ),
               ],
             ),
+            //Log & delete
             Row(
               children: [
-                //Saving Money Button
+                //Log
                 GestureDetector(
                   onTap: (){
                     Navigator.push(context, MaterialPageRoute(

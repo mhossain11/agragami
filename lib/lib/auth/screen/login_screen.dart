@@ -101,8 +101,8 @@ class _LoginScreenState extends State<LoginScreen> {
                   Text('Don\'t have an account?',style: TextStyle(
                       fontSize: 18,color: Colors.grey),),
                   TextButton(onPressed: (){
-                        Navigator.pushReplacement(context, MaterialPageRoute(
-                            builder: (context)=>RegisterScreen()));
+                        Navigator.pushAndRemoveUntil(context, MaterialPageRoute(
+                            builder: (context)=>RegisterScreen()),(route)=>false);
                   }, child: Text('Sign Up',style: TextStyle(color: Colors.blue,
                       fontSize: 18,letterSpacing: -1))
                   ),

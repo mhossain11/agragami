@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../auth/widgets/text_field.dart';
-import '../../home/edit_data/screen/editdata_screen.dart';
+import '../../edit_data/screen/editdata_screen.dart';
 import '../../home/service/adminhome_service.dart';
 import '../../log/service/log_service.dart';
 import '../model/usermodel.dart';
