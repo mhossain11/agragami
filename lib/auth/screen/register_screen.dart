@@ -26,6 +26,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   TextEditingController nomineeNameController = TextEditingController();
   String selectedRole ='user';
   bool isLoading = false;
+  bool isLoadingId = false;
   bool showForm = false;
   bool buttonShow = true;
   String? foundRole;
@@ -72,6 +73,54 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
     }
 
+    void searchId() async{
+      final userId = useridController.text.trim();
+
+      // 🔹 প্রথমে user_id duplicate কিনা চেক করো
+      setState(() => isLoadingId = true);
+      final roleCheck = await _authService.checkUserRole(userId);
+
+      if (roleCheck != null && roleCheck['user_id'] == userId) {
+        // যদি user_id আগে থেকেই থাকে, error return করো
+        setState(() => isLoadingId = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('This ${roleCheck['user_id']} already exists')));
+        return;
+      }
+
+      if (userId.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Please enter a User ID')),
+        );
+        return;
+      }
+      setState(() => isLoadingId = true);
+      final result = await _authService.checkUserAdminRole(userId);
+      setState((){
+        isLoadingId = false;
+        foundRole = result?['role'];
+        selectedRole = result?['role'] ?? 'user';
+      } );
+
+      if (result != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('✅ ID found! Role: ${result['role']}')),
+        );
+        // এখানে চাইলে নিচের form visible করতে পারো
+        setState(() {
+          buttonShow = false;
+          showForm = true;
+        });
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('❌ User ID not found')),
+        );
+        setState(() {
+          buttonShow = true;
+        });
+      }
+    }
+
 
   @override
   void dispose() {
@@ -108,47 +157,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 labelText: 'User_ID',),
               SizedBox(height: 10,),
 
-              isLoading? Center(child: CircularProgressIndicator(),):
+              isLoadingId? Center(child: CircularProgressIndicator(),):
               buttonShow ? SizedBox(
                 width: 250,
                 child: ElevatedButton(
-                    onPressed:() async{
-                      final userId = useridController.text.trim();
-
-                      if (userId.isEmpty) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('Please enter a User ID')),
-                        );
-                        return;
-                      }
-                      setState(() => isLoading = true);
-                      final result = await _authService.checkUserRole(userId);
-                      setState((){
-                        isLoading = false;
-                        foundRole = result?['role'];
-                        selectedRole = result?['role'] ?? 'user';
-                      } );
-
-                      if (result != null) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('✅ ID found! Role: ${result['role']}')),
-                        );
-                        // এখানে চাইলে নিচের form visible করতে পারো
-                        setState(() {
-                          buttonShow = false;
-                          showForm = true;
-                        });
-                      } else {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('❌ User ID not found')),
-                        );
-                        setState(() {
-                          buttonShow = true;
-                        });
-                      }
-                    },
-                    child: Text('Find Id')),
-              ):SizedBox(),
+                    onPressed:searchId,
+                    child: Text('Find Id')),):
+              SizedBox(),
 
               foundRole== 'user'?  Visibility(
                 visible: showForm,
@@ -169,9 +184,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       SizedBox(height: 10,),
                       CustomTextField(controller: addressController,maxLine: 2,labelText: 'Address',),
                       SizedBox(height: 10,),
-                      CustomTextFieldPassword(controller: passwordController,keyboardType: TextInputType.number,labelText: 'Password',),
+                      CustomTextFieldPassword(controller: passwordController,labelText: 'Password',),
                       SizedBox(height: 10,),
-                      CustomTextFieldPassword(controller: confirmPasswordController,keyboardType: TextInputType.number,labelText: 'ConfirmPassword',),
+                      CustomTextFieldPassword(controller: confirmPasswordController,labelText: 'ConfirmPassword',),
                       SizedBox(height: 10,),
                       //button
                       isLoading? Center(child: CircularProgressIndicator(),):
@@ -196,11 +211,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       SizedBox(height: 10,),
                       CustomTextField(controller: phoneController,keyboardType: TextInputType.number,labelText: 'Phone number',),
                       SizedBox(height: 10,),
-
-
-                      CustomTextFieldPassword(controller: passwordController,keyboardType: TextInputType.number,labelText: 'Password',),
+                      CustomTextFieldPassword(controller: passwordController,labelText: 'Password',),
                       SizedBox(height: 10,),
-                      CustomTextFieldPassword(controller: confirmPasswordController,keyboardType: TextInputType.number,labelText: 'ConfirmPassword',),
+                      CustomTextFieldPassword(controller: confirmPasswordController,labelText: 'ConfirmPassword',),
                       SizedBox(height: 10,),
                       //button
                       isLoading? Center(child: CircularProgressIndicator(),):

@@ -26,6 +26,7 @@ class AuthService {
     required String nomineeName,
   }) async {
     try {
+
       UserCredential userCredential = await _auth
           .createUserWithEmailAndPassword(
         email: email.trim(),
@@ -81,6 +82,7 @@ class AuthService {
       // ✅ Save user info locally using SharedPreferences
       await CacheHelper().setLoggedIn(userDoc.exists);
       await CacheHelper().setString('isRole', userDoc['role'].toString());
+      await CacheHelper().setString('names', userDoc['name'].toString());
       await CacheHelper().setString('userDocId', userDoc.id.toString());
 
       if (userDoc.exists) {
@@ -89,14 +91,16 @@ class AuthService {
         return 'User data not found in Firestore.';
       }
     } on FirebaseAuthException catch (e) {
+      print("❌ Firebase Auth Error: ${e.code} - ${e.message}");
       return e.message;
     } catch (e) {
       return e.toString();
     }
   }
 
-  Future<Map<String, dynamic>?> checkUserRole(String inputUserId) async {
+  Future<Map<String, dynamic>?> checkUserAdminRole(String inputUserId) async {
     try {
+
       // 🔹 প্রথমে auth collection থেকে সব doc নিয়ে loop করব
       final authSnapshot = await _firestore.collection('auth').get();
 
@@ -145,4 +149,37 @@ class AuthService {
       return null;
     }
   }
+
+  Future<Map<String, dynamic>?> checkUserRole(String inputUserId) async {
+    try {
+      // 🔹 user_id মিলে এমন ডকুমেন্ট খুঁজো
+      final userSnapshot = await _firestore
+          .collection('users')
+          .where('user_id', isEqualTo: inputUserId)
+          .limit(1)
+          .get();
+
+      if (userSnapshot.docs.isNotEmpty) {
+        final doc = userSnapshot.docs.first.data();
+
+        return {
+          'user_id': inputUserId,
+          'exists': true,
+          'role': doc['role'], // Firestore থেকে আসা role
+          'userDocId': userSnapshot.docs.first.id,
+        };
+      }
+
+      // 🔻 কিছু না পাওয়া গেলে
+      return {
+        'exists': false,
+        'role': null,
+      };
+    } catch (e) {
+      print('Error checking role: $e');
+      return null;
+    }
+  }
+
+
 }

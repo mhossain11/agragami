@@ -26,11 +26,23 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
   bool _isLoading = true;
   int userTotal =0;
   int adminTotal =0;
+  String name='';
 
   @override
   void initState(){
     super.initState();
     countTota();
+    getName();
+  }
+  Future<String?> getName() async {
+    final userName =  await CacheHelper().getString('names');
+    if (userName == null || userName.isEmpty) {
+      debugPrint('Error: Name not found in cache!');
+      return null;
+    }
+    setState(() {
+      name = userName;
+    });
   }
 
   void countTota() async{
@@ -107,6 +119,22 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
+            SizedBox(
+              width: double.infinity,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Text(name,style: TextStyle(
+                        fontSize: 25,color: Colors.green,
+                        fontWeight: FontWeight.bold
+                    )),
+                  ),
+                ],
+              ),
+            ),
             //Total Member & Admin
             Row(
               children: [
@@ -118,14 +146,14 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                       child: Container(
                         height: 100,
                         decoration: BoxDecoration(
-                            color: Colors.blue.shade100,
+                           // color: Colors.blue.shade100,
                             borderRadius: BorderRadius.circular(10)
                         ),
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Text(userTotal.toString(),style: TextStyle(
-                                fontSize: 18,
+                                fontSize: 25,color: Colors.green,
                                 fontWeight: FontWeight.bold
                             ),),
                             Text('Total Members',style: TextStyle(
@@ -178,7 +206,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                   height: 100,
                   width: 300,
                   decoration: BoxDecoration(
-                    color: Colors.green.shade100,
+                   // color: Colors.green.shade100,
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Center(
@@ -192,9 +220,23 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                           return Text('Error: ${snapshot.error}');
                         }
                         final totalAmount = snapshot.data ?? 0;
-                        return Text(
-                          '$totalAmount Tk',
-                          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                        return Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Center(
+                              child: Text(
+                                '$totalAmount Tk',
+                                style: const TextStyle(color:Colors.green,
+                                    fontSize: 25, fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                            Center(
+                              child: Text(
+                                'TotalAmount',
+                                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                          ],
                         );
                       },
                     )
@@ -208,30 +250,32 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
             ,
             //Saving Money & List user Button
             Row(
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 GestureDetector(
                   onTap: (){
                     Navigator.push(context, MaterialPageRoute(
                         builder: (context)=>SavingMoneyScreen()));
                   },
-                  child: Padding(
-                    padding: const EdgeInsets.all(14.0),
+                  child: Card(
+                    elevation: 5,
                     child: Container(
                       height: 150,
                       width: 150,
                       decoration: BoxDecoration(
-                          color: Colors.blue.shade100,
+                        //  color: Colors.blue.shade100,
                           borderRadius: BorderRadius.circular(10)
                       ),
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Image.asset('assets/images/taka.png',
+                            color: Colors.green,
                             width: 80,
                             height: 50,),
                           SizedBox(height: 5,),
                           Text('Saving Money',style: TextStyle(
-                              fontSize: 16,color: Colors.white
+                              fontSize: 16,color: Colors.black,fontWeight: FontWeight.w500
                           ),)
 
                         ],
@@ -246,13 +290,13 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                     Navigator.push(context, MaterialPageRoute(
                         builder: (context)=>UserListScreen()));
                   },
-                  child: Padding(
-                    padding: const EdgeInsets.all(14.0),
+                  child: Card(
+                    elevation: 5,
                     child: Container(
                       height: 150,
                       width: 150,
                       decoration: BoxDecoration(
-                          color: Colors.blue.shade300,
+                        //  color: Colors.blue.shade300,
                           borderRadius: BorderRadius.circular(10)
                       ),
                       child: Column(
@@ -261,13 +305,13 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                             Padding(
                               padding: const EdgeInsets.all(8.0),
                               child: Image.asset('assets/images/userlist.png',
-                                color: Colors.white,
+                                color: Colors.green,
                                 width: 80,
                                 height: 50,),
                             ),
                           SizedBox(height: 5,),
                           Text('User List',style: TextStyle(
-                              fontSize: 16,color: Colors.white
+                              fontSize: 16,color: Colors.black,fontWeight: FontWeight.w500
                           ),)
                         ],
                       ),
@@ -278,6 +322,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
             ),
             //Log & delete
             Row(
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 //Log
                 GestureDetector(
@@ -285,25 +330,25 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                     Navigator.push(context, MaterialPageRoute(
                         builder: (context)=>LogScreen()));
                   },
-                  child: Padding(
-                    padding: const EdgeInsets.all(14.0),
+                  child: Card(
+                    elevation: 5,
                     child: Container(
                       height: 150,
                       width: 150,
                       decoration: BoxDecoration(
-                          color: Colors.blue.shade400,
+                          //color: Colors.blue.shade400,
                           borderRadius: BorderRadius.circular(10)
                       ),
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Image.asset('assets/images/log.png',
-                            color: Colors.white,
+                            color: Colors.green,
                             width: 80,
                             height: 50,),
                           SizedBox(height: 5,),
                           Text('Admin Log',style: TextStyle(
-                              fontSize: 16,color: Colors.white
+                              fontSize: 16,color: Colors.black,fontWeight: FontWeight.w500
                           ),)
 
                         ],
@@ -318,25 +363,25 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                     Navigator.push(context, MaterialPageRoute(
                         builder: (context)=>MoneyDeleteSimpleScreen()));
                   },
-                  child: Padding(
-                    padding: const EdgeInsets.all(14.0),
+                  child: Card(
+                    elevation: 5,
                     child: Container(
                       height: 150,
                       width: 150,
                       decoration: BoxDecoration(
-                          color: Colors.blue.shade100,
+                         // color: Colors.blue.shade100,
                           borderRadius: BorderRadius.circular(10)
                       ),
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Image.asset('assets/images/delete_report.png',
-                            color: Colors.red.shade200,
+                            color: Colors.green,
                             width: 80,
                             height: 50,),
                           SizedBox(height: 5,),
                           Text('Delete Record',maxLines: 2,style: TextStyle(
-                              fontSize: 16,color: Colors.white
+                              fontSize: 16,color: Colors.black,fontWeight: FontWeight.w500
                           ),)
 
                         ],
@@ -353,25 +398,25 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                 Navigator.push(context, MaterialPageRoute(
                     builder: (context)=>NoteScreen()));
               },
-              child: Padding(
-                padding: const EdgeInsets.all(14.0),
+              child: Card(
+                elevation: 5,
                 child: Container(
                   height: 150,
                   width: 300,
                   decoration: BoxDecoration(
-                      color: Colors.blue.shade100,
+                     // color: Colors.blue.shade100,
                       borderRadius: BorderRadius.circular(10)
                   ),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Image.asset('assets/images/notes.png',
-                        color: Colors.white,
+                        color: Colors.green,
                         width: 80,
                         height: 50,),
                       SizedBox(height: 5,),
                       Text('Notice board',maxLines: 2,style: TextStyle(
-                          fontSize: 16,color: Colors.white
+                          fontSize: 16,color: Colors.black,fontWeight: FontWeight.w500
                       ),)
 
                     ],

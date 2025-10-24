@@ -41,11 +41,11 @@ class _LoginScreenState extends State<LoginScreen> {
         isLoading = false;
       });
 
-    if(result == "Admin"){
+    if(result == "admin"){
       await CacheHelper().setLoggedIn(true); // ✅ Save login state
       Navigator.pushReplacement(context, MaterialPageRoute(
           builder: (context)=>AdminHomeScreen()));
-    }else if(result == "User"){
+    }else if(result == "user"){
       await CacheHelper().setLoggedIn(true); // ✅ Save login state
       Navigator.pushReplacement(context, MaterialPageRoute(
           builder: (context)=>HomeScreen()));
@@ -70,46 +70,62 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
 
     return Scaffold(
-      appBar: AppBar(),
+      
       body: SingleChildScrollView(
-        child: SizedBox(
-          height: MediaQuery.of(context).size.height,
-          child: Padding(padding: EdgeInsets.all(10),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text('Login',style: TextStyle(
-                  fontSize: 40,fontWeight: FontWeight.bold),),
-              SizedBox(height: 20,),
-              Center(child: CustomTextField(controller: emailController,labelText: 'Email',)),
-              SizedBox(height: 10,),
-              Center(child: CustomTextFieldPassword(controller: passwordController,labelText: 'Password',)),
-              SizedBox(height: 10,),
-              isLoading? Center(child: CircularProgressIndicator(),):
-              Center(
-                child: SizedBox(
-                  width: 150,
-                  child: ElevatedButton(
-                      onPressed:login,
-                      child: Text('Login')),
+        child: SafeArea(
+          child: SizedBox(
+            height: MediaQuery.of(context).size.height,
+            child: Padding(padding: EdgeInsets.all(10),
+            child: Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(top: 10.0,left: 8,right: 8),
+                  child: Image.asset('assets/images/image_b.png',
+                    fit: BoxFit.fitHeight,height: 180,width: 200,),
                 ),
-              ),
-              SizedBox(height: 20,),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  Text('Don\'t have an account?',style: TextStyle(
-                      fontSize: 18,color: Colors.grey),),
-                  TextButton(onPressed: (){
-                        Navigator.pushAndRemoveUntil(context, MaterialPageRoute(
-                            builder: (context)=>RegisterScreen()),(route)=>false);
-                  }, child: Text('Sign Up',style: TextStyle(color: Colors.blue,
-                      fontSize: 18,letterSpacing: -1))
+                SizedBox(
+                  width: double.infinity,
+                  child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text('Create an',style: TextStyle(color: Colors.green,
+                          fontSize: 25,fontWeight: FontWeight.w200),),
+                      Text(' account',style: TextStyle(color: Colors.red,
+                          fontSize: 25,fontWeight: FontWeight.w200),),
+                    ],
                   ),
-                ],
-              )
-            ],
-          ),
+                ),
+                SizedBox(height: 20,),
+                Center(child: CustomTextField(controller: emailController,labelText: 'Email',)),
+                SizedBox(height: 10,),
+                Center(child: CustomTextFieldPassword(controller: passwordController,labelText: 'Password',)),
+                SizedBox(height: 10,),
+                isLoading? Center(child: CircularProgressIndicator(),):
+                Center(
+                  child: SizedBox(
+                    width: 150,
+                    child: ElevatedButton(
+                        onPressed:login,
+                        child: Text('Login')),
+                  ),
+                ),
+                SizedBox(height: 20,),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    Text('Don\'t have an account?',style: TextStyle(
+                        fontSize: 18,color: Colors.grey),),
+                    TextButton(onPressed: (){
+                          Navigator.pushAndRemoveUntil(context, MaterialPageRoute(
+                              builder: (context)=>RegisterScreen()),(route)=>false);
+                    }, child: Text('Sign Up',style: TextStyle(color: Colors.blue,
+                        fontSize: 18,letterSpacing: -1))
+                    ),
+                  ],
+                )
+              ],
+            ),
+            ),
           ),
         ),
       ),
