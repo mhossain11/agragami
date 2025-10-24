@@ -1,5 +1,5 @@
 
-import 'package:agragami/lib/auth/screen/register_screen.dart';
+import 'package:agragami/auth/screen/register_screen.dart';
 import 'package:flutter/material.dart';
 import '../../admin/home/screen/adminhome_screen.dart';
 import '../../cachehelper/chechehelper.dart';
