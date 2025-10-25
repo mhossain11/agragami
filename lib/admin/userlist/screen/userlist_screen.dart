@@ -5,8 +5,7 @@ import 'UsermoneyInfo_screen.dart';
 
 
 class UserListScreen extends StatelessWidget {
-  final CollectionReference usersCollection =
-  FirebaseFirestore.instance.collection('users');
+  final CollectionReference usersCollection = FirebaseFirestore.instance.collection('users');
 
   @override
   Widget build(BuildContext context) {
@@ -14,7 +13,7 @@ class UserListScreen extends StatelessWidget {
       appBar: AppBar(title: Text('User List')),
       body: StreamBuilder<QuerySnapshot>(
         // Filter করে শুধু role = "User"
-        stream: usersCollection.where('role', isEqualTo: 'User').snapshots(),
+        stream: usersCollection.where('role', isEqualTo: 'user').snapshots(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return Center(child: CircularProgressIndicator());

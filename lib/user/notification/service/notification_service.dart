@@ -10,7 +10,7 @@ class NotificationService {
   Future<List<String>> getAdminDocIds() async {
     final snapshot = await _firestore
         .collection('users')
-        .where('role', isEqualTo: 'Admin')
+        .where('role', isEqualTo: 'admin')
         .get();
     return snapshot.docs.map((doc) => doc.id).toList();
   }

@@ -100,7 +100,7 @@ class LogScreen extends StatelessWidget {
                               ),
                             ],
                           ),
-                          trailing: IconButton(
+                         /* trailing: IconButton(
                             icon: const Icon(Icons.delete, color: Colors.redAccent),
                             onPressed: () async {
                               await _firestore
@@ -110,7 +110,7 @@ class LogScreen extends StatelessWidget {
                                   .doc(logId)
                                   .delete();
                             },
-                          ),
+                          ),*/
                         ),
                       );
                     },

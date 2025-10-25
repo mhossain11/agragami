@@ -22,9 +22,9 @@ class MyApp extends StatelessWidget {
     final role = await CacheHelper().getString('isRole');
 
     if (isLoggedIn) {
-      if (role == "Admin") {
+      if (role == "admin") {
         return const AdminHomeScreen();
-      } else if(role == "User") {
+      } else if(role == "user") {
         return const HomeScreen();
       }else{
         return const LoginScreen();

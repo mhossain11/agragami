@@ -12,7 +12,6 @@ class AuthService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   //Register
-
   Future<String?> signup({
     required String email,
     required String password,
@@ -26,7 +25,6 @@ class AuthService {
     required String nomineeName,
   }) async {
     try {
-
       UserCredential userCredential = await _auth
           .createUserWithEmailAndPassword(
         email: email.trim(),
@@ -62,7 +60,6 @@ class AuthService {
 
 
   //Sing up
-
   Future<String?> Login({
     required String email,
     required String password,
@@ -98,9 +95,9 @@ class AuthService {
     }
   }
 
+//check  user_id by auth collection list
   Future<Map<String, dynamic>?> checkUserAdminRole(String inputUserId) async {
     try {
-
       // 🔹 প্রথমে auth collection থেকে সব doc নিয়ে loop করব
       final authSnapshot = await _firestore.collection('auth').get();
 
@@ -150,6 +147,7 @@ class AuthService {
     }
   }
 
+  //check  user_id by users collection list
   Future<Map<String, dynamic>?> checkUserRole(String inputUserId) async {
     try {
       // 🔹 user_id মিলে এমন ডকুমেন্ট খুঁজো
@@ -181,5 +179,55 @@ class AuthService {
     }
   }
 
+  //auth collection user Added 'user: done'
+  Future<void> addUserDoneFieldById(String userId) async {
+    try {
+      // 🔹 Step 0: Get all auth document IDs
+      final authSnapshot = await FirebaseFirestore.instance
+          .collection('auth')
+          .get();
+      final authDocIds = authSnapshot.docs.map((doc) => doc.id).toList();
 
+      bool updated = false;
+
+      // 🔹 Step 1: Loop through each auth doc
+      for (String authDocId in authDocIds) {
+        final adminRef = FirebaseFirestore.instance
+            .collection('auth')
+            .doc(authDocId)
+            .collection('admin');
+
+        final userRef = FirebaseFirestore.instance
+            .collection('auth')
+            .doc(authDocId)
+            .collection('user');
+
+        // 🔹 Step 2: Check in admin
+        final adminSnapshot =
+        await adminRef.where('user_id', isEqualTo: userId).limit(1).get();
+        if (adminSnapshot.docs.isNotEmpty) {
+          await adminSnapshot.docs.first.reference.update({'user': 'done'});
+          print("✅ Added 'user: done' in admin of auth/$authDocId for $userId");
+          updated = true;
+          break; // match হলে loop বন্ধ
+        }
+
+        // 🔹 Step 3: Check in user
+        final userSnapshot =
+        await userRef.where('user_id', isEqualTo: userId).limit(1).get();
+        if (userSnapshot.docs.isNotEmpty) {
+          await userSnapshot.docs.first.reference.update({'user': 'done'});
+          print("✅ Added 'user: done' in user of auth/$authDocId for $userId");
+          updated = true;
+          break; // match হলে loop বন্ধ
+        }
+      }
+
+      if (!updated) {
+        print("⚠️ No user found with user_id: $userId in any auth doc.");
+      }
+    } catch (e) {
+      print("❌ Error in addUserDoneFieldById: $e");
+    }
+  }
 }

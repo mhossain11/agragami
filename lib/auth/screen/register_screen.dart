@@ -1,6 +1,7 @@
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
 import '../service/auth_service.dart';
 import '../widgets/text_field.dart';
@@ -14,6 +15,7 @@ class RegisterScreen extends StatefulWidget {
 }
 
 class _RegisterScreenState extends State<RegisterScreen> {
+  final _formKey = GlobalKey<FormState>();
   TextEditingController useridController = TextEditingController();
   TextEditingController emailController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
@@ -34,6 +36,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
 
   Future<String?> _signUp() async {
+    // ✅ Form validation
+    if (!_formKey.currentState!.validate()) {
+      // যদি validation fail হয়, তাহলে ফাংশন থেমে যাবে
+      return null;
+    }
       setState(() {
         isLoading = true;
       });
@@ -53,21 +60,20 @@ class _RegisterScreenState extends State<RegisterScreen> {
         isLoading = false;
       });
       if(result == 'success' ){
-        ScaffoldMessenger.of(context).showSnackBar(
+        /*ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Signup Successful!')),
-        );
+        );*/
+        showToast(context,'Signup Successful!',Colors.green);
+       await _authService.addUserDoneFieldById(useridController.text);
+
         Navigator.pushReplacement(context, MaterialPageRoute(
             builder: (_)=>LoginScreen()));
       }else if(result != null && result.contains('email')){
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(result)),
-        );
+        showToast(context,'content: Text($result)',Colors.red);
       }
       else{
         //error
-        ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-                content: Text('Signup Failed $result')));
+        showToast(context,'Signup Failed $result',Colors.red);
       }
 
 
@@ -83,15 +89,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
       if (roleCheck != null && roleCheck['user_id'] == userId) {
         // যদি user_id আগে থেকেই থাকে, error return করো
         setState(() => isLoadingId = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('This ${roleCheck['user_id']} already exists')));
+        showToast(context,'This ${roleCheck['user_id']} already exists',Colors.red);
         return;
       }
 
       if (userId.isEmpty) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Please enter a User ID')),
-        );
+        /*ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Please enter a User ID')),);*/
+        showToast(context,'Please enter a User ID',Colors.red);
+        setState(() => isLoadingId = false);
         return;
       }
       setState(() => isLoadingId = true);
@@ -103,23 +109,36 @@ class _RegisterScreenState extends State<RegisterScreen> {
       } );
 
       if (result != null) {
-        ScaffoldMessenger.of(context).showSnackBar(
+       /* ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('✅ ID found! Role: ${result['role']}')),
-        );
-        // এখানে চাইলে নিচের form visible করতে পারো
+        );*/
+        showToast(context,'ID found! Role: ${result['role']}',Colors.green);
+
         setState(() {
           buttonShow = false;
           showForm = true;
         });
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
+        /*ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('❌ User ID not found')),
-        );
+        );*/
+        showToast(context,'User ID not found',Colors.red);
         setState(() {
           buttonShow = true;
         });
       }
     }
+
+  void showToast(BuildContext context,String message,Color color) {
+    Fluttertoast.showToast(
+      msg: message,
+      toastLength: Toast.LENGTH_SHORT,
+      gravity: ToastGravity.BOTTOM,
+      backgroundColor: color,
+      textColor: Colors.white,
+      fontSize: 16.0,
+    );
+  }
 
 
   @override
@@ -145,106 +164,149 @@ class _RegisterScreenState extends State<RegisterScreen> {
         automaticallyImplyLeading: false,
       ),
       body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Column(
-            children: [
-              Text('Register',style: TextStyle(
-                  fontSize: 40,fontWeight: FontWeight.bold),),
-              SizedBox(height: 20,),
-              CustomTextField(controller: useridController,
-                readOnly: buttonShow == false?true:false,
-                labelText: 'User_ID',),
-              SizedBox(height: 10,),
+        child: Form(
+          key: _formKey,
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Column(
+              children: [
+                Text('Register',style: TextStyle(
+                    fontSize: 40,fontWeight: FontWeight.bold),),
+                SizedBox(height: 20,),
+                CustomTextField(controller: useridController,
+                  readOnly: buttonShow == false?true:false,
+                  labelText: 'User_ID',),
+                SizedBox(height: 10,),
 
-              isLoadingId? Center(child: CircularProgressIndicator(),):
-              buttonShow ? SizedBox(
-                width: 250,
-                child: ElevatedButton(
-                    onPressed:searchId,
-                    child: Text('Find Id')),):
-              SizedBox(),
+                isLoadingId? Center(child: CircularProgressIndicator(),):
+                buttonShow ? SizedBox(
+                  width: 250,
+                  child: ElevatedButton(
+                      onPressed:searchId,
+                      child: Text('Find Id')),):
+                SizedBox(),
 
-              foundRole== 'user'?  Visibility(
-                visible: showForm,
-                child: SizedBox(
-                  child: Column(
-                    children: [
-                      CustomTextField(controller: nameController,labelText: 'Name',),
-                      SizedBox(height: 10,),
-                      CustomTextField(controller: emailController,labelText: 'Email',),
-                      SizedBox(height: 10,),
-                      CustomTextField(controller: phoneController,keyboardType: TextInputType.number,labelText: 'Phone number',),
-                      SizedBox(height: 10,),
-                      CustomTextField(controller: nomineeNameController,labelText: 'Nominee Name',),
-                      SizedBox(height: 10,),
-                      CustomTextField(controller: birthdateController,keyboardType: TextInputType.datetime,labelText: 'Birthdate',),
-                      SizedBox(height: 10,),
-                      CustomTextField(controller: nidController,keyboardType: TextInputType.number,labelText: 'Nid number',),
-                      SizedBox(height: 10,),
-                      CustomTextField(controller: addressController,maxLine: 2,labelText: 'Address',),
-                      SizedBox(height: 10,),
-                      CustomTextFieldPassword(controller: passwordController,labelText: 'Password',),
-                      SizedBox(height: 10,),
-                      CustomTextFieldPassword(controller: confirmPasswordController,labelText: 'ConfirmPassword',),
-                      SizedBox(height: 10,),
-                      //button
-                      isLoading? Center(child: CircularProgressIndicator(),):
-                      SizedBox(
-                        width: 250,
-                        child: ElevatedButton(
-                            onPressed: _signUp,
-                            child: Text('Sign Up')),
-                      ),
-                    ],
+                foundRole== 'user'?  Visibility(
+                  visible: showForm,
+                  child: SizedBox(
+                    child: Column(
+                      children: [
+                        CustomTextField(controller: nameController,labelText: 'Name',),
+                        SizedBox(height: 10,),
+                        CustomTextField(controller: emailController,validator: (value){
+                          if(value!.isEmpty){
+                            return 'Please enter an email';
+                          }
+                          if(!value.contains('@')){
+                            return 'Please enter a valid email';
+                          }
+                          if(!value.contains('.')){
+                            return 'Please enter a valid email';
+                          }
+                          final emailRegex = RegExp(r'^[^@]+@[^@]+\.[^@]+');
+                          if (!emailRegex.hasMatch(value.trim())) {
+                            return 'Enter a valid email address';
+                          }
+
+                        },labelText: 'Email',),
+                        SizedBox(height: 10,),
+                        CustomTextField(controller: phoneController,keyboardType: TextInputType.number,labelText: 'Phone number',),
+                        SizedBox(height: 10,),
+                        CustomTextField(controller: nomineeNameController,labelText: 'Nominee Name',),
+                        SizedBox(height: 10,),
+                        CustomTextField(controller: birthdateController,keyboardType: TextInputType.datetime,labelText: 'Birthdate',),
+                        SizedBox(height: 10,),
+                        CustomTextField(controller: nidController,keyboardType: TextInputType.number,labelText: 'Nid number',),
+                        SizedBox(height: 10,),
+                        CustomTextField(controller: addressController,maxLine: 2,labelText: 'Address',),
+                        SizedBox(height: 10,),
+                        CustomTextFieldPassword(controller: passwordController,validator: (value){
+                          if (value == null || value.isEmpty) {
+                            return 'Password is required';
+                          }
+
+                          if (value.length < 8) {
+                            return 'Password must be at least 8 characters';
+                          }
+
+                          // ✅ Strong password regex (optional)
+                          final strongRegex = RegExp(
+                              r'^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$');
+                          if (!strongRegex.hasMatch(value)) {
+                            return 'Include upper, lower, number & special character';
+                          }
+
+                          return null; // ✅ valid
+                        },labelText: 'Password',),
+                        SizedBox(height: 10,),
+                        CustomTextFieldPassword(controller: confirmPasswordController,validator: (value){
+                          if (value == null || value.isEmpty) {
+                            return 'Please confirm your password';
+                          }
+                          if (value != passwordController.text) {
+                            return 'Passwords do not match';
+                          }
+                          return null;
+                        },labelText: 'ConfirmPassword',),
+                        SizedBox(height: 10,),
+                        //button
+                        isLoading? Center(child: CircularProgressIndicator(),):
+                        SizedBox(
+                          width: 250,
+                          child: ElevatedButton(
+                              onPressed: _signUp,
+                              child: Text('Sign Up')),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-              ):SizedBox(),
-              foundRole== 'admin'? Visibility(
-                visible: showForm,
-                child: SizedBox(
-                  child: Column(
-                    children: [
-                      CustomTextField(controller: nameController,labelText: 'Name',),
-                      SizedBox(height: 10,),
-                      CustomTextField(controller: emailController,labelText: 'Email',),
-                      SizedBox(height: 10,),
-                      CustomTextField(controller: phoneController,keyboardType: TextInputType.number,labelText: 'Phone number',),
-                      SizedBox(height: 10,),
-                      CustomTextFieldPassword(controller: passwordController,labelText: 'Password',),
-                      SizedBox(height: 10,),
-                      CustomTextFieldPassword(controller: confirmPasswordController,labelText: 'ConfirmPassword',),
-                      SizedBox(height: 10,),
-                      //button
-                      isLoading? Center(child: CircularProgressIndicator(),):
-                      SizedBox(
-                        width: 250,
-                        child: ElevatedButton(
-                            onPressed: _signUp,
-                            child: Text('Sign Up')),
-                      ),
-                      SizedBox(height: 20,),
+                ):SizedBox(),
+                foundRole== 'admin'? Visibility(
+                  visible: showForm,
+                  child: SizedBox(
+                    child: Column(
+                      children: [
+                        CustomTextField(controller: nameController,labelText: 'Name',),
+                        SizedBox(height: 10,),
+                        CustomTextField(controller: emailController,labelText: 'Email',),
+                        SizedBox(height: 10,),
+                        CustomTextField(controller: phoneController,keyboardType: TextInputType.number,labelText: 'Phone number',),
+                        SizedBox(height: 10,),
+                        CustomTextFieldPassword(controller: passwordController,labelText: 'Password',),
+                        SizedBox(height: 10,),
+                        CustomTextFieldPassword(controller: confirmPasswordController,labelText: 'ConfirmPassword',),
+                        SizedBox(height: 10,),
+                        //button
+                        isLoading? Center(child: CircularProgressIndicator(),):
+                        SizedBox(
+                          width: 250,
+                          child: ElevatedButton(
+                              onPressed: _signUp,
+                              child: Text('Sign Up')),
+                        ),
+                        SizedBox(height: 20,),
 
-                    ],
+                      ],
+                    ),
                   ),
-                ),
-              ):SizedBox(),
-              SizedBox(height: 10,),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  Text('Already have an account?',style: TextStyle(
-                      fontSize: 18,color: Colors.grey),),
-                  TextButton(onPressed: (){
-                    Navigator.pushAndRemoveUntil(context, MaterialPageRoute(
-                        builder: (context)=>LoginScreen()),(route)=>false);
-                  }, child: Text('Sign In',style: TextStyle(color: Colors.blue,
-                      fontSize: 18,letterSpacing: -1))
-                  ),
-                ],
-              )
+                ):SizedBox(),
+                SizedBox(height: 10,),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    Text('Already have an account?',style: TextStyle(
+                        fontSize: 18,color: Colors.grey),),
+                    TextButton(onPressed: (){
+                      Navigator.pushAndRemoveUntil(context, MaterialPageRoute(
+                          builder: (context)=>LoginScreen()),(route)=>false);
+                    }, child: Text('Sign In',style: TextStyle(color: Colors.blue,
+                        fontSize: 18,letterSpacing: -1))
+                    ),
+                  ],
+                )
 
-            ],
+              ],
+            ),
           ),
         ),
       )

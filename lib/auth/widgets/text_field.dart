@@ -8,6 +8,7 @@ class CustomTextField extends StatelessWidget {
     this.maxLine,
     this.keyboardType,
     this.readOnly = false,
+    this.validator,
   });
 
   final TextEditingController controller;
@@ -16,16 +17,18 @@ class CustomTextField extends StatelessWidget {
   final int? maxLine;
   final TextInputType? keyboardType;
   final bool readOnly;
+  final String? Function(String?)? validator;
 
   @override
   Widget build(BuildContext context) {
-    return TextField(
+    return TextFormField(
 
       maxLength:maxLength,
       maxLines: maxLine,
       keyboardType: keyboardType,
       controller: controller,
       readOnly: readOnly,
+      validator: validator,
       decoration: InputDecoration(
         label: Text(labelText),
         border: OutlineInputBorder(),
@@ -41,11 +44,13 @@ class CustomTextFieldPassword extends StatefulWidget {
     required this.controller,
     this.labelText = "",
     this.keyboardType,
+    this.validator,
   });
 
   final TextEditingController controller;
   final String labelText;
   final TextInputType? keyboardType;
+  final String? Function(String?)? validator;
 
   @override
   State<CustomTextFieldPassword> createState() => _CustomTextFieldPasswordState();
@@ -57,8 +62,9 @@ class _CustomTextFieldPasswordState extends State<CustomTextFieldPassword> {
 
   @override
   Widget build(BuildContext context) {
-    return TextField(
+    return TextFormField(
       controller: widget.controller,
+      validator: widget.validator,
       decoration: InputDecoration(
         label: Text(widget.labelText),
         border: OutlineInputBorder(),

@@ -37,7 +37,9 @@ class _UserMoneyRecordScreenState extends State<UserMoneyRecordScreen> {
 
 
     return Scaffold(
-      appBar: AppBar(title: const Text('User Money List')),
+      appBar: AppBar(title: const Text('User Money List'),
+      backgroundColor: Colors.red,
+      ),
       body: StreamBuilder<QuerySnapshot>(
         stream: _moneyRecordService.getMoneyListByUserId(userDocId),
         builder: (context, snapshot) {

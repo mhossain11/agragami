@@ -1,11 +1,13 @@
 import 'dart:async';
 
+import 'package:agragami/admin/id_create/screen/create_id_screen.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 import '../../../auth/screen/login_screen.dart';
 import '../../../cachehelper/chechehelper.dart';
+import '../../id_create/screen/edit_id_screen.dart';
 import '../../log/screen/log_screen.dart';
 import '../../moneydelete/screen/moneydelete_screen.dart';
 import '../../notification/screen/note_screen.dart';
@@ -93,7 +95,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                     value: 0,
                     child: Row(
                       children: [
-                        Icon(Icons.login),
+                        Icon(Icons.login,color: Colors.black),
                         SizedBox(width: 10,),
                         Text('Logout'),
                       ],
@@ -103,9 +105,9 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                     value: 1,
                     child: Row(
                       children: [
-                        Icon(Icons.settings),
+                        Icon(Icons.person,color: Colors.black,),
                         SizedBox(width: 10,),
-                        Text('Setting'),
+                        Text('Profile'),
                       ],
                     )),
 
@@ -423,6 +425,78 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                   ),
                 ),
               ),
+            ),
+            //Saving Money & List user Button
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                GestureDetector(
+                  onTap: (){
+                    Navigator.push(context, MaterialPageRoute(
+                        builder: (context)=>CreateIdScreen()));
+                  },
+                  child: Card(
+                    elevation: 5,
+                    child: Container(
+                      height: 150,
+                      width: 150,
+                      decoration: BoxDecoration(
+                        //  color: Colors.blue.shade100,
+                          borderRadius: BorderRadius.circular(10)
+                      ),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Image.asset('assets/images/id.png',
+                            color: Colors.green,
+                            width: 80,
+                            height: 50,),
+                          SizedBox(height: 5,),
+                          Text('User id Create',style: TextStyle(
+                              fontSize: 16,color: Colors.black,fontWeight: FontWeight.w500
+                          ),)
+
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+                SizedBox(width: 10,),
+                //list button
+                GestureDetector(
+                  onTap: (){
+                    Navigator.push(context, MaterialPageRoute(
+                        builder: (context)=>EditIdScreen()));
+                  },
+                  child: Card(
+                    elevation: 5,
+                    child: Container(
+                      height: 150,
+                      width: 150,
+                      decoration: BoxDecoration(
+                        //  color: Colors.blue.shade300,
+                          borderRadius: BorderRadius.circular(10)
+                      ),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Image.asset('assets/images/id_list.png',
+                              color: Colors.green,
+                              width: 80,
+                              height: 50,),
+                          ),
+                          SizedBox(height: 5,),
+                          Text('Id List',style: TextStyle(
+                              fontSize: 16,color: Colors.black,fontWeight: FontWeight.w500
+                          ),)
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
 
           ],

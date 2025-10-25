@@ -23,13 +23,25 @@ class _HomeScreenState extends State<HomeScreen> {
   final NotificationService _notificationService = NotificationService();
     final HomeService _homeService = HomeService();
     String userDocId = '';
+    String name='';
 
     @override
   void initState() {
     super.initState();
     getUserDocId();
+    getName();
   }
 
+  Future<String?> getName() async {
+    final userName =  await CacheHelper().getString('names');
+    if (userName == null || userName.isEmpty) {
+      debugPrint('Error: Name not found in cache!');
+      return null;
+    }
+    setState(() {
+      name = userName;
+    });
+  }
   Future<String?> getUserDocId() async {
     final id =  await CacheHelper().getString('userDocId');
     if (id == null || id.isEmpty) {
@@ -46,7 +58,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text('User Home'),
-
+        backgroundColor: Colors.red,
         centerTitle: true,
         actions: [
           FutureBuilder<List<String>>(
@@ -60,6 +72,14 @@ class _HomeScreenState extends State<HomeScreen> {
                   int count = snapshot.data ?? 0;
                   return badges.Badge(
                     showBadge: count > 0,
+                    badgeAnimation: badges.BadgeAnimation.scale(), // optional animation
+                    badgeStyle: badges.BadgeStyle(
+                      badgeColor: Colors.green,        // 🎨 background color of badge
+                      padding: EdgeInsets.all(6),    // inner padding
+                      borderRadius: BorderRadius.circular(8), // shape of badge
+                      borderSide: BorderSide(color: Colors.white, width: 1), // optional border
+                      elevation: 4,                  // drop shadow
+                    ),
                     badgeContent: Text('$count',
                         style: TextStyle(color: Colors.white, fontSize: 10)),
                     child: IconButton(
@@ -87,13 +107,13 @@ class _HomeScreenState extends State<HomeScreen> {
                     value: 0,
                     child: Row(
                       children: [
-                        Icon(Icons.login),
+                        Icon(Icons.login,color: Colors.black,),
                         SizedBox(width: 10,),
                         Text('Logout'),
                       ],
                     )),
-                const PopupMenuDivider(),
-                PopupMenuItem(
+                //const PopupMenuDivider(),
+               /* PopupMenuItem(
                     value: 1,
                     child: Row(
                       children: [
@@ -101,7 +121,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         SizedBox(width: 10,),
                         Text('Setting'),
                       ],
-                    )),
+                    )),*/
 
               ]
           ),
@@ -110,15 +130,31 @@ class _HomeScreenState extends State<HomeScreen> {
 
       body: Column(
         children: [
+          SizedBox(
+            width: double.infinity,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(10.0),
+                  child: Text(name,style: TextStyle(
+                      fontSize: 25,color: Colors.red,
+                      fontWeight: FontWeight.bold
+                  )),
+                ),
+              ],
+            ),
+          ),
           Padding(
-            padding: const EdgeInsets.all(14.0),
+            padding: const EdgeInsets.all(10.0),
             child: Card(
               elevation: 5,
               child: Container(
                 height: 100,
                 width: double.infinity,
                 decoration: BoxDecoration(
-                  color: Colors.green.shade100,
+                 // color: Colors.green.shade100,
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Center(
@@ -134,12 +170,26 @@ class _HomeScreenState extends State<HomeScreen> {
 
                       final totalAmount = snapshot.data?.toInt() ?? 0; // double to int
 
-                      return Text(
-                        '$totalAmount Tk',
-                        style: const TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
+                      return Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            '$totalAmount Tk',
+                            style: const TextStyle(
+                              fontSize: 25,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.red
+                            ),
+                          ),
+                          Text(
+                            'TotalAmount',
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+
+                        ],
                       );
                     },
                   ),
@@ -155,13 +205,13 @@ class _HomeScreenState extends State<HomeScreen> {
                     Navigator.push(context, MaterialPageRoute(
                         builder: (context)=>UserMoneyRecordScreen()));
                   },
-                  child: Padding(
-                    padding: const EdgeInsets.all(14.0),
+                  child: Card(
+                    elevation: 5,
                     child: Container(
                       height: 150,
                       width: 150,
                       decoration: BoxDecoration(
-                          color: Colors.blue.shade300,
+                          //color: Colors.blue.shade300,
                           borderRadius: BorderRadius.circular(10)
                       ),
                       child: Column(
@@ -170,13 +220,14 @@ class _HomeScreenState extends State<HomeScreen> {
                           Padding(
                             padding: const EdgeInsets.all(8.0),
                             child: Image.asset('assets/images/userlist.png',
-                              color: Colors.white,
+                              color: Colors.red,
                               width: 80,
                               height: 50,),
                           ),
                           SizedBox(height: 5,),
                           Text('User List',style: TextStyle(
-                              fontSize: 16,color: Colors.white
+                              fontSize: 16,color: Colors.black ,
+                              fontWeight: FontWeight.w500
                           ),)
                         ],
                       ),
@@ -188,16 +239,16 @@ class _HomeScreenState extends State<HomeScreen> {
               Expanded(
                 child: GestureDetector(
                   onTap: (){
-                    Navigator.push(context, MaterialPageRoute(
-                        builder: (context)=>UserMoneyRecordScreen()));
+                   /* Navigator.push(context, MaterialPageRoute(
+                        builder: (context)=>UserMoneyRecordScreen()));*/
                   },
-                  child: Padding(
-                    padding: const EdgeInsets.all(14.0),
+                  child: Card(
+                    elevation: 5,
                     child: Container(
                       height: 150,
                       width: 150,
                       decoration: BoxDecoration(
-                          color: Colors.blue.shade300,
+                          //color: Colors.blue.shade300,
                           borderRadius: BorderRadius.circular(10)
                       ),
                       child: Column(
@@ -206,13 +257,13 @@ class _HomeScreenState extends State<HomeScreen> {
                           Padding(
                             padding: const EdgeInsets.all(8.0),
                             child: Image.asset('assets/images/profile.png',
-                              color: Colors.white,
+                              color: Colors.red,
                               width: 80,
                               height: 50,),
                           ),
                           SizedBox(height: 5,),
                           Text('Profile',style: TextStyle(
-                              fontSize: 16,color: Colors.white
+                              fontSize: 16,color: Colors.black,fontWeight: FontWeight.w500
                           ),)
                         ],
                       ),
