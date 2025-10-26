@@ -148,11 +148,11 @@ class _LoginScreenState extends State<LoginScreen> {
                     }
 
                     // ✅ Strong password regex (optional)
-                    final strongRegex = RegExp(
+                   /* final strongRegex = RegExp(
                         r'^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$');
                     if (!strongRegex.hasMatch(value)) {
                       return 'Include upper, lower, number & special character';
-                    }
+                    }*/
 
                     return null; // ✅ valid
                   },labelText: 'Password',)),

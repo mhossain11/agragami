@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:agragami/admin/deleteid/screen/deleteid_screen.dart';
 import 'package:agragami/admin/id_create/screen/create_id_screen.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -8,6 +9,7 @@ import 'package:flutter/material.dart';
 import '../../../auth/screen/login_screen.dart';
 import '../../../cachehelper/chechehelper.dart';
 import '../../id_create/screen/edit_id_screen.dart';
+import '../../id_list/screen/id_list_screen.dart';
 import '../../log/screen/log_screen.dart';
 import '../../moneydelete/screen/moneydelete_screen.dart';
 import '../../notification/screen/note_screen.dart';
@@ -466,7 +468,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                 GestureDetector(
                   onTap: (){
                     Navigator.push(context, MaterialPageRoute(
-                        builder: (context)=>EditIdScreen()));
+                        builder: (context)=>IdListScreen()));
                   },
                   child: Card(
                     elevation: 5,
@@ -488,7 +490,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                               height: 50,),
                           ),
                           SizedBox(height: 5,),
-                          Text('Id List',style: TextStyle(
+                          Text('User Id List',style: TextStyle(
                               fontSize: 16,color: Colors.black,fontWeight: FontWeight.w500
                           ),)
                         ],
@@ -496,7 +498,42 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                     ),
                   ),
                 ),
+                SizedBox(width: 10,),
               ],
+            ),
+
+            GestureDetector(
+              onTap: (){
+                Navigator.push(context, MaterialPageRoute(
+                    builder: (context)=>DeleteIdScreen()));
+              },
+              child: Card(
+                elevation: 5,
+                child: Container(
+                  height: 150,
+                  width: 150,
+                  decoration: BoxDecoration(
+                    //  color: Colors.blue.shade300,
+                      borderRadius: BorderRadius.circular(10)
+                  ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Image.asset('assets/images/delete_id.png',
+                          color: Colors.green,
+                          width: 80,
+                          height: 50,),
+                      ),
+                      SizedBox(height: 5,),
+                      Text('Delete id',style: TextStyle(
+                          fontSize: 16,color: Colors.black,fontWeight: FontWeight.w500
+                      ),)
+                    ],
+                  ),
+                ),
+              ),
             ),
 
           ],
