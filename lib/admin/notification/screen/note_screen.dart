@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../auth/widgets/text_field.dart';
+import '../../../cachehelper/toast.dart';
 import '../service/note_service.dart';
 
 class NoteScreen extends StatefulWidget {
@@ -34,13 +35,9 @@ class _NoteScreenState extends State<NoteScreen> {
       });
       titleController.clear();
       messageController.clear();
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Note added successfully!')),
-      );
+      CustomToast().showToast(context, 'Note added successfully!', Colors.green);
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: $e')),
-      );
+      CustomToast().showToast(context, 'Error: $e', Colors.red);
     } finally {
       setState(() => _isLoading = false);
     }

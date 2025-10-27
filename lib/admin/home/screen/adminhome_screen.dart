@@ -2,6 +2,9 @@ import 'dart:async';
 
 import 'package:agragami/admin/deleteid/screen/deleteid_screen.dart';
 import 'package:agragami/admin/id_create/screen/create_id_screen.dart';
+import 'package:agragami/admin/notification/service/note_service.dart';
+import 'package:agragami/admin/profile/screen/profile_screen.dart';
+import 'package:badges/badges.dart' as badges;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -13,6 +16,7 @@ import '../../id_list/screen/id_list_screen.dart';
 import '../../log/screen/log_screen.dart';
 import '../../moneydelete/screen/moneydelete_screen.dart';
 import '../../notification/screen/note_screen.dart';
+import '../../notification/screen/notificationlist_screen.dart';
 import '../../save_money/screen/saving_money_screen.dart';
 import '../../userlist/screen/userlist_screen.dart';
 import '../service/adminhome_service.dart';
@@ -27,10 +31,12 @@ class AdminHomeScreen extends StatefulWidget {
 class _AdminHomeScreenState extends State<AdminHomeScreen> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
    final AdminHomeService _adminHomeService = AdminHomeService();
+   final NoteService _noteService = NoteService();
   bool _isLoading = true;
   int userTotal =0;
   int adminTotal =0;
   String name='';
+  String DocId='';
 
   @override
   void initState(){
@@ -40,12 +46,19 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
   }
   Future<String?> getName() async {
     final userName =  await CacheHelper().getString('names');
+    final userDocId =  await CacheHelper().getString('userDocId');
     if (userName == null || userName.isEmpty) {
       debugPrint('Error: Name not found in cache!');
       return null;
     }
+
+    if (userDocId == null || userDocId.isEmpty) {
+      debugPrint('Error: UserDocId not found in cache!');
+      return null;
+    }
     setState(() {
       name = userName;
+      DocId = userDocId;
     });
   }
 
@@ -89,7 +102,44 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
 
         centerTitle: true,
         actions: [
-          IconButton(onPressed: (){}, icon: Icon(Icons.notifications)),
+          FutureBuilder<List<String>>(
+            future: _noteService.getAdminDocIds(),
+            builder: (context, snapshot) {
+              if (!snapshot.hasData) return Icon(Icons.notifications);
+              final adminDocIds = snapshot.data!;
+              return StreamBuilder<int>(
+                stream: _noteService.getTotalUnreadCount(adminDocIds),
+                builder: (context, snapshot) {
+                  int count = snapshot.data ?? 0;
+                  return badges.Badge(
+                    showBadge: count > 0,
+                    badgeAnimation: badges.BadgeAnimation.scale(), // optional animation
+                    badgeStyle: badges.BadgeStyle(
+                      badgeColor: Colors.green,        // 🎨 background color of badge
+                      padding: EdgeInsets.all(6),    // inner padding
+                      borderRadius: BorderRadius.circular(8), // shape of badge
+                      borderSide: BorderSide(color: Colors.white, width: 1), // optional border
+                      elevation: 4,                  // drop shadow
+                    ),
+                    badgeContent: Text('$count',
+                        style: TextStyle(color: Colors.white, fontSize: 10)),
+                    child: IconButton(
+                      icon: Icon(Icons.notifications),
+                      onPressed: () {
+                        // Navigate to NotificationScreen
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => NotificationListScreen(adminDocId: DocId,),
+                          ),
+                        );
+                      },
+                    ),
+                  );
+                },
+              );
+            },
+          ),
           PopupMenuButton<int>(
               onSelected: (item)=>onSelected(item,context),
               itemBuilder: (context)=>[
@@ -549,6 +599,11 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
         CacheHelper().clear();
         Navigator.pushReplacement(context, MaterialPageRoute(
             builder: (context)=>LoginScreen()));
+        break;
+
+      case 1:
+        Navigator.push(context, MaterialPageRoute(
+            builder: (context)=>ProfileScreen(userId: DocId)));
         break;
     }
 

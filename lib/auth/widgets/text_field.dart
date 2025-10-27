@@ -9,6 +9,7 @@ class CustomTextField extends StatelessWidget {
     this.keyboardType,
     this.readOnly = false,
     this.validator,
+    this.enabled,
   });
 
   final TextEditingController controller;
@@ -18,6 +19,7 @@ class CustomTextField extends StatelessWidget {
   final TextInputType? keyboardType;
   final bool readOnly;
   final String? Function(String?)? validator;
+  final bool? enabled;
 
   @override
   Widget build(BuildContext context) {
@@ -28,6 +30,7 @@ class CustomTextField extends StatelessWidget {
       keyboardType: keyboardType,
       controller: controller,
       readOnly: readOnly,
+      enabled: enabled,
       validator: validator,
       decoration: InputDecoration(
         label: Text(labelText),

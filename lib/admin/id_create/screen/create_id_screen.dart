@@ -66,7 +66,7 @@ class _CreateIdScreenState extends State<CreateIdScreen> {
                 border: OutlineInputBorder(),
               ),
               items: const [
-                DropdownMenuItem(value: 'admin', child: Text("Admin")),
+               // DropdownMenuItem(value: 'admin', child: Text("Admin")),
                 DropdownMenuItem(value: 'user', child: Text("User")),
               ],
               onChanged: (value) {

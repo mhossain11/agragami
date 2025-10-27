@@ -1,9 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-
-
-
-class NotificationService {
+class UserNotificationService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   /// 🔹 Get all admin doc IDs
@@ -27,7 +24,6 @@ class NotificationService {
           .map((snap) => snap.docs.length);
     }).toList();
 
-    // Merge all streams and sum counts
     return Stream<int>.multi((controller) {
       final counts = List<int>.filled(adminDocIds.length, 0);
       for (int i = 0; i < streams.length; i++) {
@@ -49,30 +45,25 @@ class NotificationService {
         .update({'seen': true});
   }
 
-  /// 🔹 Get first unread notification ID of an admin
-  Future<String?> getFirstUnreadNotificationId(String adminDocId) async {
+  /// 🔹 Delete a notification
+  Future<void> deleteNotification(String adminDocId, String notificationId) async {
+    await _firestore
+        .collection('users')
+        .doc(adminDocId)
+        .collection('notification')
+        .doc(notificationId)
+        .delete();
+  }
+
+  /// 🔹 Future-based fetch for all notifications of an admin
+  Future<List<QueryDocumentSnapshot<Map<String, dynamic>>>> getNotificationsOnce(String adminDocId) async {
     final snapshot = await _firestore
         .collection('users')
         .doc(adminDocId)
         .collection('notification')
-        .where('seen', isEqualTo: false)
         .orderBy('datetime', descending: true)
-        .limit(1)
         .get();
 
-    if (snapshot.docs.isNotEmpty) return snapshot.docs.first.id;
-    return null;
-  }
-
-  /// 🔹 Get all notifications for an admin (for NotificationScreen)
-  Stream<List<QueryDocumentSnapshot<Map<String, dynamic>>>> getNotifications(String adminDocId) {
-    return _firestore
-        .collection('users')
-        .doc(adminDocId)
-        .collection('notification')
-        .orderBy('datetime', descending: true)
-        .snapshots()
-        .map((snap) => snap.docs);
+    return snapshot.docs;
   }
 }
-

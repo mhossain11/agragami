@@ -1,14 +1,16 @@
+import 'package:agragami/user/profile/screen/profile_screen.dart';
 import 'package:badges/badges.dart' as badges;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 import '../../../admin/home/service/adminhome_service.dart';
+import '../../../admin/profile/screen/profile_screen.dart';
 import '../../../auth/screen/login_screen.dart';
 import '../../../cachehelper/chechehelper.dart';
 import '../../money record/screen/user_money_record_screen.dart';
-import '../../notification/screen/notification_screen.dart';
-import '../../notification/service/notification_service.dart';
+import '../../notification/screen/user_notification_screen.dart';
+import '../../notification/service/user_notification_service.dart';
 import '../service/home_service.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -20,10 +22,11 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
-  final NotificationService _notificationService = NotificationService();
+  final UserNotificationService _notificationService = UserNotificationService();
     final HomeService _homeService = HomeService();
     String userDocId = '';
     String name='';
+    String DocId='';
 
     @override
   void initState() {
@@ -34,12 +37,20 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<String?> getName() async {
     final userName =  await CacheHelper().getString('names');
+    final userDocId =  await CacheHelper().getString('userDocId');
     if (userName == null || userName.isEmpty) {
       debugPrint('Error: Name not found in cache!');
       return null;
     }
+
+    if (userDocId == null || userDocId.isEmpty) {
+      debugPrint('Error: UserDocId not found in cache!');
+      return null;
+    }
+
     setState(() {
       name = userName;
+      DocId = userDocId;
     });
   }
   Future<String?> getUserDocId() async {
@@ -89,7 +100,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (_) => NotificationScreen(adminDocIds: adminDocIds),
+                            builder: (_) => UserNotificationScreen(adminDocIds: adminDocIds),
                           ),
                         );
                       },
@@ -239,8 +250,8 @@ class _HomeScreenState extends State<HomeScreen> {
               Expanded(
                 child: GestureDetector(
                   onTap: (){
-                   /* Navigator.push(context, MaterialPageRoute(
-                        builder: (context)=>UserMoneyRecordScreen()));*/
+                    Navigator.push(context, MaterialPageRoute(
+                        builder: (context)=>UserProfileScreen(userId: DocId)));
                   },
                   child: Card(
                     elevation: 5,
@@ -285,6 +296,7 @@ class _HomeScreenState extends State<HomeScreen> {
         Navigator.pushReplacement(context, MaterialPageRoute(
             builder: (context)=>LoginScreen()));
         break;
+
     }
 
   }

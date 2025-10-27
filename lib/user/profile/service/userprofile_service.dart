@@ -1,13 +1,14 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../model/profile_model.dart';
 
-class ProfileService{
+import '../model/userprofile_model.dart';
+
+class UserProfileService{
   final _firestore = FirebaseFirestore.instance;
 
-  Future<ProfileModel?> getUserById(String userId) async {
+  Future<UserProfileModel?> getUserById(String userId) async {
     final doc = await _firestore.collection('users').doc(userId).get();
     if (doc.exists) {
-      return ProfileModel.fromFirestore(doc);
+      return UserProfileModel.fromFirestore(doc);
     } else {
       return null;
     }

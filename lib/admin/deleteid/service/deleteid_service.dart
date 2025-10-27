@@ -20,18 +20,18 @@ class DeleteIdService{
 
 
   Future<void> deleteUserByAuthDoc({ required String authDocId,
-    required String userDocId}) async {
+    required String authuserDocId}) async {
     try {
       // 1️⃣ Get user_id from the auth subcollection
       DocumentSnapshot authUserDoc = await _firestore
           .collection('auth')
           .doc(authDocId)
           .collection('user')
-          .doc(userDocId)
+          .doc(authuserDocId)
           .get();
 
       if (!authUserDoc.exists) {
-        print("No user found in auth/$authDocId/user/$userDocId");
+        print("No user found in auth/$authDocId/user/$authuserDocId");
         return;
       }
 
@@ -42,9 +42,9 @@ class DeleteIdService{
           .collection('auth')
           .doc(authDocId)
           .collection('user')
-          .doc(userDocId)
+          .doc(authuserDocId)
           .delete();
-      print("Deleted auth user document: $userDocId");
+      print("Deleted auth user document: $authuserDocId");
 
       // 3️⃣ Delete the user document in top-level 'users' collection
       QuerySnapshot usersSnapshot = await _firestore
