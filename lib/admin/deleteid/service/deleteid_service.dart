@@ -19,48 +19,80 @@ class DeleteIdService{
 
 
 
-  Future<void> deleteUserByAuthDoc({ required String authDocId,
-    required String authuserDocId}) async {
+  Future<void> deleteUserByAuthUid({
+    required String authDocId,       // auth collection-এর uid
+    required String authUserDocId, // auth/{uid}/user subcollection-এর doc id
+  }) async {
     try {
-      // 1️⃣ Get user_id from the auth subcollection
-      DocumentSnapshot authUserDoc = await _firestore
+      // 1️⃣ Get user_id from auth subcollection
+      final authUserDoc = await _firestore
           .collection('auth')
           .doc(authDocId)
           .collection('user')
-          .doc(authuserDocId)
+          .doc(authUserDocId)
           .get();
 
       if (!authUserDoc.exists) {
-        print("No user found in auth/$authDocId/user/$authuserDocId");
+        print("❌ No user found in auth/$authDocId/user/$authUserDocId");
         return;
       }
 
-      String userId = authUserDoc.get('user_id');
+      final String userId = authUserDoc.get('user_id');
 
-      // 2️⃣ Delete the user document inside auth subcollection
-      await _firestore
-          .collection('auth')
-          .doc(authDocId)
-          .collection('user')
-          .doc(authuserDocId)
-          .delete();
-      print("Deleted auth user document: $authuserDocId");
-
-      // 3️⃣ Delete the user document in top-level 'users' collection
-      QuerySnapshot usersSnapshot = await _firestore
+      // 2️⃣ Find matching user document in 'users' collection
+      final userSnap = await _firestore
           .collection('users')
           .where('user_id', isEqualTo: userId)
           .get();
 
-      for (var doc in usersSnapshot.docs) {
-        await _firestore.collection('users').doc(doc.id).delete();
-        print("Deleted top-level user document: ${doc.id}");
+      if (userSnap.docs.isEmpty) {
+        print("❌ No user found in users collection for user_id: $userId");
+        return;
       }
 
-      print("All deletions completed for user_id: $userId");
+      // 3️⃣ Move each found user document
+      for (var doc in userSnap.docs) {
+        final fromDocRef = _firestore.collection('users').doc(doc.id);
+        final toDocRef = _firestore.collection('delete_users').doc(doc.id);
+
+        final Map<String, dynamic> userData = doc.data();
+        // Add deletedAt without changing other dates
+        userData['deletedAt'] = FieldValue.serverTimestamp();
+
+        // Copy main user doc
+        await toDocRef.set(userData);
+
+        // Copy 'Money' subcollection
+        final moneySnap = await fromDocRef.collection('Money').get();
+        for (var moneyDoc in moneySnap.docs) {
+          await toDocRef.collection('Money').doc(moneyDoc.id).set(moneyDoc.data());
+        }
+
+        // Delete original 'Money' subcollection
+        for (var moneyDoc in moneySnap.docs) {
+          await moneyDoc.reference.delete();
+        }
+
+        // Delete original user doc
+        await fromDocRef.delete();
+      }
+
+      // 4️⃣ Delete auth subcollection document
+      await _firestore.collection('auth').doc(authDocId).collection('user').doc(authUserDocId).delete();
+
+      // 5️⃣ Optionally delete auth uid doc itself (if empty or needed)
+      final remaining = await _firestore.collection('auth').doc(authDocId).collection('user').get();
+      if (remaining.docs.isEmpty) {
+        await _firestore.collection('auth').doc(authDocId).delete();
+      }
+
+      print("✅ User moved to delete_users with Money subcollection and auth deleted");
     } catch (e) {
-      print("Error deleting user: $e");
+      print("⚠️ Error deleting user: $e");
     }
   }
+
+
+
 
 }

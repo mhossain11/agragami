@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../../../cachehelper/chechehelper.dart';
 import '../../../cachehelper/toast.dart';
+import '../../log/service/log_service.dart';
 import '../service/deleteid_service.dart';
 
 class DeleteIdScreen extends StatefulWidget {
@@ -12,43 +14,51 @@ class DeleteIdScreen extends StatefulWidget {
 }
 
 class _DeleteIdScreenState extends State<DeleteIdScreen> {
-  TextEditingController _userIdController = TextEditingController();
+ final TextEditingController _userIdController = TextEditingController();
+  final LogService _logService = LogService();
   bool _isLoading = false;
+  String name='';
+  String DocId='';
+  String email='';
+  String adminId='';
 
   final DeleteIdService _deleteIdService = DeleteIdService();
 
-  /*Future<void> _deleteId() async {
-    final userId = _userIdController.text.trim();
 
+ @override
+  void initState() {
+    super.initState();
+    getName();
+  }
+ Future<String?> getName() async {
+    name =  (await CacheHelper().getString('names'))!;
+    DocId =  (await CacheHelper().getString('userDocId'))!;
+    adminId =  (await CacheHelper().getString('adminId'))!;
+    email =  (await CacheHelper().getString('email'))!;
+   if (name == null || name.isEmpty) {
+     debugPrint('Error: Name not found in cache!');
+     return null;
+   }if (adminId == null ||adminId.isEmpty) {
+     debugPrint('Error: Name not found in cache!');
+     return null;
+   }
 
-    if (userId.isEmpty ) {
-      CustomToast().showToast(context, 'User ID are required.', Colors.red);
-      return;
-    }
+   if (DocId == null || DocId.isEmpty) {
+     debugPrint('Error: UserDocId not found in cache!');
+     return null;
+   }
+   if (email == null || email.isEmpty) {
+     debugPrint('Error: Name not found in cache!');
+     return null;
+   }
+   setState(() {
+     name = name;
+     DocId = DocId;
+     email = email;
+     adminId = adminId;
+   });
+ }
 
-    setState(() {
-      _isLoading = true;
-    });
-
-    try {
-      //await _deleteIdService.deleteUser(docId: userId);
-       await _deleteIdService.deleteUserByAuthDoc(
-           authDocId: 'HUbPbYgwEss4dIE4Uiv8',
-           authuserDocId: _userIdController.text.trim());
-
-      CustomToast().showToast(context, '$userId deleted successfully', Colors.green);
-
-
-      // Optional: clear fields
-      _userIdController.clear();
-    } catch (e) {
-      CustomToast().showToast(context, 'Error: $e', Colors.red);
-    } finally {
-      setState(() {
-        _isLoading = false;
-      });
-    }
-  }*/
   Future<void> _deleteId() async {
     final userId = _userIdController.text.trim();
 
@@ -84,9 +94,17 @@ class _DeleteIdScreenState extends State<DeleteIdScreen> {
     });
 
     try {
-      await _deleteIdService.deleteUserByAuthDoc(
+      await _deleteIdService.deleteUserByAuthUid(
         authDocId: 'HUbPbYgwEss4dIE4Uiv8',
-        authuserDocId: userId,
+        authUserDocId: userId,
+      );
+      await _logService.addLog(
+          name:  name,
+          email: email,
+          userid:  adminId,
+          oldData:  'N/A',
+          newData: userId,
+          note: 'User Id:$userId deleted'
       );
 
       CustomToast().showToast(context, '$userId deleted successfully', Colors.green);
@@ -116,7 +134,7 @@ class _DeleteIdScreenState extends State<DeleteIdScreen> {
             child: TextField(
               controller: _userIdController,
               decoration: const InputDecoration(
-                labelText: 'User Id record',
+                labelText: 'Id record',
                 border: OutlineInputBorder(),
               ),
             ),
