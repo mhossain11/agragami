@@ -9,6 +9,13 @@ class UserMoneyInfoScreen extends StatelessWidget {
   final String userId;
   final String name;
   final String email;
+  final String phone;
+  final String nid;
+  final String birthdate;
+  final String address;
+  final String nomineeName;
+  final String nomineeRelation;
+
 
   final UserListService _userListService = UserListService();
 
@@ -17,6 +24,12 @@ class UserMoneyInfoScreen extends StatelessWidget {
     required this.userId,
     required this.name,
     required this.email,
+    required this.phone,
+    required this.nid,
+    required this.birthdate,
+    required this.address,
+    required this.nomineeName,
+    required this.nomineeRelation,
   });
 
   @override
@@ -35,53 +48,148 @@ class UserMoneyInfoScreen extends StatelessWidget {
 
           // 🚫 Empty data check
           if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-            return const Center(child: Text('No money record found.'));
+            return  Column(
+              children: [
+                Card(
+                  margin: const EdgeInsets.all(12),
+                  elevation: 4,
+                  color: Colors.red.shade100,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: SizedBox(
+                      width: double.infinity,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('Name: $name',
+                              style: const TextStyle(
+                                  fontSize: 14, fontWeight: FontWeight.w600)),
+                          Text('User ID: $userId',
+                              style: const TextStyle(
+                                  fontSize: 14, fontWeight: FontWeight.w600)),
+                          Text('Email: $email',
+                              style: const TextStyle(
+                                  fontSize: 14, fontWeight: FontWeight.w600)),
+                          Text('phone: $phone',
+                              style: const TextStyle(
+                                  fontSize: 14, fontWeight: FontWeight.w600)),
+                          Text('Nid: $nid',
+                              style: const TextStyle(
+                                  fontSize: 14, fontWeight: FontWeight.w600)),
+                          Text('BirthDate: $birthdate',
+                              style: const TextStyle(
+                                  fontSize: 14, fontWeight: FontWeight.w600)),
+                          Text('Address: $address',
+                              style: const TextStyle(
+                                  fontSize: 14, fontWeight: FontWeight.w600)),
+                          Text('NomineeName: $nomineeName',
+                              style: const TextStyle(
+                                  fontSize: 14, fontWeight: FontWeight.w600)),
+                          Text('NomineeRelation: $nomineeRelation',
+                              style: const TextStyle(
+                                  fontSize: 14, fontWeight: FontWeight.w600)),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Expanded(child: Center(child: Text('No money record found.'))),
+              ],
+            );
           }
 
           // ✅ Snapshot data list
           final moneyDocs = snapshot.data!.docs;
+          double totalAmount = 0;
+          for (var doc in moneyDocs) {
+            final data = doc.data() as Map<String, dynamic>;
+            final amount = (data['amount'] ?? 0).toDouble();
+            totalAmount += amount;
+          }
 
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // 🔹 User Info Card
+
               Card(
                 margin: const EdgeInsets.all(12),
                 elevation: 4,
+                color: Colors.green.shade100,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Padding(
                   padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                        Text('👤 Name: $name',
+                  child: SizedBox(
+                    width: double.infinity,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('Name: $name',
                             style: const TextStyle(
-                                fontSize: 18, fontWeight: FontWeight.bold)),
-                        Text('🆔 User ID: $userId',
+                                fontSize: 14, fontWeight: FontWeight.w600)),
+                        Text('User ID: $userId',
                             style: const TextStyle(
-                                fontSize: 18, fontWeight: FontWeight.bold)),
-                      ],),
-
-                      const SizedBox(height: 8),
-                      Center(
-                        child: Text('📧 Email: $email',
+                                fontSize: 14, fontWeight: FontWeight.w600)),
+                        Text('Email: $email',
                             style: const TextStyle(
-                                fontSize: 18, fontWeight: FontWeight.bold)),
-                      ),
-
-                    ],
+                                fontSize: 14, fontWeight: FontWeight.w600)),
+                        Text('phone: $phone',
+                            style: const TextStyle(
+                                fontSize: 14, fontWeight: FontWeight.w600)),
+                        Text('Nid: $nid',
+                            style: const TextStyle(
+                                fontSize: 14, fontWeight: FontWeight.w600)),
+                        Text('BirthDate: $birthdate',
+                            style: const TextStyle(
+                                fontSize: 14, fontWeight: FontWeight.w600)),
+                        Text('Address: $address',
+                            style: const TextStyle(
+                                fontSize: 14, fontWeight: FontWeight.w600)),
+                        Text('NomineeName: $nomineeName',
+                            style: const TextStyle(
+                                fontSize: 14, fontWeight: FontWeight.w600)),
+                        Text('NomineeRelation: $nomineeRelation',
+                            style: const TextStyle(
+                                fontSize: 14, fontWeight: FontWeight.w600)),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              Center(
+                child: Card(
+                  elevation: 3,
+                  color: Colors.grey.shade300,
+                  child: SizedBox(
+                    width: 300,
+                    height: 30,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text('Total Amount:',
+                          style: TextStyle(
+                              fontSize:14,
+                              color: Colors.black,
+                              fontWeight: FontWeight.w600),),
+                        Text('${totalAmount.toStringAsFixed(0)} Tk ',
+                          style: TextStyle(
+                              fontSize:16,
+                              color: Colors.black,
+                              fontWeight: FontWeight.bold),),
+                      ],
+                    ),
                   ),
                 ),
               ),
 
-              const SizedBox(height: 8),
 
-              // 🔹 Money List
+              const SizedBox(height: 8),
+              //  Money List
               Expanded(
                 child: ListView.builder(
                   itemCount: moneyDocs.length,

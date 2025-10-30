@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../cachehelper/toast.dart';
 import '../service/moneydelete_service.dart';
 
 class MoneyDeleteSimpleScreen extends StatefulWidget {
@@ -29,9 +30,7 @@ class _MoneyDeleteSimpleScreenState extends State<MoneyDeleteSimpleScreen> {
     final moneyDocId = _moneyDocIdController.text.trim();
 
     if (userId.isEmpty || moneyDocId.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Both fields are required')),
-      );
+      CustomToast().showToast(context, 'Both fields are required', Colors.red);
       return;
     }
 
@@ -44,18 +43,13 @@ class _MoneyDeleteSimpleScreenState extends State<MoneyDeleteSimpleScreen> {
         userId: userId,
         moneyDocId: moneyDocId,
       );
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Record deleted successfully')),
-      );
+      CustomToast().showToast(context, 'Record deleted successfully', Colors.green);
 
       // Optional: clear fields
       _userIdController.clear();
       _moneyDocIdController.clear();
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: $e')),
-      );
+      CustomToast().showToast(context, 'Error: $e', Colors.red);
     } finally {
       setState(() {
         _isLoading = false;
@@ -82,7 +76,7 @@ class _MoneyDeleteSimpleScreenState extends State<MoneyDeleteSimpleScreen> {
             TextField(
               controller: _moneyDocIdController,
               decoration: const InputDecoration(
-                labelText: 'Money Document ID',
+                labelText: 'Money ID',
                 border: OutlineInputBorder(),
               ),
             ),

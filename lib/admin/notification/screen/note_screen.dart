@@ -2,7 +2,9 @@
 import 'package:flutter/material.dart';
 
 import '../../../auth/widgets/text_field.dart';
+import '../../../cachehelper/chechehelper.dart';
 import '../../../cachehelper/toast.dart';
+import '../../log/service/log_service.dart';
 import '../service/note_service.dart';
 
 class NoteScreen extends StatefulWidget {
@@ -16,8 +18,49 @@ class _NoteScreenState extends State<NoteScreen> {
   TextEditingController titleController = TextEditingController();
   TextEditingController messageController = TextEditingController();
   final NoteService _noteService = NoteService();
+  final LogService _logService = LogService();
   bool _isLoading = false;
   bool successful = false;
+  String name='';
+  String DocId='';
+  String email='';
+  String adminId='';
+
+
+  @override
+  void initState() {
+    super.initState();
+    getName();
+  }
+
+  Future<String?> getName() async {
+    name =  (await CacheHelper().getString('names'))!;
+    DocId =  (await CacheHelper().getString('userDocId'))!;
+    adminId =  (await CacheHelper().getString('adminId'))!;
+    email =  (await CacheHelper().getString('email'))!;
+    if (name == null || name.isEmpty) {
+      debugPrint('Error: Name not found in cache!');
+      return null;
+    }if (adminId == null ||adminId.isEmpty) {
+      debugPrint('Error: Name not found in cache!');
+      return null;
+    }
+
+    if (DocId == null || DocId.isEmpty) {
+      debugPrint('Error: UserDocId not found in cache!');
+      return null;
+    }
+    if (email == null || email.isEmpty) {
+      debugPrint('Error: Name not found in cache!');
+      return null;
+    }
+    setState(() {
+      name = name;
+      DocId = DocId;
+      email = email;
+      adminId = adminId;
+    });
+  }
 
   Future<void> _handleAddNote() async {
     if (titleController.text.isEmpty) return;
@@ -30,6 +73,15 @@ class _NoteScreenState extends State<NoteScreen> {
         message: messageController.text,
       );
 
+
+      await _logService.addLog(
+          name:  name,
+          email: email,
+          userid:  adminId,
+          oldData:  titleController.text,
+          newData: messageController.text,
+          note: 'Admin Note create'
+      );
       setState(() {
         successful= true;
       });

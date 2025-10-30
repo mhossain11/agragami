@@ -1,3 +1,4 @@
+import 'package:agragami/cachehelper/toast.dart';
 import 'package:flutter/material.dart';
 
 import '../../../auth/widgets/text_field.dart';
@@ -78,13 +79,9 @@ class _SavingMoneyScreenState extends State<SavingMoneyScreen> {
         print('Taka1:$currentAmount');
       });
       _amountController.clear();
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Money added successfully!')),
-      );
+      CustomToast().showToast(context, 'Money added successfully!', Colors.green);
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: $e')),
-      );
+      CustomToast().showToast(context, 'Error: $e', Colors.red);
     } finally {
       setState(() => _isLoading = false);
     }
@@ -111,7 +108,7 @@ class _SavingMoneyScreenState extends State<SavingMoneyScreen> {
                 width: double.infinity,
                 padding: EdgeInsets.all(15),
                 child: CustomTextField(
-                  maxLength: 5,
+                  maxLength: 10,
                   controller: _searchController,
                   labelText: 'User Id',)),
             Container(

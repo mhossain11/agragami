@@ -1,4 +1,5 @@
 
+import 'package:agragami/cachehelper/toast.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -26,6 +27,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   TextEditingController birthdateController = TextEditingController();
   TextEditingController nidController = TextEditingController();
   TextEditingController nomineeNameController = TextEditingController();
+  TextEditingController nomineeRelationController = TextEditingController();
   String selectedRole ='user';
   bool isLoading = false;
   bool isLoadingId = false;
@@ -54,6 +56,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         birthdate: birthdateController.text,
         nid: nidController.text,
         nomineeName: nomineeNameController.text,
+        nomineeRelation: nomineeRelationController.text,
         user_id: useridController.text,
       );
       setState(() {
@@ -63,17 +66,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
         /*ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Signup Successful!')),
         );*/
-        showToast(context,'Signup Successful!',Colors.green);
+        CustomToast().showToast(context,'Signup Successful!',Colors.green);
        await _authService.addUserDoneFieldById(useridController.text);
 
         Navigator.pushReplacement(context, MaterialPageRoute(
             builder: (_)=>LoginScreen()));
       }else if(result != null && result.contains('email')){
-        showToast(context,'content: Text($result)',Colors.red);
+        CustomToast().showToast(context,'content: Text($result)',Colors.red);
       }
       else{
         //error
-        showToast(context,'Signup Failed $result',Colors.red);
+        CustomToast().showToast(context,'Signup Failed $result',Colors.red);
       }
 
 
@@ -89,14 +92,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
       if (roleCheck != null && roleCheck['user_id'] == userId) {
         // যদি user_id আগে থেকেই থাকে, error return করো
         setState(() => isLoadingId = false);
-        showToast(context,'This ${roleCheck['user_id']} already exists',Colors.red);
+       CustomToast().showToast(context,'This ${roleCheck['user_id']} already exists',Colors.red);
         return;
       }
 
       if (userId.isEmpty) {
         /*ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Please enter a User ID')),);*/
-        showToast(context,'Please enter a User ID',Colors.red);
+        CustomToast(). showToast(context,'Please enter a User ID',Colors.red);
         setState(() => isLoadingId = false);
         return;
       }
@@ -109,10 +112,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       } );
 
       if (result != null) {
-       /* ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('✅ ID found! Role: ${result['role']}')),
-        );*/
-        showToast(context,'ID found! Role: ${result['role']}',Colors.green);
+        CustomToast().showToast(context,'ID found! Role: ${result['role']}',Colors.green);
 
         setState(() {
           buttonShow = false;
@@ -122,23 +122,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
         /*ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('❌ User ID not found')),
         );*/
-        showToast(context,'User ID not found',Colors.red);
-        setState(() {
-          buttonShow = true;
-        });
+        CustomToast().showToast(context,'User ID not found',Colors.red);
       }
     }
 
-  void showToast(BuildContext context,String message,Color color) {
-    Fluttertoast.showToast(
-      msg: message,
-      toastLength: Toast.LENGTH_SHORT,
-      gravity: ToastGravity.BOTTOM,
-      backgroundColor: color,
-      textColor: Colors.white,
-      fontSize: 16.0,
-    );
-  }
 
 
   @override
@@ -174,7 +161,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     fontSize: 40,fontWeight: FontWeight.bold),),
                 SizedBox(height: 20,),
                 CustomTextField(controller: useridController,
-                  readOnly: buttonShow == false?true:false,
+                 // readOnly: buttonShow == false?true:false,
+                  enabled:  buttonShow,
                   labelText: 'User_ID',),
                 SizedBox(height: 10,),
 
@@ -186,14 +174,21 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       child: Text('Find Id')),):
                 SizedBox(),
 
-                foundRole== 'user'?  Visibility(
+                Visibility(
                   visible: showForm,
                   child: SizedBox(
                     child: Column(
                       children: [
-                        CustomTextField(controller: nameController,labelText: 'Name',),
+                        CustomTextField(controller: nameController,labelText: 'Name',isRequired: true,
+                            validator: (value){
+                              if (value == null || value.trim().isEmpty) {
+                                return 'Name is required';
+                              }
+                              return null; // valid
+                            }
+                        ),
                         SizedBox(height: 10,),
-                        CustomTextField(controller: emailController,
+                        CustomTextField(controller: emailController,isRequired: true,
                           validator: (value){
                           if(value!.isEmpty){
                             return 'Please enter an email';
@@ -219,11 +214,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             return pattern.hasMatch(value.trim()) ? null : 'Enter valid Bangladesh phone';
                           },keyboardType: TextInputType.number,labelText: 'Phone number',),
                         SizedBox(height: 10,),
-                        CustomTextField(controller: nomineeNameController,labelText: 'Nominee Name',),
-                        SizedBox(height: 10,),
                         CustomTextField(controller: birthdateController,keyboardType: TextInputType.datetime,labelText: 'Birthdate',),
                         SizedBox(height: 10,),
-                        CustomTextField(controller: nidController,validator: (value){
+                        CustomTextField(controller: nidController,isRequired: true,
+                          validator: (value){
                           if (value == null || value.trim().isEmpty) {
                             return 'NID is required';
                           }
@@ -239,6 +233,26 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         },keyboardType: TextInputType.number,labelText: 'Nid number',),
                         SizedBox(height: 10,),
                         CustomTextField(controller: addressController,maxLine: 2,labelText: 'Address',),
+                        SizedBox(height: 10,),
+                        CustomTextField(controller: nomineeNameController,
+                          labelText: 'Nominee Name',isRequired: true,
+                            validator: (value){
+                              if (value == null || value.trim().isEmpty) {
+                                return 'Nominee Name is required';
+                              }
+                              return null; // valid
+                            }
+                        ),
+                        SizedBox(height: 10,),
+                        CustomTextField(controller: nomineeRelationController,
+                          labelText: 'Nominee Relation',isRequired: true,
+                            validator: (value){
+                              if (value == null || value.trim().isEmpty) {
+                                return 'Nominee Relation is required';
+                              }
+                              return null; // valid
+                            }
+                        ),
                         SizedBox(height: 10,),
                         CustomTextFieldPassword(controller: passwordController,
                           validator: (value){
@@ -258,9 +272,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           }*/
 
                           return null; // ✅ valid
-                        },labelText: 'Password',),
+                        },isRequired: true,labelText: 'Password',),
                         SizedBox(height: 10,),
-                        CustomTextFieldPassword(controller: confirmPasswordController,
+                        CustomTextFieldPassword(controller: confirmPasswordController,isRequired: true,
                           validator: (value){
                           if (value == null || value.isEmpty) {
                             return 'Please confirm your password';
@@ -282,8 +296,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       ],
                     ),
                   ),
-                ):SizedBox(),
-                foundRole== 'admin'? Visibility(
+                ),
+
+
+              //admin
+              /*  foundRole== 'admin'? Visibility(
                   visible: showForm,
                   child: SizedBox(
                     child: Column(
@@ -326,12 +343,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               return 'Password must be at least 8 characters';
                             }
 
-                            /*  // ✅ Strong password regex (optional)
+                            *//*  // ✅ Strong password regex (optional)
                           final strongRegex = RegExp(
                               r'^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$');
                           if (!strongRegex.hasMatch(value)) {
                             return 'Include upper, lower, number & special character';
-                          }*/
+                          }*//*
 
                             return null; // ✅ valid
                           },labelText: 'Password',),
@@ -375,7 +392,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     ),
                   ],
                 )
-
+*/
               ],
             ),
           ),

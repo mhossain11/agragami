@@ -5,20 +5,36 @@ class CreateIdService{
   final String authId = 'HUbPbYgwEss4dIE4Uiv8';
 
   // 🔹 Add Admin/User
-  Future<String> addUserId({
+  Future<String?> addUserId({
     required String role, // "admin" or "user"
     required String userId,
   }) async {
-    // Create a new document reference first
+    final trimmedUserId = userId.trim();
+
+    // 1️⃣ Check if user_id already exists
+    final querySnapshot = await _firestore
+        .collection('auth')
+        .doc(authId)
+        .collection(role)
+        .where('user_id', isEqualTo: trimmedUserId)
+        .get();
+
+    if (querySnapshot.docs.isNotEmpty) {
+      // Already exists
+      return null; // ✅ allowed now
+    }
+
+    // 3️⃣ Otherwise, add new user_id
     final docRef = await _firestore
         .collection('auth')
         .doc(authId)
         .collection(role)
-        .add({'user_id': userId.trim()});
+        .add({'user_id': trimmedUserId});
 
-    // Return the generated document ID
+    print("User ID added successfully!");
     return docRef.id;
   }
+
 
   // 🔹 Update Admin/User
   Future<void> updateUserId({

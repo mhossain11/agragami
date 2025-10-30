@@ -1,13 +1,61 @@
 import 'package:agragami/cachehelper/toast.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '../../../cachehelper/chechehelper.dart';
+import '../../log/service/log_service.dart';
 import '../service/note_service.dart';
 
-class NotificationListScreen extends StatelessWidget {
-  final String adminDocId; // ✅ single admin ID
+class NotificationListScreen extends StatefulWidget {
+  final String adminDocId;
+  NotificationListScreen({super.key, required this.adminDocId});
+
+  @override
+  State<NotificationListScreen> createState() => _NotificationListScreenState();
+}
+
+class _NotificationListScreenState extends State<NotificationListScreen> {
+ // ✅ single admin ID
   final NoteService _noteService = NoteService();
 
-  NotificationListScreen({super.key, required this.adminDocId});
+  final LogService _logService = LogService();
+  String name='';
+  String DocId='';
+  String email='';
+  String adminId='';
+
+  @override
+  void initState() {
+    super.initState();
+    getName();
+  }
+  Future<String?> getName() async {
+    name =  (await CacheHelper().getString('names'))!;
+    DocId =  (await CacheHelper().getString('userDocId'))!;
+    adminId =  (await CacheHelper().getString('adminId'))!;
+    email =  (await CacheHelper().getString('email'))!;
+    if (name == null || name.isEmpty) {
+      debugPrint('Error: Name not found in cache!');
+      return null;
+    }if (adminId == null ||adminId.isEmpty) {
+      debugPrint('Error: Name not found in cache!');
+      return null;
+    }
+
+    if (DocId == null || DocId.isEmpty) {
+      debugPrint('Error: UserDocId not found in cache!');
+      return null;
+    }
+    if (email == null || email.isEmpty) {
+      debugPrint('Error: Name not found in cache!');
+      return null;
+    }
+    setState(() {
+      name = name;
+      DocId = DocId;
+      email = email;
+      adminId = adminId;
+    });
+  }
 
   Future<void> _confirmDelete(BuildContext context, String docId) async {
     final confirm = await showDialog<bool>(
@@ -26,7 +74,15 @@ class NotificationListScreen extends StatelessWidget {
     );
 
     if (confirm == true) {
-      await _noteService.deleteNotification(adminDocId, docId);
+      await _noteService.deleteNotification(widget.adminDocId, docId);
+      await _logService.addLog(
+          name:  name,
+          email: email,
+          userid:  adminId,
+          oldData:  widget.adminDocId,
+          newData: docId,
+          note: 'Notification deleted'
+      );
       CustomToast().showToast(context, 'Notification deleted', Colors.green);
     }
   }
@@ -36,7 +92,7 @@ class NotificationListScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(title: const Text('Notifications'), backgroundColor: Colors.green),
       body: StreamBuilder<List<QueryDocumentSnapshot<Map<String, dynamic>>>>(
-        stream: _noteService.getNotifications(adminDocId), // ✅ single stream
+        stream: _noteService.getNotifications(widget.adminDocId), // ✅ single stream
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
@@ -62,7 +118,7 @@ class NotificationListScreen extends StatelessWidget {
                 margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 child: InkWell(
                   onTap: () async {
-                    if (!seen) await _noteService.markAsSeen(adminDocId, doc.id);
+                    if (!seen) await _noteService.markAsSeen(widget.adminDocId, doc.id);
                     showDialog(
                       context: context,
                       builder: (_) => AlertDialog(

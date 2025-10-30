@@ -36,7 +36,14 @@ class UserListScreen extends StatelessWidget {
                       UserMoneyInfoScreen (
                         userId: user['user_id'],
                         name: user['name'],
-                        email: user['email'],)));
+                        email: user['email'],
+                        phone: user['phone'],
+                        nid: user['nid'],
+                        birthdate: user['birthdate'],
+                        address: user['address'],
+                        nomineeName: user['nomineeName'],
+                        nomineeRelation: user['nomineeRelation'],
+                      )));
                 },
                 child: Card(
                   margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),

@@ -47,6 +47,8 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
   Future<String?> getName() async {
     final userName =  await CacheHelper().getString('names');
     final userDocId =  await CacheHelper().getString('userDocId');
+    final adminId =  await CacheHelper().getString('adminId');
+    final email =  await CacheHelper().getString('email');
     if (userName == null || userName.isEmpty) {
       debugPrint('Error: Name not found in cache!');
       return null;
@@ -286,7 +288,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                             ),
                             Center(
                               child: Text(
-                                'TotalAmount',
+                                'Total Amount',
                                 style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                               ),
                             ),

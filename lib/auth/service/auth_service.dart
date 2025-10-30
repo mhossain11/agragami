@@ -23,6 +23,7 @@ class AuthService {
     required String birthdate,
     required String nid,
     required String nomineeName,
+    required String nomineeRelation,
   }) async {
     try {
       UserCredential userCredential = await _auth
@@ -42,6 +43,7 @@ class AuthService {
         'birthdate': birthdate.trim(),
         'nid': nid.trim(),
         'nomineeName': nomineeName.trim(),
+        'nomineeRelation': nomineeRelation.trim(),
         'uid': userCredential.user!.uid,
         'created_at': Timestamp.now(),
       });
@@ -80,6 +82,8 @@ class AuthService {
       await CacheHelper().setLoggedIn(userDoc.exists);
       await CacheHelper().setString('isRole', userDoc['role'].toString());
       await CacheHelper().setString('names', userDoc['name'].toString());
+      await CacheHelper().setString('adminId', userDoc['user_id'].toString());
+      await CacheHelper().setString('email', userDoc['email'].toString());
       await CacheHelper().setString('userDocId', userDoc.id.toString());
 
       if (userDoc.exists) {
