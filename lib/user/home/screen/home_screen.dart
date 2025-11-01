@@ -1,16 +1,15 @@
 import 'package:agragami/user/profile/screen/profile_screen.dart';
 import 'package:badges/badges.dart' as badges;
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
-import '../../../admin/home/service/adminhome_service.dart';
-import '../../../admin/profile/screen/profile_screen.dart';
 import '../../../auth/screen/login_screen.dart';
 import '../../../cachehelper/chechehelper.dart';
+import '../../about_us/screen/aboutus_screen.dart';
 import '../../money record/screen/user_money_record_screen.dart';
 import '../../notification/screen/user_notification_screen.dart';
 import '../../notification/service/user_notification_service.dart';
+import '../../userlist/screen/userlist_screen.dart';
 import '../service/home_service.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -268,7 +267,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: GestureDetector(
                     onTap: (){
                       Navigator.push(context, MaterialPageRoute(
-                          builder: (context)=>UserProfileScreen(userId: DocId)));
+                          builder: (context)=>UsersListScreen()));
                     },
                     child: Card(
                       elevation: 5,
@@ -276,46 +275,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         height: 150,
                         width: 150,
                         decoration: BoxDecoration(
-                            //color: Colors.blue.shade300,
-                            borderRadius: BorderRadius.circular(10)
-                        ),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Image.asset('assets/images/profile.png',
-                                color: Colors.red,
-                                width: 80,
-                                height: 50,),
-                            ),
-                            SizedBox(height: 5,),
-                            Text('Profile',style: TextStyle(
-                                fontSize: 16,color: Colors.black,fontWeight: FontWeight.w500
-                            ),)
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            Row(
-              children: [
-                Expanded(
-                  child: GestureDetector(
-                    onTap: (){
-                      Navigator.push(context, MaterialPageRoute(
-                          builder: (context)=>UserMoneyRecordScreen()));
-                    },
-                    child: Card(
-                      elevation: 5,
-                      child: Container(
-                        height: 150,
-                        width: 150,
-                        decoration: BoxDecoration(
-                            //color: Colors.blue.shade300,
+                          //color: Colors.blue.shade300,
                             borderRadius: BorderRadius.circular(10)
                         ),
                         child: Column(
@@ -339,12 +299,52 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ),
                 ),
-                SizedBox(width: 10,),
+
+              ],
+            ),
+            Row(
+              children: [
                 Expanded(
                   child: GestureDetector(
                     onTap: (){
                       Navigator.push(context, MaterialPageRoute(
                           builder: (context)=>UserProfileScreen(userId: DocId)));
+                    },
+                    child: Card(
+                      elevation: 5,
+                      child: Container(
+                        height: 150,
+                        width: 150,
+                        decoration: BoxDecoration(
+                          //color: Colors.blue.shade300,
+                            borderRadius: BorderRadius.circular(10)
+                        ),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Image.asset('assets/images/profile.png',
+                                color: Colors.red,
+                                width: 80,
+                                height: 50,),
+                            ),
+                            SizedBox(height: 5,),
+                            Text('Profile',style: TextStyle(
+                                fontSize: 16,color: Colors.black,fontWeight: FontWeight.w500
+                            ),)
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                SizedBox(width: 10,),
+                Expanded(
+                  child: GestureDetector(
+                    onTap: (){
+                      Navigator.push(context, MaterialPageRoute(
+                          builder: (context)=>AboutUsScreen()));
                     },
                     child: Card(
                       elevation: 5,

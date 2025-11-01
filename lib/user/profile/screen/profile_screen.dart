@@ -50,6 +50,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
         _addressController.text = user.address;
         _userIdController.text = user.userId;
         _nomineeNameController.text = user.nomineeName;
+        _nomineeRelationController.text = user.nomineeRelation;
         _nidController.text = user.nid;
         _birthdateController.text = user.birthdate;
         _profileImageUrl = user.profileImage; // 🔹 Add this field in your user model

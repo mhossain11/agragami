@@ -404,7 +404,7 @@ class PdfService {
                 ),
               ],
             ),
-            pw.Column(
+            /*pw.Column(
               crossAxisAlignment: pw.CrossAxisAlignment.end,
               children: [
                 pw.Text(
@@ -431,7 +431,7 @@ class PdfService {
                   style: pw.TextStyle(fontSize: 12),
                 ),
               ],
-            ),
+            ),*/
           ],
         ),
       ],

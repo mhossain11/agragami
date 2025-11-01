@@ -9,6 +9,7 @@ class UserProfileModel {
   final String userId;
   final String nid;
   final String nomineeName;
+  final String nomineeRelation;
   final String birthdate;
   final String profileImage;
 
@@ -20,6 +21,7 @@ class UserProfileModel {
     required this.address,
     required this.userId,
     required this.nomineeName,
+    required this.nomineeRelation,
     required this.nid,
     required this.birthdate,
     required this.profileImage,
@@ -36,6 +38,7 @@ class UserProfileModel {
       address: data['address'] ?? '',
       userId: data['user_id'] ?? '',
       nomineeName: data['nomineeName'] ?? '',
+      nomineeRelation: data['nomineeRelation'] ?? '',
       nid: data['nid'] ?? '',
       birthdate: data['birthdate'] ?? '',
       profileImage: data['profileImage'] ?? '',
@@ -50,6 +53,7 @@ class UserProfileModel {
       'address': address,
       'userId': address,
       'nomineeName': nomineeName,
+      'nomineeRelation': nomineeRelation,
       'nid': nid,
       'birthdate': birthdate,
       'profileImage': profileImage,
