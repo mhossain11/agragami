@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
+import '../../../cachehelper/chechehelper.dart';
 import '../../../cachehelper/toast.dart';
+import '../../log/service/log_service.dart';
 import '../service/moneydelete_service.dart';
 
 class MoneyDeleteSimpleScreen extends StatefulWidget {
@@ -15,14 +17,57 @@ class _MoneyDeleteSimpleScreenState extends State<MoneyDeleteSimpleScreen> {
   final TextEditingController _userIdController = TextEditingController();
   final TextEditingController _moneyDocIdController = TextEditingController();
   final MoneyDeleteService _deleteService = MoneyDeleteService();
-
+  final LogService _logService = LogService();
+  String adminName='';
+  String adminDocId='';
+  String adminId='';
+  String adminEmail='';
   bool _isLoading = false;
+  @override
+  void initState() {
+    super.initState();
+    getName();
+  }
 
   @override
   void dispose() {
     _userIdController.dispose();
     _moneyDocIdController.dispose();
     super.dispose();
+  }
+  Future<String?> getName() async {
+    final userName =  await CacheHelper().getString('names');
+    final userDocId =  await CacheHelper().getString('userDocId');
+    var Id =  await CacheHelper().getString('adminId');
+    final email =  await CacheHelper().getString('email');
+
+
+    if (userName == null || userName.isEmpty) {
+      debugPrint('Error: Name not found in cache!');
+      return null;
+    }
+
+    if (userDocId == null || userDocId.isEmpty) {
+      debugPrint('Error: UserDocId not found in cache!');
+      return null;
+    }
+
+    if (Id == null || Id.isEmpty) {
+      debugPrint('Error: Id not found in cache!');
+      return null;
+    }
+
+    if (email == null || email.isEmpty) {
+      debugPrint('Error: email not found in cache!');
+      return null;
+    }
+    setState(() {
+      adminName = userName;
+      adminDocId = userDocId;
+      adminId = Id;
+      adminEmail = email  ;
+    });
+    return null;
   }
 
   Future<void> _deleteMoney() async {
@@ -42,6 +87,15 @@ class _MoneyDeleteSimpleScreenState extends State<MoneyDeleteSimpleScreen> {
       await _deleteService.deleteMoneyByUserId(
         userId: userId,
         moneyDocId: moneyDocId,
+      );
+
+      await _logService.addLog(
+          name: adminName ?? 'Unknown',
+          email: adminEmail ?? 'N/A',
+          userid: adminId ?? 'N/A',
+          oldData: userId ?? '0',
+          newData: moneyDocId,
+          note: 'Money Record Delete'
       );
       CustomToast().showToast(context, 'Record deleted successfully', Colors.green);
 

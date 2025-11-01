@@ -17,6 +17,7 @@ import '../../log/screen/log_screen.dart';
 import '../../moneydelete/screen/moneydelete_screen.dart';
 import '../../notification/screen/note_screen.dart';
 import '../../notification/screen/notificationlist_screen.dart';
+import '../../pdf/screen/pdf_generate_screen.dart';
 import '../../save_money/screen/saving_money_screen.dart';
 import '../../userlist/screen/userlist_screen.dart';
 import '../service/adminhome_service.dart';
@@ -32,9 +33,10 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
    final AdminHomeService _adminHomeService = AdminHomeService();
    final NoteService _noteService = NoteService();
-  bool _isLoading = true;
+  bool _isLoading = false;
   int userTotal =0;
   int adminTotal =0;
+  int totalTk =0;
   String name='';
   String DocId='';
 
@@ -67,19 +69,24 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
   void countTota() async{
     userTotal= await loadUserCount('user');
     adminTotal= await loadUserCount('admin');
+    totalTk= await totalMoney();
+
   }
 
 
   Future<int> loadUserCount(String role) async {
     try {
+      setState(() {
+        _isLoading = true;
+      });
       int totalUsers = await _adminHomeService.getTotalUserCount(role);
 
       if (!mounted) return 0; // ✅ Widget dispose হয়ে গেলে return করো
 
+
       setState(() {
         _isLoading = false;
       });
-
       return totalUsers;
     } catch (e) {
       if (!mounted) return 0;
@@ -90,6 +97,28 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
 
       debugPrint('Error loading user count: $e');
       return 0; // ✅ catch ব্লকেও return দিতে হবে
+    }
+  }
+  Future<int> totalMoney() async {
+    try {
+      setState(() => _isLoading = true);
+
+      int totalUsers = await _adminHomeService.getAllUsersTotalAmountStream().first;
+
+      if (!mounted) return 0;
+
+      setState(() {
+        _isLoading = false;
+        totalTk= totalUsers;
+      } );
+
+      return totalUsers;
+    } catch (e) {
+      if (!mounted) return 0;
+
+      setState(() => _isLoading = false);
+      debugPrint('Error loading total money: $e');
+      return 0;
     }
   }
 
@@ -170,37 +199,250 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
         ],
       ),
 
-      body: SingleChildScrollView(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            SizedBox(
-              width: double.infinity,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.start,
-                crossAxisAlignment: CrossAxisAlignment.start,
+      body: RefreshIndicator(
+        onRefresh: totalMoney,
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              SizedBox(
+                width: double.infinity,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Text(name,style: TextStyle(
+                          fontSize: 25,color: Colors.green,
+                          fontWeight: FontWeight.bold
+                      )),
+                    ),
+                  ],
+                ),
+              ),
+              //Total Member & Admin
+              Row(
                 children: [
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Text(name,style: TextStyle(
-                        fontSize: 25,color: Colors.green,
-                        fontWeight: FontWeight.bold
-                    )),
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.all(14.0),
+                      child: Card(
+                        elevation: 5,
+                        child: Container(
+                          height: 100,
+                          decoration: BoxDecoration(
+                             // color: Colors.blue.shade100,
+                              borderRadius: BorderRadius.circular(10)
+                          ),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(userTotal.toString(),style: TextStyle(
+                                  fontSize: 25,color: Colors.green,
+                                  fontWeight: FontWeight.bold
+                              ),),
+                              Text('Total Members',style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w700
+                              ),),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
                   ),
+                  /*Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.all(14.0),
+                      child: Card(
+                        elevation: 5,
+                        child: Container(
+                          height: 100,
+                          decoration: BoxDecoration(
+                              color: Colors.blue.shade100,
+                              borderRadius: BorderRadius.circular(10)
+                          ),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(adminTotal.toString(),style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold
+                              ),),
+                              Text('Total Admin',style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w700
+                              ),),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),*/
                 ],
               ),
-            ),
-            //Total Member & Admin
-            Row(
-              children: [
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.all(14.0),
+
+              //Total Amount
+              Padding(
+                padding: const EdgeInsets.all(14.0),
+                child: Card(
+                  elevation: 5,
+                  child: Container(
+                    height: 100,
+                    width: 300,
+                    decoration: BoxDecoration(
+                     // color: Colors.green.shade100,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Center(
+                            child: Text(
+                              '$totalTk Tk',
+                              style: const TextStyle(color:Colors.green,
+                                  fontSize: 25, fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                          Center(
+                            child: Text(
+                              'Total Amount',
+                              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                        ],
+                      )
+
+
+                      ,
+                    ),
+                  ),
+                ),
+              )
+              ,
+              //Saving Money & List user Button
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  GestureDetector(
+                    onTap: (){
+                      Navigator.push(context, MaterialPageRoute(
+                          builder: (context)=>SavingMoneyScreen()));
+                    },
                     child: Card(
                       elevation: 5,
                       child: Container(
-                        height: 100,
+                        height: 150,
+                        width: 150,
+                        decoration: BoxDecoration(
+                          //  color: Colors.blue.shade100,
+                            borderRadius: BorderRadius.circular(10)
+                        ),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Image.asset('assets/images/taka.png',
+                              color: Colors.green,
+                              width: 80,
+                              height: 50,),
+                            SizedBox(height: 5,),
+                            Text('Saving Money',style: TextStyle(
+                                fontSize: 16,color: Colors.black,fontWeight: FontWeight.w500
+                            ),)
+
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  SizedBox(width: 10,),
+                  //list button
+                  GestureDetector(
+                    onTap: (){
+                      Navigator.push(context, MaterialPageRoute(
+                          builder: (context)=>UserListScreen()));
+                    },
+                    child: Card(
+                      elevation: 5,
+                      child: Container(
+                        height: 150,
+                        width: 150,
+                        decoration: BoxDecoration(
+                          //  color: Colors.blue.shade300,
+                            borderRadius: BorderRadius.circular(10)
+                        ),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                              Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Image.asset('assets/images/userlist.png',
+                                  color: Colors.green,
+                                  width: 80,
+                                  height: 50,),
+                              ),
+                            SizedBox(height: 5,),
+                            Text('User List',style: TextStyle(
+                                fontSize: 16,color: Colors.black,fontWeight: FontWeight.w500
+                            ),)
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              //Log & delete
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  //Log
+                  GestureDetector(
+                    onTap: (){
+                      Navigator.push(context, MaterialPageRoute(
+                          builder: (context)=>LogScreen()));
+                    },
+                    child: Card(
+                      elevation: 5,
+                      child: Container(
+                        height: 150,
+                        width: 150,
+                        decoration: BoxDecoration(
+                            //color: Colors.blue.shade400,
+                            borderRadius: BorderRadius.circular(10)
+                        ),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Image.asset('assets/images/log.png',
+                              color: Colors.green,
+                              width: 80,
+                              height: 50,),
+                            SizedBox(height: 5,),
+                            Text('Admin Log',style: TextStyle(
+                                fontSize: 16,color: Colors.black,fontWeight: FontWeight.w500
+                            ),)
+
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  SizedBox(width: 10,),
+                  //delete button
+                  GestureDetector(
+                    onTap: (){
+                      Navigator.push(context, MaterialPageRoute(
+                          builder: (context)=>MoneyDeleteSimpleScreen()));
+                    },
+                    child: Card(
+                      elevation: 5,
+                      child: Container(
+                        height: 150,
+                        width: 150,
                         decoration: BoxDecoration(
                            // color: Colors.blue.shade100,
                             borderRadius: BorderRadius.circular(10)
@@ -208,387 +450,198 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Text(userTotal.toString(),style: TextStyle(
-                                fontSize: 25,color: Colors.green,
-                                fontWeight: FontWeight.bold
-                            ),),
-                            Text('Total Members',style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w700
-                            ),),
+                            Image.asset('assets/images/delete_report.png',
+                              color: Colors.green,
+                              width: 80,
+                              height: 50,),
+                            SizedBox(height: 5,),
+                            Text('Delete Record',maxLines: 2,style: TextStyle(
+                                fontSize: 16,color: Colors.black,fontWeight: FontWeight.w500
+                            ),)
+
                           ],
                         ),
                       ),
                     ),
                   ),
+                ],
+              ),
+              SizedBox(width: 10,),
+              //Note button
+              GestureDetector(
+                onTap: (){
+                  Navigator.push(context, MaterialPageRoute(
+                      builder: (context)=>NoteScreen()));
+                },
+                child: Card(
+                  elevation: 5,
+                  child: Container(
+                    height: 150,
+                    width: 300,
+                    decoration: BoxDecoration(
+                       // color: Colors.blue.shade100,
+                        borderRadius: BorderRadius.circular(10)
+                    ),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Image.asset('assets/images/notes.png',
+                          color: Colors.green,
+                          width: 80,
+                          height: 50,),
+                        SizedBox(height: 5,),
+                        Text('Notice board',maxLines: 2,style: TextStyle(
+                            fontSize: 16,color: Colors.black,fontWeight: FontWeight.w500
+                        ),)
+
+                      ],
+                    ),
+                  ),
                 ),
-                /*Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.all(14.0),
+              ),
+              //Saving Money & List user Button
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  GestureDetector(
+                    onTap: (){
+                      Navigator.push(context, MaterialPageRoute(
+                          builder: (context)=>CreateIdScreen()));
+                    },
                     child: Card(
                       elevation: 5,
                       child: Container(
-                        height: 100,
+                        height: 150,
+                        width: 150,
                         decoration: BoxDecoration(
-                            color: Colors.blue.shade100,
+                          //  color: Colors.blue.shade100,
                             borderRadius: BorderRadius.circular(10)
                         ),
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Text(adminTotal.toString(),style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold
-                            ),),
-                            Text('Total Admin',style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w700
-                            ),),
+                            Image.asset('assets/images/id.png',
+                              color: Colors.green,
+                              width: 80,
+                              height: 50,),
+                            SizedBox(height: 5,),
+                            Text('User id Create',style: TextStyle(
+                                fontSize: 16,color: Colors.black,fontWeight: FontWeight.w500
+                            ),)
+
                           ],
                         ),
                       ),
                     ),
                   ),
-                ),*/
-              ],
-            ),
-
-            //Total Amount
-            Padding(
-              padding: const EdgeInsets.all(14.0),
-              child: Card(
-                elevation: 5,
-                child: Container(
-                  height: 100,
-                  width: 300,
-                  decoration: BoxDecoration(
-                   // color: Colors.green.shade100,
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Center(
-                    child: StreamBuilder<int>(
-                      stream: _adminHomeService.getAllUsersTotalAmountStream(),
-                      builder: (context, snapshot) {
-                        if (snapshot.connectionState == ConnectionState.waiting) {
-                          return const CircularProgressIndicator();
-                        }
-                        if (snapshot.hasError) {
-                          return Text('Error: ${snapshot.error}');
-                        }
-                        final totalAmount = snapshot.data ?? 0;
-                        return Column(
+                  SizedBox(width: 10,),
+                  //list button
+                  GestureDetector(
+                    onTap: (){
+                      Navigator.push(context, MaterialPageRoute(
+                          builder: (context)=>IdListScreen()));
+                    },
+                    child: Card(
+                      elevation: 5,
+                      child: Container(
+                        height: 150,
+                        width: 150,
+                        decoration: BoxDecoration(
+                          //  color: Colors.blue.shade300,
+                            borderRadius: BorderRadius.circular(10)
+                        ),
+                        child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Center(
-                              child: Text(
-                                '$totalAmount Tk',
-                                style: const TextStyle(color:Colors.green,
-                                    fontSize: 25, fontWeight: FontWeight.bold),
-                              ),
-                            ),
-                            Center(
-                              child: Text(
-                                'Total Amount',
-                                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                              ),
-                            ),
-                          ],
-                        );
-                      },
-                    )
-
-
-                    ,
-                  ),
-                ),
-              ),
-            )
-            ,
-            //Saving Money & List user Button
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                GestureDetector(
-                  onTap: (){
-                    Navigator.push(context, MaterialPageRoute(
-                        builder: (context)=>SavingMoneyScreen()));
-                  },
-                  child: Card(
-                    elevation: 5,
-                    child: Container(
-                      height: 150,
-                      width: 150,
-                      decoration: BoxDecoration(
-                        //  color: Colors.blue.shade100,
-                          borderRadius: BorderRadius.circular(10)
-                      ),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Image.asset('assets/images/taka.png',
-                            color: Colors.green,
-                            width: 80,
-                            height: 50,),
-                          SizedBox(height: 5,),
-                          Text('Saving Money',style: TextStyle(
-                              fontSize: 16,color: Colors.black,fontWeight: FontWeight.w500
-                          ),)
-
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-                SizedBox(width: 10,),
-                //list button
-                GestureDetector(
-                  onTap: (){
-                    Navigator.push(context, MaterialPageRoute(
-                        builder: (context)=>UserListScreen()));
-                  },
-                  child: Card(
-                    elevation: 5,
-                    child: Container(
-                      height: 150,
-                      width: 150,
-                      decoration: BoxDecoration(
-                        //  color: Colors.blue.shade300,
-                          borderRadius: BorderRadius.circular(10)
-                      ),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
                             Padding(
                               padding: const EdgeInsets.all(8.0),
-                              child: Image.asset('assets/images/userlist.png',
+                              child: Image.asset('assets/images/id_list.png',
                                 color: Colors.green,
                                 width: 80,
                                 height: 50,),
                             ),
-                          SizedBox(height: 5,),
-                          Text('User List',style: TextStyle(
-                              fontSize: 16,color: Colors.black,fontWeight: FontWeight.w500
-                          ),)
-                        ],
+                            SizedBox(height: 5,),
+                            Text('User Id List',style: TextStyle(
+                                fontSize: 16,color: Colors.black,fontWeight: FontWeight.w500
+                            ),)
+                          ],
+                        ),
                       ),
                     ),
                   ),
-                ),
-              ],
-            ),
-            //Log & delete
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                //Log
-                GestureDetector(
-                  onTap: (){
-                    Navigator.push(context, MaterialPageRoute(
-                        builder: (context)=>LogScreen()));
-                  },
-                  child: Card(
-                    elevation: 5,
-                    child: Container(
-                      height: 150,
-                      width: 150,
-                      decoration: BoxDecoration(
-                          //color: Colors.blue.shade400,
-                          borderRadius: BorderRadius.circular(10)
-                      ),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Image.asset('assets/images/log.png',
+                  SizedBox(width: 10,),
+                ],
+              ),
+
+              GestureDetector(
+                onTap: (){
+                  Navigator.push(context, MaterialPageRoute(
+                      builder: (context)=>DeleteIdScreen()));
+                },
+                child: Card(
+                  elevation: 5,
+                  child: Container(
+                    height: 150,
+                    width: 150,
+                    decoration: BoxDecoration(
+                      //  color: Colors.blue.shade300,
+                        borderRadius: BorderRadius.circular(10)
+                    ),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Image.asset('assets/images/delete_id.png',
                             color: Colors.green,
                             width: 80,
                             height: 50,),
-                          SizedBox(height: 5,),
-                          Text('Admin Log',style: TextStyle(
-                              fontSize: 16,color: Colors.black,fontWeight: FontWeight.w500
-                          ),)
-
-                        ],
-                      ),
+                        ),
+                        SizedBox(height: 5,),
+                        Text('Delete id',style: TextStyle(
+                            fontSize: 16,color: Colors.black,fontWeight: FontWeight.w500
+                        ),)
+                      ],
                     ),
-                  ),
-                ),
-                SizedBox(width: 10,),
-                //delete button
-                GestureDetector(
-                  onTap: (){
-                    Navigator.push(context, MaterialPageRoute(
-                        builder: (context)=>MoneyDeleteSimpleScreen()));
-                  },
-                  child: Card(
-                    elevation: 5,
-                    child: Container(
-                      height: 150,
-                      width: 150,
-                      decoration: BoxDecoration(
-                         // color: Colors.blue.shade100,
-                          borderRadius: BorderRadius.circular(10)
-                      ),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Image.asset('assets/images/delete_report.png',
-                            color: Colors.green,
-                            width: 80,
-                            height: 50,),
-                          SizedBox(height: 5,),
-                          Text('Delete Record',maxLines: 2,style: TextStyle(
-                              fontSize: 16,color: Colors.black,fontWeight: FontWeight.w500
-                          ),)
-
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            SizedBox(width: 10,),
-            //Note button
-            GestureDetector(
-              onTap: (){
-                Navigator.push(context, MaterialPageRoute(
-                    builder: (context)=>NoteScreen()));
-              },
-              child: Card(
-                elevation: 5,
-                child: Container(
-                  height: 150,
-                  width: 300,
-                  decoration: BoxDecoration(
-                     // color: Colors.blue.shade100,
-                      borderRadius: BorderRadius.circular(10)
-                  ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Image.asset('assets/images/notes.png',
-                        color: Colors.green,
-                        width: 80,
-                        height: 50,),
-                      SizedBox(height: 5,),
-                      Text('Notice board',maxLines: 2,style: TextStyle(
-                          fontSize: 16,color: Colors.black,fontWeight: FontWeight.w500
-                      ),)
-
-                    ],
                   ),
                 ),
               ),
-            ),
-            //Saving Money & List user Button
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                GestureDetector(
-                  onTap: (){
-                    Navigator.push(context, MaterialPageRoute(
-                        builder: (context)=>CreateIdScreen()));
-                  },
-                  child: Card(
-                    elevation: 5,
-                    child: Container(
-                      height: 150,
-                      width: 150,
-                      decoration: BoxDecoration(
-                        //  color: Colors.blue.shade100,
-                          borderRadius: BorderRadius.circular(10)
-                      ),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Image.asset('assets/images/id.png',
-                            color: Colors.green,
-                            width: 80,
-                            height: 50,),
-                          SizedBox(height: 5,),
-                          Text('User id Create',style: TextStyle(
-                              fontSize: 16,color: Colors.black,fontWeight: FontWeight.w500
-                          ),)
-
-                        ],
-                      ),
+              SizedBox(width: 10,),
+              //Note button
+              GestureDetector(
+                onTap: (){
+                  Navigator.push(context, MaterialPageRoute(
+                      builder: (context)=>UserMoneyScreen()));
+                },
+                child: Card(
+                  elevation: 5,
+                  child: Container(
+                    height: 150,
+                    width: 300,
+                    decoration: BoxDecoration(
+                      // color: Colors.blue.shade100,
+                        borderRadius: BorderRadius.circular(10)
                     ),
-                  ),
-                ),
-                SizedBox(width: 10,),
-                //list button
-                GestureDetector(
-                  onTap: (){
-                    Navigator.push(context, MaterialPageRoute(
-                        builder: (context)=>IdListScreen()));
-                  },
-                  child: Card(
-                    elevation: 5,
-                    child: Container(
-                      height: 150,
-                      width: 150,
-                      decoration: BoxDecoration(
-                        //  color: Colors.blue.shade300,
-                          borderRadius: BorderRadius.circular(10)
-                      ),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Image.asset('assets/images/id_list.png',
-                              color: Colors.green,
-                              width: 80,
-                              height: 50,),
-                          ),
-                          SizedBox(height: 5,),
-                          Text('User Id List',style: TextStyle(
-                              fontSize: 16,color: Colors.black,fontWeight: FontWeight.w500
-                          ),)
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-                SizedBox(width: 10,),
-              ],
-            ),
-
-            GestureDetector(
-              onTap: (){
-                Navigator.push(context, MaterialPageRoute(
-                    builder: (context)=>DeleteIdScreen()));
-              },
-              child: Card(
-                elevation: 5,
-                child: Container(
-                  height: 150,
-                  width: 150,
-                  decoration: BoxDecoration(
-                    //  color: Colors.blue.shade300,
-                      borderRadius: BorderRadius.circular(10)
-                  ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Image.asset('assets/images/delete_id.png',
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Image.asset('assets/images/pdf.png',
                           color: Colors.green,
                           width: 80,
                           height: 50,),
-                      ),
-                      SizedBox(height: 5,),
-                      Text('Delete id',style: TextStyle(
-                          fontSize: 16,color: Colors.black,fontWeight: FontWeight.w500
-                      ),)
-                    ],
+                        SizedBox(height: 5,),
+                        Text('Generate a Pdf',maxLines: 2,style: TextStyle(
+                            fontSize: 16,color: Colors.black,fontWeight: FontWeight.w500
+                        ),)
+
+                      ],
+                    ),
                   ),
                 ),
               ),
-            ),
 
-          ],
+            ],
+          ),
         ),
       ),
     );

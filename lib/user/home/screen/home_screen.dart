@@ -24,17 +24,47 @@ class _HomeScreenState extends State<HomeScreen> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final UserNotificationService _notificationService = UserNotificationService();
     final HomeService _homeService = HomeService();
+   bool _isLoading = false;
     String userDocId = '';
     String name='';
     String DocId='';
+    int totalTk =0;
 
     @override
   void initState() {
     super.initState();
     getUserDocId();
     getName();
+    countTota();
+    FocusManager.instance.primaryFocus?.unfocus();
+  }
+  void countTota() async{
+    totalTk= await totalMoney();
+
   }
 
+  Future<int> totalMoney() async {
+    try {
+      setState(() => _isLoading = true);
+
+      int totalUsers = await _homeService.getAllUsersTotalAmountStream().first;
+
+      if (!mounted) return 0;
+
+      setState(() {
+        _isLoading = false;
+        totalTk= totalUsers;
+      } );
+
+      return totalUsers;
+    } catch (e) {
+      if (!mounted) return 0;
+
+      setState(() => _isLoading = false);
+      debugPrint('Error loading total money: $e');
+      return 0;
+    }
+  }
   Future<String?> getName() async {
     final userName =  await CacheHelper().getString('names');
     final userDocId =  await CacheHelper().getString('userDocId');
@@ -65,10 +95,9 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   @override
   Widget build(BuildContext context) {
-      debugPrint('User Doc ID: $userDocId');
     return Scaffold(
       appBar: AppBar(
-        title: Text('User Home'),
+        title: Text('Home'),
         backgroundColor: Colors.red,
         centerTitle: true,
         actions: [
@@ -139,152 +168,217 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
       ),
 
-      body: Column(
-        children: [
-          SizedBox(
-            width: double.infinity,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.start,
-              crossAxisAlignment: CrossAxisAlignment.start,
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            SizedBox(
+              width: double.infinity,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(10.0),
+                    child: Text(' $name',style: TextStyle(
+                        fontSize: 25,color: Colors.red,
+                        fontWeight: FontWeight.bold
+                    )),
+                  ),
+                ],
+              ),
+            ),
+            //Total Amount
+            Padding(
+              padding: const EdgeInsets.all(14.0),
+              child: Card(
+                elevation: 5,
+                child: Container(
+                  height: 100,
+                  width: 300,
+                  decoration: BoxDecoration(
+                    // color: Colors.green.shade100,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Center(
+                          child: Text(
+                            '$totalTk Tk',
+                            style: const TextStyle(color:Colors.red,
+                                fontSize: 25, fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                        Center(
+                          child: Text(
+                            'Total Amount',
+                            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                      ],
+                    )
+        
+        
+                    ,
+                  ),
+                ),
+              ),
+            ),
+            Row(
               children: [
-                Padding(
-                  padding: const EdgeInsets.all(10.0),
-                  child: Text(name,style: TextStyle(
-                      fontSize: 25,color: Colors.red,
-                      fontWeight: FontWeight.bold
-                  )),
+                Expanded(
+                  child: GestureDetector(
+                    onTap: (){
+                      Navigator.push(context, MaterialPageRoute(
+                          builder: (context)=>UserMoneyRecordScreen()));
+                    },
+                    child: Card(
+                      elevation: 5,
+                      child: Container(
+                        height: 150,
+                        width: 150,
+                        decoration: BoxDecoration(
+                            //color: Colors.blue.shade300,
+                            borderRadius: BorderRadius.circular(10)
+                        ),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Image.asset('assets/images/transactional.png',
+                                color: Colors.red,
+                                width: 80,
+                                height: 50,),
+                            ),
+                            SizedBox(height: 5,),
+                            Text('Transactional',style: TextStyle(
+                                fontSize: 16,color: Colors.black ,
+                                fontWeight: FontWeight.w500
+                            ),)
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                SizedBox(width: 10,),
+                Expanded(
+                  child: GestureDetector(
+                    onTap: (){
+                      Navigator.push(context, MaterialPageRoute(
+                          builder: (context)=>UserProfileScreen(userId: DocId)));
+                    },
+                    child: Card(
+                      elevation: 5,
+                      child: Container(
+                        height: 150,
+                        width: 150,
+                        decoration: BoxDecoration(
+                            //color: Colors.blue.shade300,
+                            borderRadius: BorderRadius.circular(10)
+                        ),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Image.asset('assets/images/profile.png',
+                                color: Colors.red,
+                                width: 80,
+                                height: 50,),
+                            ),
+                            SizedBox(height: 5,),
+                            Text('Profile',style: TextStyle(
+                                fontSize: 16,color: Colors.black,fontWeight: FontWeight.w500
+                            ),)
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
                 ),
               ],
             ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(10.0),
-            child: Card(
-              elevation: 5,
-              child: Container(
-                height: 100,
-                width: double.infinity,
-                decoration: BoxDecoration(
-                 // color: Colors.green.shade100,
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Center(
-                  child: FutureBuilder<int?>(
-                    future: _homeService.getUserTotalMoney(userDocId),
-                    builder: (context, snapshot) {
-                      if (snapshot.connectionState == ConnectionState.waiting) {
-                        return const CircularProgressIndicator();
-                      }
-                      if (snapshot.hasError) {
-                        return Text('Error: ${snapshot.error}');
-                      }
-
-                      final totalAmount = snapshot.data?.toInt() ?? 0; // double to int
-
-                      return Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            '$totalAmount Tk',
-                            style: const TextStyle(
-                              fontSize: 25,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.red
-                            ),
-                          ),
-                          Text(
-                            'TotalAmount',
-                            style: const TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-
-                        ],
-                      );
+            Row(
+              children: [
+                Expanded(
+                  child: GestureDetector(
+                    onTap: (){
+                      Navigator.push(context, MaterialPageRoute(
+                          builder: (context)=>UserMoneyRecordScreen()));
                     },
+                    child: Card(
+                      elevation: 5,
+                      child: Container(
+                        height: 150,
+                        width: 150,
+                        decoration: BoxDecoration(
+                            //color: Colors.blue.shade300,
+                            borderRadius: BorderRadius.circular(10)
+                        ),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Image.asset('assets/images/userlist.png',
+                                color: Colors.red,
+                                width: 80,
+                                height: 50,),
+                            ),
+                            SizedBox(height: 5,),
+                            Text('User List',style: TextStyle(
+                                fontSize: 16,color: Colors.black ,
+                                fontWeight: FontWeight.w500
+                            ),)
+                          ],
+                        ),
+                      ),
+                    ),
                   ),
                 ),
-              ),
+                SizedBox(width: 10,),
+                Expanded(
+                  child: GestureDetector(
+                    onTap: (){
+                      Navigator.push(context, MaterialPageRoute(
+                          builder: (context)=>UserProfileScreen(userId: DocId)));
+                    },
+                    child: Card(
+                      elevation: 5,
+                      child: Container(
+                        height: 150,
+                        width: 150,
+                        decoration: BoxDecoration(
+                            //color: Colors.blue.shade300,
+                            borderRadius: BorderRadius.circular(10)
+                        ),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Image.asset('assets/images/about-us.png',
+                                color: Colors.red,
+                                width: 80,
+                                height: 50,),
+                            ),
+                            SizedBox(height: 5,),
+                            Text('About us',style: TextStyle(
+                                fontSize: 16,color: Colors.black,fontWeight: FontWeight.w500
+                            ),)
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
-          ),
-          Row(
-            children: [
-              Expanded(
-                child: GestureDetector(
-                  onTap: (){
-                    Navigator.push(context, MaterialPageRoute(
-                        builder: (context)=>UserMoneyRecordScreen()));
-                  },
-                  child: Card(
-                    elevation: 5,
-                    child: Container(
-                      height: 150,
-                      width: 150,
-                      decoration: BoxDecoration(
-                          //color: Colors.blue.shade300,
-                          borderRadius: BorderRadius.circular(10)
-                      ),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Image.asset('assets/images/userlist.png',
-                              color: Colors.red,
-                              width: 80,
-                              height: 50,),
-                          ),
-                          SizedBox(height: 5,),
-                          Text('User List',style: TextStyle(
-                              fontSize: 16,color: Colors.black ,
-                              fontWeight: FontWeight.w500
-                          ),)
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              SizedBox(width: 10,),
-              Expanded(
-                child: GestureDetector(
-                  onTap: (){
-                    Navigator.push(context, MaterialPageRoute(
-                        builder: (context)=>UserProfileScreen(userId: DocId)));
-                  },
-                  child: Card(
-                    elevation: 5,
-                    child: Container(
-                      height: 150,
-                      width: 150,
-                      decoration: BoxDecoration(
-                          //color: Colors.blue.shade300,
-                          borderRadius: BorderRadius.circular(10)
-                      ),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Image.asset('assets/images/profile.png',
-                              color: Colors.red,
-                              width: 80,
-                              height: 50,),
-                          ),
-                          SizedBox(height: 5,),
-                          Text('Profile',style: TextStyle(
-                              fontSize: 16,color: Colors.black,fontWeight: FontWeight.w500
-                          ),)
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          )
-        ],
+          ],
+        ),
       ),
     );
   }

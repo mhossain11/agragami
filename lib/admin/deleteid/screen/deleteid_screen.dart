@@ -124,7 +124,7 @@ class _DeleteIdScreenState extends State<DeleteIdScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Delete User Id"),
+        title: const Text("Delete User"),
         centerTitle: true,
       ),
       body: Column(

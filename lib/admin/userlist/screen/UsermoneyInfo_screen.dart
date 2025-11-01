@@ -37,7 +37,7 @@ class UserMoneyInfoScreen extends StatelessWidget {
     debugPrint('userId: $userId');
 
     return Scaffold(
-      appBar: AppBar(title: const Text('User Money List')),
+      appBar: AppBar(title: const Text('User transaction history'),centerTitle: true,),
       body: StreamBuilder<QuerySnapshot>(
         stream: _userListService.getMoneyListByUserId(userId),
         builder: (context, snapshot) {
@@ -198,6 +198,7 @@ class UserMoneyInfoScreen extends StatelessWidget {
                     moneyDocs[index].data() as Map<String, dynamic>;
                      final moneyDocId = moneyDocs[index].id;
                     final amount = data['amount'] ?? 0;
+                    final paymentMethod = data['payment_method'] ?? '';
                     final dateTime = (data['date&time'] as Timestamp).toDate();
                     final formattedDate =
                     DateFormat('dd MMM yyyy, hh:mm a').format(dateTime);
@@ -234,7 +235,9 @@ class UserMoneyInfoScreen extends StatelessWidget {
                               style: const TextStyle(
                                   fontSize: 18, fontWeight: FontWeight.bold),
                             ),
-                            subtitle: Text(formattedDate),
+                            subtitle: Text(paymentMethod,style: const TextStyle(
+                                fontSize: 18, fontWeight: FontWeight.bold),),
+                            trailing: Text(formattedDate)
                           ),
 
                         ],

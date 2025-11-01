@@ -25,6 +25,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
   final _adminIdController = TextEditingController();
   final _phoneController = TextEditingController();
   final _addressController = TextEditingController();
+  final _nidController = TextEditingController();
+  final _birthdateController = TextEditingController();
+  final _nomineeNameController = TextEditingController();
+  final _nomineeRelationController = TextEditingController();
 
   String? _profileImageUrl;
   File? _selectedImage;
@@ -111,7 +115,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ? FileImage(_selectedImage!)
                       : (_profileImageUrl != null && _profileImageUrl!.isNotEmpty)
                       ? NetworkImage(_profileImageUrl!) as ImageProvider
-                      : const AssetImage('assets/images/agrogami_logo.png'),
+                      : const AssetImage('assets/images/image_profile.png'),
                 ),
                 if (_isEditing)
                   Positioned(
@@ -159,14 +163,43 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   controller:_phoneController,
                   labelText: 'Phone',
                   enabled:  _isEditing,
+                  validator: (value) =>
+                  value!.isEmpty ? 'Please enter your phone number' : null,
                 ),
                 const SizedBox(height: 12),
-               /* CustomTextField(
+                CustomTextField(
+                  controller:_nidController,
+                  labelText: 'Nid',
+                  enabled:  false,
+                ),
+                const SizedBox(height: 12),
+                CustomTextField(
                   controller:_addressController,
                   labelText: 'Address',
-                  maxLine: 2,
                   enabled:  _isEditing,
-                ),*/
+                  validator: (value) =>
+                  value!.isEmpty ? 'Please enter your address' : null,
+                ),
+                const SizedBox(height: 12),
+                CustomTextField(
+                  controller:_birthdateController,
+                  labelText: 'Birthdate',
+                  enabled:  _isEditing,
+                  validator: (value) =>
+                  value!.isEmpty ? 'Please enter your birthdate' : null,
+                ),
+                const SizedBox(height: 12),
+                CustomTextField(
+                  controller:_nomineeNameController,
+                  labelText: 'NomineeName',
+                  enabled:  false,
+                ),
+                const SizedBox(height: 12),
+                CustomTextField(
+                  controller:_nomineeRelationController,
+                  labelText: 'NomineeRelation',
+                  enabled:  false,
+                ),
               ],
             ),
           ),

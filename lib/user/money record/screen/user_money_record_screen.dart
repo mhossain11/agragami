@@ -37,7 +37,8 @@ class _UserMoneyRecordScreenState extends State<UserMoneyRecordScreen> {
 
 
     return Scaffold(
-      appBar: AppBar(title: const Text('User Money List'),
+      appBar: AppBar(title: const Text(' Money Records'),
+      centerTitle: true,
       backgroundColor: Colors.red,
       ),
       body: StreamBuilder<QuerySnapshot>(
@@ -55,12 +56,42 @@ class _UserMoneyRecordScreenState extends State<UserMoneyRecordScreen> {
 
           // ✅ Snapshot data list
           final moneyDocs = snapshot.data!.docs;
+          double totalAmount = 0;
+          for (var doc in moneyDocs) {
+            final data = doc.data() as Map<String, dynamic>;
+            final amount = (data['amount'] ?? 0).toDouble();
+            totalAmount += amount;
+          }
 
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
 
-
+              Center(
+                child: Card(
+                  elevation: 3,
+                  color: Colors.grey.shade300,
+                  child: SizedBox(
+                    width: 300,
+                    height: 30,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text('Total Amount:',
+                          style: TextStyle(
+                              fontSize:14,
+                              color: Colors.black,
+                              fontWeight: FontWeight.w600),),
+                        Text('${totalAmount.toStringAsFixed(0)} Tk ',
+                          style: TextStyle(
+                              fontSize:16,
+                              color: Colors.black,
+                              fontWeight: FontWeight.bold),),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
               // 🔹 Money List
               Expanded(
                 child: ListView.builder(

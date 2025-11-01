@@ -2,6 +2,7 @@ import 'package:agragami/cachehelper/toast.dart';
 import 'package:flutter/material.dart';
 
 import '../../../auth/widgets/text_field.dart';
+import '../../../cachehelper/chechehelper.dart';
 import '../../edit_data/screen/editdata_screen.dart';
 import '../../home/service/adminhome_service.dart';
 import '../../log/service/log_service.dart';
@@ -20,15 +21,62 @@ class _SavingMoneyScreenState extends State<SavingMoneyScreen> {
   final TextEditingController _amountController = TextEditingController();
   final SavingMoneyService _savingMoneyService = SavingMoneyService();
   final AdminHomeService _adminHomeService = AdminHomeService();
+  String _selectedMethod ='Cache Money'; // dropdown value
+  final List<String> _methods = ['Nogod', 'Bkash', 'Cache Money', 'cheque','Upay'];
   final LogService _logService = LogService();
   UserModel? _userData;
   String? currentAmount ;
+  String adminName='';
+  String adminDocId='';
+  String adminId='';
+  String adminEmail='';
   bool _isLoading = false;
   String? _error;
   bool visibleData = false;
   bool textVisible = false;
   bool editVisible = false;
   bool successful = false;
+
+  @override
+  void initState() {
+    super.initState();
+    getName();
+  }
+
+  Future<String?> getName() async {
+    final userName =  await CacheHelper().getString('names');
+    final userDocId =  await CacheHelper().getString('userDocId');
+    var Id =  await CacheHelper().getString('adminId');
+    final email =  await CacheHelper().getString('email');
+
+
+    if (userName == null || userName.isEmpty) {
+      debugPrint('Error: Name not found in cache!');
+      return null;
+    }
+
+    if (userDocId == null || userDocId.isEmpty) {
+      debugPrint('Error: UserDocId not found in cache!');
+      return null;
+    }
+
+    if (Id == null || Id.isEmpty) {
+      debugPrint('Error: Id not found in cache!');
+      return null;
+    }
+
+    if (email == null || email.isEmpty) {
+      debugPrint('Error: email not found in cache!');
+      return null;
+    }
+    setState(() {
+      adminName = userName;
+      adminDocId = userDocId;
+      adminId = Id;
+      adminEmail = email  ;
+    });
+    return null;
+  }
 
   Future<void> _searchUser() async {
     final userId = _searchController.text.trim();
@@ -68,6 +116,7 @@ class _SavingMoneyScreenState extends State<SavingMoneyScreen> {
     try {
       await _savingMoneyService.addMoney(
         userId: _searchController.text,
+        paymentMethod: _selectedMethod,
         amount: double.parse(_amountController.text),
       );
 
@@ -91,10 +140,6 @@ class _SavingMoneyScreenState extends State<SavingMoneyScreen> {
 
   @override
   Widget build(BuildContext context) {
-    if (_userData != null) {
-      print('email: ${_userData!.email}');
-      print('role: ${_userData!.role}');
-    }
     return Scaffold(
 
       appBar: AppBar(
@@ -157,7 +202,28 @@ class _SavingMoneyScreenState extends State<SavingMoneyScreen> {
                 child: Column(
                   children: [
                     CustomTextField(controller: _amountController,
-                      labelText: 'Taka',),
+                      labelText: 'Amount',),
+                    const SizedBox(height: 20),
+
+                    // 🔹 Dropdown
+                    DropdownButtonFormField<String>(
+                      initialValue: _selectedMethod,
+                      hint: const Text('Select Payment Method'),
+                      items: _methods
+                          .map((m) => DropdownMenuItem(value: m, child: Text(m)))
+                          .toList(),
+                      onChanged: (value) {
+                        setState(() {
+                          _selectedMethod = value!;
+                        });
+                      },
+                      decoration: InputDecoration(
+                        labelText: 'Payment Method',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                    ),
 
                     Container(
                         padding:EdgeInsets.all(5),
@@ -165,11 +231,10 @@ class _SavingMoneyScreenState extends State<SavingMoneyScreen> {
                         child: ElevatedButton(
                             onPressed: ()async{
                           _handleAddMoney();
-                          _adminHomeService.getAllUsersTotalAmountStream();
                           await _logService.addLog(
-                              name: _userData?.name ?? 'Unknown',
-                              email: _userData?.email ?? 'N/A',
-                              userid: _userData?.userid ?? 'N/A',
+                              name: adminName ?? 'Unknown',
+                              email: adminEmail ?? 'N/A',
+                              userid: adminId ?? 'N/A',
                               oldData: currentAmount ?? '0',
                               newData: _amountController.text,
                                 note: 'Add Money'

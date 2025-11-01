@@ -1,4 +1,4 @@
-
+import 'package:async/async.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class HomeService{
@@ -26,6 +26,37 @@ class HomeService{
       total += value;
     }
     return total.toInt();
+  }
+
+  Stream<int> getAllUsersTotalAmountStream() {
+    final usersCollection = FirebaseFirestore.instance.collection('users');
+
+    // Listen to users collection
+    return usersCollection.snapshots().asyncExpand((usersSnapshot) {
+      // For each user, create a stream of their Money subcollection
+      final moneyStreams = usersSnapshot.docs.map((userDoc) {
+        final moneyCollection = usersCollection.doc(userDoc.id).collection('Money');
+
+        // Listen to Money collection live
+        return moneyCollection.snapshots().map((QuerySnapshot moneySnapshot) {
+          int userTotal = 0;
+
+          for (var moneyDoc in moneySnapshot.docs) {
+            final amount = moneyDoc['amount'];
+            if (amount is int) userTotal += amount;
+            else if (amount is double) userTotal += amount.toInt();
+            else if (amount is String) userTotal += int.tryParse(amount) ?? 0;
+          }
+
+          return userTotal; // total for this user
+        });
+      }).toList();
+
+      // Combine all users' totals into one stream
+      return StreamZip<int>(moneyStreams).map((totals) {
+        return totals.fold(0, (sum, value) => sum + value);
+      });
+    });
   }
 
 

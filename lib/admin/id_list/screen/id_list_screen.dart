@@ -17,7 +17,7 @@ class _IdListScreenState extends State<IdListScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("User List")),
+      appBar: AppBar(title: const Text("List of user id"),centerTitle: true,),
       body: StreamBuilder<List<Map<String, dynamic>>>(
         stream: idListService.getUserList(),
         builder: (context, snapshot) {

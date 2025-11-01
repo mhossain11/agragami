@@ -35,6 +35,7 @@ class SavingMoneyService {
   Future<void> addMoney({
     required String userId,
     required double amount,
+    required String paymentMethod,
   }) async {
     try {
       final String? userDocId = await CacheHelper().getString('userDocId');
@@ -46,6 +47,7 @@ class SavingMoneyService {
           .collection('Money')
           .add({
         'amount': amount,
+        'payment_method': paymentMethod,
         'date&time': Timestamp.now(),
       });
       await CacheHelper().setString('moneyDocID', docRef.id);

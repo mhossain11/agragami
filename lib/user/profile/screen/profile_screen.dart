@@ -29,6 +29,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   final _nomineeNameController = TextEditingController();
   final _nidController = TextEditingController();
   final _birthdateController = TextEditingController();
+  final _nomineeRelationController = TextEditingController();
 
   String? _profileImageUrl;
   File? _selectedImage;
@@ -157,7 +158,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                             ? FileImage(_selectedImage!)
                             : (_profileImageUrl != null && _profileImageUrl!.isNotEmpty)
                             ? NetworkImage(_profileImageUrl!) as ImageProvider
-                            : const AssetImage('assets/images/agrogami_logo.png'),
+                            : const AssetImage('assets/images/image_profile.png'),
                       ),
                       if (_isEditing)
                         Positioned(
@@ -185,7 +186,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                 CustomTextField(
                   controller: _nameController,
                   labelText: 'Name',
-                  enabled: _isEditing,
+                  enabled: false,
                   validator: (value) =>
                   value!.isEmpty ? 'Please enter your name' : null,
                 ),
@@ -216,9 +217,15 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                 ),
                 const SizedBox(height: 12),
                 CustomTextField(
+                  controller: _birthdateController,
+                  labelText: 'BirthDate',
+                  enabled: _isEditing,
+                ),
+                const SizedBox(height: 12),
+                CustomTextField(
                   controller: _nidController,
                   labelText: 'Nid',
-                  enabled: _isEditing,
+                  enabled: false,
                 ),
                 const SizedBox(height: 12),
                 CustomTextField(
@@ -228,10 +235,11 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                 ),
                 const SizedBox(height: 12),
                 CustomTextField(
-                  controller: _birthdateController,
-                  labelText: 'BirthDate',
-                  enabled: _isEditing,
+                  controller: _nomineeRelationController,
+                  labelText: 'NomineeRelation',
+                  enabled: false,
                 ),
+
 
               ],
             ),
