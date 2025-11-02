@@ -5,7 +5,7 @@ import 'package:firebase_storage/firebase_storage.dart';
 
 import '../../../cachehelper/toast.dart';
 import '../../../user/profile/service/userprofile_service.dart';
-import 'package:agragami/auth/widgets/text_field.dart';
+import 'package:Agragami/auth/widgets/text_field.dart';
 
 class UserProfileScreen extends StatefulWidget {
   final String userId;

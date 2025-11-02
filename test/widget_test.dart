@@ -1,5 +1,5 @@
 
-import 'package:agragami/main.dart';
+import 'package:Agragami/main.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 

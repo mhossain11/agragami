@@ -1,9 +1,10 @@
 
-import 'package:agragami/auth/screen/register_screen.dart';
+import 'package:Agragami/auth/screen/register_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import '../../admin/home/screen/adminhome_screen.dart';
 import '../../cachehelper/chechehelper.dart';
+import '../../forgot_password/screen/forgotpassword_screen.dart';
 import '../../user/home/screen/home_screen.dart';
 import '../service/auth_service.dart';
 import '../widgets/text_field.dart';
@@ -156,6 +157,32 @@ class _LoginScreenState extends State<LoginScreen> {
 
                     return null; // ✅ valid
                   },labelText: 'Password',)),
+                  SizedBox(height: 10,),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      TextButton(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const ForgotPasswordScreen(),
+                            ),
+                          );
+                        },
+                        child: const Text(
+                          "Forgot Password?",
+                          style: TextStyle(
+                            color: Colors.blue,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w400,
+                            decoration: TextDecoration.underline,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+
                   SizedBox(height: 10,),
                   isLoading? Center(child: CircularProgressIndicator(),):
                   Center(

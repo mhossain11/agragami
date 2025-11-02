@@ -18,43 +18,48 @@ class UserMoneyRecordScreen extends StatefulWidget {
 class _UserMoneyRecordScreenState extends State<UserMoneyRecordScreen> {
   final MoneyRecordService _moneyRecordService = MoneyRecordService();
   String userDocId = '';
+
   @override
   void initState() {
     super.initState();
     getUserDocId();
   }
 
+  Future<void> getUserDocId() async {
+    final id = await CacheHelper().getString('userDocId');
 
-  Future<String?> getUserDocId() async {
-    final id =  await CacheHelper().getString('userDocId');
+    if (id == null || id.isEmpty) {
+      debugPrint("Error: userDocId not found in cache!");
+      return; // stop
+    }
+
+    if (!mounted) return;
     setState(() {
-      userDocId = id!;
+      userDocId = id;
     });
   }
 
   @override
   Widget build(BuildContext context) {
-
-
     return Scaffold(
-      appBar: AppBar(title: const Text(' Money Records'),
-      centerTitle: true,
-      backgroundColor: Colors.red,
+      appBar: AppBar(
+        title: const Text('Money Records'),
+        centerTitle: true,
+        backgroundColor: Colors.red,
       ),
-      body: StreamBuilder<QuerySnapshot>(
+      body: userDocId.isEmpty
+          ? const Center(child: CircularProgressIndicator())
+          : StreamBuilder<QuerySnapshot>(
         stream: _moneyRecordService.getMoneyListByUserId(userDocId),
         builder: (context, snapshot) {
-          // ⏳ Loading
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           }
 
-          // 🚫 Empty data check
           if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
             return const Center(child: Text('No money record found.'));
           }
 
-          // ✅ Snapshot data list
           final moneyDocs = snapshot.data!.docs;
           double totalAmount = 0;
           for (var doc in moneyDocs) {
@@ -66,7 +71,6 @@ class _UserMoneyRecordScreenState extends State<UserMoneyRecordScreen> {
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-
               Center(
                 child: Card(
                   elevation: 3,
@@ -77,28 +81,30 @@ class _UserMoneyRecordScreenState extends State<UserMoneyRecordScreen> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Text('Total Amount:',
+                        const Text(
+                          'Total Amount:',
                           style: TextStyle(
-                              fontSize:14,
+                              fontSize: 14,
                               color: Colors.black,
-                              fontWeight: FontWeight.w600),),
-                        Text('${totalAmount.toStringAsFixed(0)} Tk ',
-                          style: TextStyle(
-                              fontSize:16,
+                              fontWeight: FontWeight.w600),
+                        ),
+                        Text(
+                          '${totalAmount.toStringAsFixed(0)} Tk ',
+                          style: const TextStyle(
+                              fontSize: 16,
                               color: Colors.black,
-                              fontWeight: FontWeight.bold),),
+                              fontWeight: FontWeight.bold),
+                        ),
                       ],
                     ),
                   ),
                 ),
               ),
-              // 🔹 Money List
               Expanded(
                 child: ListView.builder(
                   itemCount: moneyDocs.length,
                   itemBuilder: (context, index) {
-                    final data =
-                    moneyDocs[index].data() as Map<String, dynamic>;
+                    final data = moneyDocs[index].data() as Map<String, dynamic>;
                     final moneyDocId = moneyDocs[index].id;
                     final amount = data['amount'] ?? 0;
                     final dateTime = (data['date&time'] as Timestamp).toDate();
@@ -106,8 +112,7 @@ class _UserMoneyRecordScreenState extends State<UserMoneyRecordScreen> {
                     DateFormat('dd MMM yyyy, hh:mm a').format(dateTime);
 
                     return Card(
-                      margin: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 6),
+                      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                       child: Column(
                         children: [
                           Row(
@@ -115,14 +120,17 @@ class _UserMoneyRecordScreenState extends State<UserMoneyRecordScreen> {
                             children: [
                               Padding(
                                 padding: const EdgeInsets.only(left: 8.0),
-                                child: Text('MoneyID: $moneyDocId',style: const TextStyle(
-                                    fontSize: 16, fontWeight: FontWeight.bold),
+                                child: Text(
+                                  'MoneyID: $moneyDocId',
+                                  style: const TextStyle(
+                                      fontSize: 16, fontWeight: FontWeight.bold),
                                 ),
                               ),
                               IconButton(
                                 icon: const Icon(Icons.copy, color: Colors.blue),
                                 onPressed: () async {
-                                  await Clipboard.setData(ClipboardData(text: moneyDocId)); // ✅ Copy to clipboard
+                                  await Clipboard.setData(
+                                      ClipboardData(text: moneyDocId));
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     SnackBar(content: Text('Copied: $moneyDocId')),
                                   );
@@ -139,7 +147,6 @@ class _UserMoneyRecordScreenState extends State<UserMoneyRecordScreen> {
                             ),
                             subtitle: Text(formattedDate),
                           ),
-
                         ],
                       ),
                     );
@@ -153,3 +160,4 @@ class _UserMoneyRecordScreenState extends State<UserMoneyRecordScreen> {
     );
   }
 }
+

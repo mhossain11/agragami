@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:agragami/auth/widgets/text_field.dart';
+import 'package:Agragami/auth/widgets/text_field.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
