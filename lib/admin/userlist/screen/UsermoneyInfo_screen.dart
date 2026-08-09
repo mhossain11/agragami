@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+import '../../../res/apptextstyle.dart';
 import '../service/userlist_service.dart';
 
 class UserMoneyInfoScreen extends StatelessWidget {
@@ -73,22 +74,22 @@ class UserMoneyInfoScreen extends StatelessWidget {
                           Text('Email: $email',
                               style: const TextStyle(
                                   fontSize: 14, fontWeight: FontWeight.w600)),
-                          Text('phone: $phone',
+                          Text('Cell Number: $phone',
                               style: const TextStyle(
                                   fontSize: 14, fontWeight: FontWeight.w600)),
-                          Text('Nid: $nid',
+                          Text('NID: $nid',
                               style: const TextStyle(
                                   fontSize: 14, fontWeight: FontWeight.w600)),
-                          Text('BirthDate: $birthdate',
+                          Text('Date of Birth: $birthdate',
                               style: const TextStyle(
                                   fontSize: 14, fontWeight: FontWeight.w600)),
                           Text('Address: $address',
                               style: const TextStyle(
                                   fontSize: 14, fontWeight: FontWeight.w600)),
-                          Text('NomineeName: $nomineeName',
+                          Text('Nominee Name: $nomineeName',
                               style: const TextStyle(
                                   fontSize: 14, fontWeight: FontWeight.w600)),
-                          Text('NomineeRelation: $nomineeRelation',
+                          Text('Relation with Applicant: $nomineeRelation',
                               style: const TextStyle(
                                   fontSize: 14, fontWeight: FontWeight.w600)),
                         ],
@@ -138,22 +139,22 @@ class UserMoneyInfoScreen extends StatelessWidget {
                         Text('Email: $email',
                             style: const TextStyle(
                                 fontSize: 14, fontWeight: FontWeight.w600)),
-                        Text('phone: $phone',
+                        Text('Cell Number:: $phone',
                             style: const TextStyle(
                                 fontSize: 14, fontWeight: FontWeight.w600)),
-                        Text('Nid: $nid',
+                        Text('NID: $nid',
                             style: const TextStyle(
                                 fontSize: 14, fontWeight: FontWeight.w600)),
-                        Text('BirthDate: $birthdate',
+                        Text('Date of Birth: $birthdate',
                             style: const TextStyle(
                                 fontSize: 14, fontWeight: FontWeight.w600)),
                         Text('Address: $address',
                             style: const TextStyle(
                                 fontSize: 14, fontWeight: FontWeight.w600)),
-                        Text('NomineeName: $nomineeName',
+                        Text('Nominee Name: $nomineeName',
                             style: const TextStyle(
                                 fontSize: 14, fontWeight: FontWeight.w600)),
-                        Text('NomineeRelation: $nomineeRelation',
+                        Text('Relation with Applicant: $nomineeRelation',
                             style: const TextStyle(
                                 fontSize: 14, fontWeight: FontWeight.w600)),
                       ],
@@ -171,7 +172,7 @@ class UserMoneyInfoScreen extends StatelessWidget {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Text('Total Amount:',
+                        Text('Balance: ',
                           style: TextStyle(
                               fontSize:14,
                               color: Colors.black,
@@ -213,9 +214,9 @@ class UserMoneyInfoScreen extends StatelessWidget {
                             children: [
                               Padding(
                                 padding: const EdgeInsets.only(left: 8.0),
-                                child: Text('MoneyID: $moneyDocId',style: const TextStyle(
-                                                          fontSize: 16, fontWeight: FontWeight.bold),
-                                                    ),
+                                child: Text('MoneyID: $moneyDocId',
+                                    style: AppTextStyles.style10_bold),
+
                               ),
                               IconButton(
                                 icon: const Icon(Icons.copy, color: Colors.blue),
@@ -236,7 +237,7 @@ class UserMoneyInfoScreen extends StatelessWidget {
                                   fontSize: 18, fontWeight: FontWeight.bold),
                             ),
                             subtitle: Text(paymentMethod,style: const TextStyle(
-                                fontSize: 18, fontWeight: FontWeight.bold),),
+                                fontSize: 12, fontWeight: FontWeight.bold),),
                             trailing: Text(formattedDate)
                           ),
 

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../../../res/apptextstyle.dart';
 import '../service/id_list_service.dart';
 
 
@@ -51,8 +52,7 @@ class _IdListScreenState extends State<IdListScreen> {
                       children: [
                         Padding(
                           padding: const EdgeInsets.only(left: 8.0),
-                          child: Text('Id record: ${user['docId']}',style: const TextStyle(
-                              fontSize: 16, fontWeight: FontWeight.bold),
+                          child: Text('Id record: ${user['docId']}',style: AppTextStyles.style12_bold,
                           ),
                         ),
                         IconButton(

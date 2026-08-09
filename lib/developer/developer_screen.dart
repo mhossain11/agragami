@@ -3,12 +3,13 @@ import '../res/apptextstyle.dart';
 import 'developerinfo.dart'; // <-- তোমার ফাইলের নাম অনুযায়ী import করবে
 
 class DeveloperScreen extends StatelessWidget {
-  const DeveloperScreen({super.key});
+   DeveloperScreen({super.key,required this.color});
+  Color color ;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(backgroundColor: Colors.red,),
+      appBar: AppBar(backgroundColor: color,),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -18,7 +19,7 @@ class DeveloperScreen extends StatelessWidget {
               style: AppTextStyles.heading1,
             ),
             SizedBox(height: 20),
-            DeveloperInfo(), // 👈 এখানে widget টা দেখাবে
+            DeveloperInfo(color:color), // 👈 এখানে widget টা দেখাবে
           ],
         ),
       ),

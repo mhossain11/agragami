@@ -24,10 +24,43 @@ class AppTextStyles {
     fontSize: 14.sp,
     color: Colors.grey,
   );
+  static  TextStyle small_bold = TextStyle(
+    fontSize: 14.sp,
+    color: Colors.black,
+    fontWeight: FontWeight.bold,
+  );
+
+  static  TextStyle  style12_normal = TextStyle(
+    fontSize: 12.sp,
+    color: Colors.black,
+    fontWeight: FontWeight.normal,
+  );
+
+  static  TextStyle  style12_bold = TextStyle(
+    fontSize: 12.sp,
+    color: Colors.black,
+    fontWeight: FontWeight.bold,
+  );
 
   static  TextStyle button = TextStyle(
     fontSize: 16.sp,
     fontWeight: FontWeight.bold,
     color: Colors.white,
+  );
+
+  static  TextStyle style10_bold = TextStyle(
+    fontSize: 10.sp,
+    fontWeight: FontWeight.bold,
+    color: Colors.black,
+  );
+  static  TextStyle style10_normal = TextStyle(
+    fontSize: 10.sp,
+    fontWeight: FontWeight.normal,
+    color: Colors.black,
+  );
+  static  TextStyle style16_bold = TextStyle(
+    fontSize: 16.sp,
+    fontWeight: FontWeight.bold,
+    color: Colors.black,
   );
 }

@@ -65,7 +65,7 @@ class _MoneyDeleteSimpleScreenState extends State<MoneyDeleteSimpleScreen> {
       adminName = userName;
       adminDocId = userDocId;
       adminId = Id;
-      adminEmail = email  ;
+      adminEmail = email;
     });
     return null;
   }
@@ -90,10 +90,10 @@ class _MoneyDeleteSimpleScreenState extends State<MoneyDeleteSimpleScreen> {
       );
 
       await _logService.addLog(
-          name: adminName ?? 'Unknown',
-          email: adminEmail ?? 'N/A',
-          userid: adminId ?? 'N/A',
-          oldData: userId ?? '0',
+          name: adminName ,
+          email: adminEmail ,
+          userid: adminId,
+          oldData: userId,
           newData: moneyDocId,
           note: 'Money Record Delete'
       );

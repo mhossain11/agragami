@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -61,7 +62,11 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   Future<void> _pickImage() async {
     final picker = ImagePicker();
     final pickedFile =
-    await picker.pickImage(source: ImageSource.gallery, imageQuality: 80);
+    await picker.pickImage(
+        source: ImageSource.gallery,
+        imageQuality: 60,
+        maxWidth: 800,
+        maxHeight: 800,);
 
     if (pickedFile != null) {
       setState(() {
@@ -76,7 +81,9 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
           .ref()
           .child('profile_images')
           .child('${widget.userId}.jpg');
+
       await ref.putFile(imageFile);
+
       return await ref.getDownloadURL();
     } catch (e) {
       debugPrint('Image upload failed: $e');
@@ -91,11 +98,12 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
       String? imageUrl = _profileImageUrl;
 
       if (_selectedImage != null) {
-        /*final uploadedUrl = await _uploadImage(_selectedImage!);
-        if (uploadedUrl != null) imageUrl = uploadedUrl;*/
+        final uploadedUrl = await _uploadImage(_selectedImage!);
+        if (uploadedUrl != null) imageUrl = uploadedUrl;
       }
 
-      await _profileService.updateUser(widget.userId, {
+      await _profileService.updateUser(
+          widget.userId, {
         'name': _nameController.text.trim(),
         'email': _emailController.text.trim(),
         'phone': _phoneController.text.trim(),
@@ -104,7 +112,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
         'nomineeName': _nomineeNameController.text.trim(),
         'nid': _nidController.text.trim(),
         'birthdate': _birthdateController.text.trim(),
-        //'profileImage': imageUrl ?? '',
+        'profileImage': imageUrl ?? '',
       });
 
       setState(() {
@@ -115,6 +123,20 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
 
       CustomToast().showToast(context, 'Profile updated successfully', Colors.green);
     }
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _emailController.dispose();
+    _addressController.dispose();
+    _phoneController.dispose();
+    _userIdController.dispose();
+    _nomineeNameController.dispose();
+    _nidController.dispose();
+    _birthdateController.dispose();
+    _nomineeRelationController.dispose();
+    super.dispose();
   }
 
   @override
@@ -150,7 +172,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
 
                 // 🔹 Profile Image
                 Center(
-                  child: Stack(
+                  child: /*Stack(
                     alignment: Alignment.bottomRight,
                     children: [
                       CircleAvatar(
@@ -179,6 +201,43 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                           ),
                         ),
                     ],
+                  ),*/
+                  Stack(
+                    alignment: Alignment.bottomRight,
+                    children: [
+                      CircleAvatar(
+                        radius: 60,
+                        backgroundImage: _selectedImage != null
+                            ? FileImage(_selectedImage!)
+                            : (_profileImageUrl?.isNotEmpty ?? false)
+                            ? CachedNetworkImageProvider(
+                          _profileImageUrl!,
+                        )
+                            : const AssetImage(
+                          'assets/images/image_profile.png',
+                        ) as ImageProvider,
+                      ),
+                      if (_isEditing)
+                        Positioned(
+                          bottom: 0,
+                          right: 4,
+                          child: GestureDetector(
+                            onTap: _pickImage,
+                            child: Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: const BoxDecoration(
+                                color: Colors.blue,
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(
+                                Icons.camera_alt,
+                                color: Colors.white,
+                                size: 20,
+                              ),
+                            ),
+                          ),
+                        ),
+                    ],
                   ),
                 ),
                 const SizedBox(height: 20),
@@ -200,13 +259,13 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                 const SizedBox(height: 12),
                 CustomTextField(
                   controller: _userIdController,
-                  labelText: 'User_id',
+                  labelText: 'User_Id',
                   enabled: false,
                 ),
                 const SizedBox(height: 12),
                 CustomTextField(
                   controller: _phoneController,
-                  labelText: 'Phone',
+                  labelText: 'Cell Number',
                   enabled: _isEditing,
                 ),
                 const SizedBox(height: 12),
@@ -219,25 +278,25 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                 const SizedBox(height: 12),
                 CustomTextField(
                   controller: _birthdateController,
-                  labelText: 'BirthDate',
+                  labelText: 'Date of Birth',
                   enabled: _isEditing,
                 ),
                 const SizedBox(height: 12),
                 CustomTextField(
                   controller: _nidController,
-                  labelText: 'Nid',
+                  labelText: 'NID',
                   enabled: false,
                 ),
                 const SizedBox(height: 12),
                 CustomTextField(
                   controller: _nomineeNameController,
-                  labelText: 'NomineeName',
+                  labelText: 'Nominee Name',
                   enabled: false,
                 ),
                 const SizedBox(height: 12),
                 CustomTextField(
                   controller: _nomineeRelationController,
-                  labelText: 'NomineeRelation',
+                  labelText: ' Relation with Applicant',
                   enabled: false,
                 ),
 

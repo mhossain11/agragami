@@ -1,9 +1,10 @@
 
-import 'package:Agragami/cachehelper/toast.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
+import '../../cachehelper/toast.dart';
 import '../service/auth_service.dart';
 import '../widgets/text_field.dart';
 import 'login_screen.dart';
@@ -148,27 +149,27 @@ class _RegisterScreenState extends State<RegisterScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        automaticallyImplyLeading: false,
+        //automaticallyImplyLeading: false,
       ),
       body: SingleChildScrollView(
         child: Form(
           key: _formKey,
           child: Padding(
-            padding: const EdgeInsets.all(8.0),
+            padding:  EdgeInsets.all(8.0.r),
             child: Column(
               children: [
                 Text('Register',style: TextStyle(
-                    fontSize: 40,fontWeight: FontWeight.bold),),
-                SizedBox(height: 20,),
+                    fontSize: 40.sp,fontWeight: FontWeight.bold),),
+                SizedBox(height: 20.h,),
                 CustomTextField(controller: useridController,
                  // readOnly: buttonShow == false?true:false,
                   enabled:  buttonShow,
                   labelText: 'User_ID',),
-                SizedBox(height: 10,),
+                SizedBox(height: 10.h,),
 
                 isLoadingId? Center(child: CircularProgressIndicator(),):
                 buttonShow ? SizedBox(
-                  width: 250,
+                  width: 250.w,
                   child: ElevatedButton(
                       onPressed:searchId,
                       child: Text('Find Id')),):
@@ -187,7 +188,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               return null; // valid
                             }
                         ),
-                        SizedBox(height: 10,),
+                        SizedBox(height: 10.h,),
                         CustomTextField(controller: emailController,isRequired: true,
                           validator: (value){
                           if(value!.isEmpty){
@@ -206,16 +207,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           return null;
 
                         },labelText: 'Email',),
-                        SizedBox(height: 10,),
+                        SizedBox(height: 10.h,),
                         CustomTextField(controller: phoneController,
                           validator: (value){
                             if (value == null || value.trim().isEmpty) return 'Phone is required';
                             final pattern = RegExp(r'^(?:\+?88)?01[3-9]\d{8}$');
                             return pattern.hasMatch(value.trim()) ? null : 'Enter valid Bangladesh phone';
                           },keyboardType: TextInputType.number,labelText: 'Phone number',),
-                        SizedBox(height: 10,),
+                        SizedBox(height: 10.h,),
                         CustomTextField(controller: birthdateController,keyboardType: TextInputType.datetime,labelText: 'Birthdate',),
-                        SizedBox(height: 10,),
+                        SizedBox(height: 10.h,),
                         CustomTextField(controller: nidController,isRequired: true,
                           validator: (value){
                           if (value == null || value.trim().isEmpty) {
@@ -231,9 +232,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                           return null; // valid
                         },keyboardType: TextInputType.number,labelText: 'Nid number',),
-                        SizedBox(height: 10,),
+                        SizedBox(height: 10.h,),
                         CustomTextField(controller: addressController,maxLine: 2,labelText: 'Address',),
-                        SizedBox(height: 10,),
+                        SizedBox(height: 10.h,),
                         CustomTextField(controller: nomineeNameController,
                           labelText: 'Nominee Name',isRequired: true,
                             validator: (value){
@@ -243,7 +244,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               return null; // valid
                             }
                         ),
-                        SizedBox(height: 10,),
+                        SizedBox(height: 10.h,),
                         CustomTextField(controller: nomineeRelationController,
                           labelText: 'Nominee Relation',isRequired: true,
                             validator: (value){
@@ -253,7 +254,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               return null; // valid
                             }
                         ),
-                        SizedBox(height: 10,),
+                        SizedBox(height: 10.h,),
                         CustomTextFieldPassword(controller: passwordController,
                           validator: (value){
                           if (value == null || value.isEmpty) {
@@ -273,7 +274,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                           return null; // ✅ valid
                         },isRequired: true,labelText: 'Password',),
-                        SizedBox(height: 10,),
+                        SizedBox(height: 10.h,),
                         CustomTextFieldPassword(controller: confirmPasswordController,isRequired: true,
                           validator: (value){
                           if (value == null || value.isEmpty) {
@@ -284,11 +285,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           }
                           return null;
                         },labelText: 'ConfirmPassword',),
-                        SizedBox(height: 10,),
+                        SizedBox(height: 10.h,),
                         //button
                         isLoading? Center(child: CircularProgressIndicator(),):
                         SizedBox(
-                          width: 250,
+                          width: 250.w,
                           child: ElevatedButton(
                               onPressed: _signUp,
                               child: Text('Sign Up')),

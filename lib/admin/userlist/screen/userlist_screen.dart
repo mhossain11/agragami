@@ -2,6 +2,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../../../cachehelper/toast.dart';
+import '../../../res/apptextstyle.dart';
 import 'UsermoneyInfo_screen.dart';
 
 
@@ -75,17 +77,13 @@ class UserListScreen extends StatelessWidget {
                                   children: [
                                     Padding(
                                       padding: const EdgeInsets.only(left: 8.0),
-                                      child: Text('UserDocID: $userDocId',style: const TextStyle(
-                                          fontSize: 12, fontWeight: FontWeight.bold),
-                                      ),
+                                      child: Text('UserDocID: $userDocId',style: AppTextStyles.style10_bold,)
                                     ),
                                     IconButton(
                                       icon: const Icon(Icons.copy, color: Colors.blue),
                                       onPressed: () async {
                                         await Clipboard.setData(ClipboardData(text: userDocId)); // ✅ Copy to clipboard
-                                        ScaffoldMessenger.of(context).showSnackBar(
-                                          SnackBar(content: Text('Copied: $userDocId')),
-                                        );
+                                        CustomToast().showToast(context,'Copied: $userDocId', Colors.green);
                                       },
                                     ),
                                   ],
@@ -96,10 +94,11 @@ class UserListScreen extends StatelessWidget {
                                     child: const Icon(Icons.person, color: Colors.teal),
                                   ),
                                   title: Text(
-                                    user['name']?? 'No Name',
-                                    style: const TextStyle(fontWeight: FontWeight.bold),
+                                    user['name']?? 'No Name',maxLines: 2,
+                                    style: AppTextStyles.small_bold,
                                   ),
-                                  subtitle: Text('${user['email'] ?? 'N/A'}',overflow: TextOverflow.ellipsis,maxLines: 1,),
+                                  subtitle: Text('${user['email'] ?? 'N/A'}',overflow: TextOverflow.ellipsis,maxLines: 1,
+                                  style: AppTextStyles.style10_normal,),
                                   trailing: Text(
                                     'ID: ${user['user_id'] ?? 'N/A'}',
                                     style: const TextStyle(

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 import '../../../auth/widgets/text_field.dart';
 import '../../../cachehelper/chechehelper.dart';
+import '../../../res/apptextstyle.dart';
 import '../../edit_data/screen/editdata_screen.dart';
 import '../../home/service/adminhome_service.dart';
 import '../../log/service/log_service.dart';
@@ -20,7 +21,7 @@ class _SavingMoneyScreenState extends State<SavingMoneyScreen> {
   final TextEditingController _searchController = TextEditingController();
   final TextEditingController _amountController = TextEditingController();
   final SavingMoneyService _savingMoneyService = SavingMoneyService();
-  final AdminHomeService _adminHomeService = AdminHomeService();
+  //final AdminHomeService _adminHomeService = AdminHomeService();
   String _selectedMethod ='Cache Money'; // dropdown value
   final List<String> _methods = ['Nogod', 'Bkash', 'Cache Money', 'cheque','Upay'];
   final LogService _logService = LogService();
@@ -42,6 +43,7 @@ class _SavingMoneyScreenState extends State<SavingMoneyScreen> {
     super.initState();
     getName();
   }
+
 
   Future<String?> getName() async {
     final userName =  await CacheHelper().getString('names');
@@ -136,7 +138,12 @@ class _SavingMoneyScreenState extends State<SavingMoneyScreen> {
     }
   }
 
-
+  @override
+  void dispose() {
+    super.dispose();
+    _searchController.dispose();
+    _amountController.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -158,14 +165,14 @@ class _SavingMoneyScreenState extends State<SavingMoneyScreen> {
                   labelText: 'User Id',)),
             Container(
                 padding:EdgeInsets.all(5),
-                width: 110,
+                width: 120,
                 child: ElevatedButton(onPressed: (){
                   _searchUser();
                   setState(() {
                     visibleData=true;
                   });
                 },
-                    child: Text('Search'))),
+                    child: Text('Search',style: AppTextStyles.button,))),
 
             const SizedBox(height: 20),
             if (_isLoading)

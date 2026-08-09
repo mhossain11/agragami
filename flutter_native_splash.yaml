@@ -4,3 +4,9 @@ flutter_native_splash:
  web: false
  color: "#ffffff"
  image: assets/images/agrogami_logo.png
+
+ # Android 12+ specific configuration
+ android_12:
+  image: assets/images/agrogami_logo.png     # Recommended: 960x960 transparent PNG
+  icon_background_color: "#ffffff"       # Background color
+  image_dark: assets/images/agrogami_logo.png  # optional (for dark mode)

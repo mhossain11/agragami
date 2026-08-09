@@ -11,6 +11,7 @@ class CustomTextField extends StatelessWidget {
     this.validator,
     this.enabled,
     this.isRequired = false,
+    this.autofillHints,
   });
 
   final TextEditingController controller;
@@ -22,11 +23,12 @@ class CustomTextField extends StatelessWidget {
   final String? Function(String?)? validator;
   final bool? enabled;
   final bool isRequired;
+  final Iterable<String>? autofillHints;
 
   @override
   Widget build(BuildContext context) {
     return TextFormField(
-
+      autofillHints: autofillHints,
       maxLength:maxLength,
       maxLines: maxLine,
       keyboardType: keyboardType,
@@ -62,6 +64,7 @@ class CustomTextFieldPassword extends StatefulWidget {
     this.keyboardType,
     this.validator,
     this.isRequired = false,
+    this.autofillHints
   });
 
   final TextEditingController controller;
@@ -69,6 +72,7 @@ class CustomTextFieldPassword extends StatefulWidget {
   final TextInputType? keyboardType;
   final String? Function(String?)? validator;
   final bool isRequired;
+  final Iterable<String>? autofillHints;
 
   @override
   State<CustomTextFieldPassword> createState() => _CustomTextFieldPasswordState();
@@ -82,6 +86,7 @@ class _CustomTextFieldPasswordState extends State<CustomTextFieldPassword> {
   Widget build(BuildContext context) {
     return TextFormField(
       controller: widget.controller,
+      autofillHints: widget.autofillHints,
       validator: widget.validator,
       decoration: InputDecoration(
         label: RichText(

@@ -67,9 +67,28 @@ class AuthService {
     required String password,
   }) async {
     try {
-      final userCredential = await _auth
-          .signInWithEmailAndPassword(
-        email: email.trim(),
+      String emails = email.trim();
+
+      // যদি Email না হয়, তাহলে user_id ধরে email বের করো
+      if (!email.contains('@')) {
+        final snapshot = await _firestore
+            .collection('users')
+            .where(
+          'user_id',
+          isEqualTo: email.trim(),
+        ).limit(1)
+            .get();
+
+        if (snapshot.docs.isEmpty) {
+          return 'User ID not found';
+        }
+
+        email = snapshot.docs.first['email'];
+      }
+
+      final userCredential =
+      await _auth.signInWithEmailAndPassword(
+        email: email,
         password: password.trim(),
       );
 
@@ -78,14 +97,22 @@ class AuthService {
           .doc(userCredential.user!.uid)
           .get();
 
+      if (!userDoc.exists) {
+        return 'User data not found';
+      }
+
+
       // ✅ Save user info locally using SharedPreferences
       await CacheHelper().setLoggedIn(userDoc.exists);
       await CacheHelper().setString('isRole', userDoc['role'].toString());
       await CacheHelper().setString('names', userDoc['name'].toString());
       await CacheHelper().setString('adminId', userDoc['user_id'].toString());
+      await CacheHelper().setString('userId', userDoc['user_id'].toString());
       await CacheHelper().setString('email', userDoc['email'].toString());
       await CacheHelper().setString('userDocId', userDoc.id.toString());
-
+      print("Saved User ID: ${userDoc['user_id']}");
+      final test = CacheHelper().getString('userId');
+      print("Read After Save => $test");
       if (userDoc.exists) {
         return userDoc['role'] as String;
       } else {
@@ -130,7 +157,7 @@ class AuthService {
             .collection('auth')
             .doc(docId)
             .collection('user')
-            .where('user_id', isEqualTo: inputUserId)
+            .where('user_id', isEqualTo: inputUserId.trim())
             .limit(1)
             .get();
 
@@ -157,10 +184,11 @@ class AuthService {
       // 🔹 user_id মিলে এমন ডকুমেন্ট খুঁজো
       final userSnapshot = await _firestore
           .collection('users')
-          .where('user_id', isEqualTo: inputUserId)
+          .where('user_id', isEqualTo: inputUserId.trim())
           .limit(1)
           .get();
-
+      print('Project: ${FirebaseFirestore.instance.app.options.projectId}');
+      print('Docs: ${userSnapshot.docs.length}');
       if (userSnapshot.docs.isNotEmpty) {
         final doc = userSnapshot.docs.first.data();
 

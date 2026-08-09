@@ -106,7 +106,8 @@ class _UserMoneyRecordScreenState extends State<UserMoneyRecordScreen> {
                   itemBuilder: (context, index) {
                     final data = moneyDocs[index].data() as Map<String, dynamic>;
                     final moneyDocId = moneyDocs[index].id;
-                    final amount = data['amount'] ?? 0;
+                    final amount = data['amount'] ?? 00;
+                    final payMethod = data['payment_method'];
                     final dateTime = (data['date&time'] as Timestamp).toDate();
                     final formattedDate =
                     DateFormat('dd MMM yyyy, hh:mm a').format(dateTime);
@@ -146,6 +147,7 @@ class _UserMoneyRecordScreenState extends State<UserMoneyRecordScreen> {
                                   fontSize: 18, fontWeight: FontWeight.bold),
                             ),
                             subtitle: Text(formattedDate),
+                            trailing: Text('PayMethod: $payMethod'),
                           ),
                         ],
                       ),

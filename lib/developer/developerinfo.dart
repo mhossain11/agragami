@@ -5,7 +5,8 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class DeveloperInfo extends StatelessWidget {
-  const DeveloperInfo({super.key});
+   DeveloperInfo({super.key,required this.color});
+  Color color ;
 
   final String _logo = 'assets/images/softkormo.png';
   final String _playStoreUrl =
@@ -74,7 +75,7 @@ class DeveloperInfo extends StatelessWidget {
           ElevatedButton(
             onPressed: () => _launchUrl(_playStoreUrl),
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
+              backgroundColor: color,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
               ),

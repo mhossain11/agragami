@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:Agragami/admin/id_create/screen/create_id_screen.dart';
+import 'package:Agragami/developer/developer_screen.dart';
 import 'package:badges/badges.dart' as badges;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -8,6 +9,7 @@ import 'package:flutter/material.dart';
 
 import '../../../auth/screen/login_screen.dart';
 import '../../../cachehelper/chechehelper.dart';
+import '../../../contact/screen/contact_screen.dart';
 import '../../deleteid/screen/deleteid_screen.dart';
 import '../../id_create/screen/edit_id_screen.dart';
 import '../../id_list/screen/id_list_screen.dart';
@@ -133,6 +135,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
 
         centerTitle: true,
         actions: [
+          //Notification
           FutureBuilder<List<String>>(
             future: _noteService.getAdminDocIds(),
             builder: (context, snapshot) {
@@ -183,7 +186,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                         Text('Logout'),
                       ],
                     )),
-            const PopupMenuDivider(),
+          //  const PopupMenuDivider(),
             PopupMenuItem(
                     value: 1,
                     child: Row(
@@ -193,9 +196,33 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                         Text('Profile'),
                       ],
                     )),
+                PopupMenuItem(
+                  value: 2,
+                  child: Row(
+                    children: [
+                      Image.asset('assets/images/contact-mail.png', height: 20, width: 20),
+                      const SizedBox(width: 10),
+                      const Text('Contact'),
+                    ],
+                  ),
+                ),
+
+                PopupMenuItem(
+                  value: 3,
+                  child: Row(
+                    children: [
+                      Image.asset('assets/images/coding.png', height: 20, width: 20),
+                      const SizedBox(width: 10),
+                      const Text('About Developer'),
+                    ],
+                  ),
+                ),
+
+
 
           ]
           ),
+
         ],
       ),
 
@@ -309,7 +336,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                           ),
                           Center(
                             child: Text(
-                              'Total Amount',
+                              'Balance',
                               style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                             ),
                           ),
@@ -385,7 +412,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                                   height: 50,),
                               ),
                             SizedBox(height: 5,),
-                            Text('User List',style: TextStyle(
+                            Text('Members List',style: TextStyle(
                                 fontSize: 16,color: Colors.black,fontWeight: FontWeight.w500
                             ),)
                           ],
@@ -525,7 +552,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                               width: 80,
                               height: 50,),
                             SizedBox(height: 5,),
-                            Text('User id Create',style: TextStyle(
+                            Text('User Id Create',style: TextStyle(
                                 fontSize: 16,color: Colors.black,fontWeight: FontWeight.w500
                             ),)
 
@@ -598,7 +625,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                             height: 50,),
                         ),
                         SizedBox(height: 5,),
-                        Text('Delete id',style: TextStyle(
+                        Text('Delete Id',style: TextStyle(
                             fontSize: 16,color: Colors.black,fontWeight: FontWeight.w500
                         ),)
                       ],
@@ -660,7 +687,18 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
         Navigator.push(context, MaterialPageRoute(
             builder: (context)=>ProfileScreen(userId: DocId)));
         break;
+
+      case 2:
+        Navigator.push(context, MaterialPageRoute(
+            builder: (context)=>ContactScreen(color: Colors.green,)));
+        break;
+
+      case 3:
+        Navigator.push(context, MaterialPageRoute(
+            builder: (context)=>DeveloperScreen(color: Colors.green,)));
+        break;
     }
+
 
   }
 }

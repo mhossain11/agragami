@@ -1,10 +1,20 @@
 import 'package:flutter/material.dart';
 
 class ContactScreen extends StatelessWidget {
-  const ContactScreen({super.key});
+   ContactScreen({super.key,required this.color});
+  Color color;
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold();
+    return Scaffold(
+      backgroundColor: Colors.white,
+      appBar: AppBar(
+        title: Text('Contact Us'),
+        centerTitle: true,
+        backgroundColor: color,
+      ),
+      body: Center(
+          child: Image.asset('assets/images/contact.png')),
+    );
   }
 }

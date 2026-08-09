@@ -64,10 +64,16 @@ class _CreateIdScreenState extends State<CreateIdScreen> {
       userId: userId,
     );
 
+    if(userId.isEmpty){
+      setState(() => isLoadingId = false);
+      CustomToast().showToast(context, "Please enter an User ID", Colors.red);
+      return;
+    }
+
     // 🔹 If user already exists
     if (newDocId == null) {
       setState(() => isLoadingId = false);
-      CustomToast().showToast(context, "User ID already exists!", Colors.orange);
+      CustomToast().showToast(context, "User ID already exists!", Colors.red);
       return;
     }
 

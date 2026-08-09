@@ -47,7 +47,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
         _emailController.text = user.email;
         _adminIdController.text = user.userId;
         _phoneController.text = user.phone;
-       // _addressController.text = user.address;
+        _addressController.text = user.address;
+        _nidController.text = user.nid;
+        _nidController.text = user.nid;
+        _birthdateController.text = user.birthdate;
+        _nomineeNameController.text = user.nomineeName;
+        _nomineeRelationController.text = user.nomineeRelation;
       });
     }
   }
@@ -161,7 +166,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 const SizedBox(height: 12),
                 CustomTextField(
                   controller:_phoneController,
-                  labelText: 'Phone',
+                  labelText: 'Cell Number',
                   enabled:  _isEditing,
                   validator: (value) =>
                   value!.isEmpty ? 'Please enter your phone number' : null,
@@ -169,7 +174,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 const SizedBox(height: 12),
                 CustomTextField(
                   controller:_nidController,
-                  labelText: 'Nid',
+                  labelText: 'NID',
                   enabled:  false,
                 ),
                 const SizedBox(height: 12),
@@ -183,7 +188,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 const SizedBox(height: 12),
                 CustomTextField(
                   controller:_birthdateController,
-                  labelText: 'Birthdate',
+                  labelText: 'Date of Birth',
                   enabled:  _isEditing,
                   validator: (value) =>
                   value!.isEmpty ? 'Please enter your birthdate' : null,
@@ -191,13 +196,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 const SizedBox(height: 12),
                 CustomTextField(
                   controller:_nomineeNameController,
-                  labelText: 'NomineeName',
+                  labelText: 'Nominee Name',
                   enabled:  false,
                 ),
                 const SizedBox(height: 12),
                 CustomTextField(
                   controller:_nomineeRelationController,
-                  labelText: 'NomineeRelation',
+                  labelText: ' Relation with Applicant',
                   enabled:  false,
                 ),
               ],

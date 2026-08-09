@@ -592,7 +592,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               color: Colors.red, fontSize: 25, fontWeight: FontWeight.bold),
                         ),
                         const Text(
-                          'Total Amount',
+                          'Balance',
                           style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                         ),
                       ],
@@ -609,7 +609,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   _buildCardRow(
                     context,
                     first: _HomeCardData(
-                      title: 'Transactional',
+                      title: 'Transaction Report',
                       imagePath: 'assets/images/transactional.png',
                       color: Colors.red,
                       onTap: () {
@@ -620,7 +620,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       },
                     ),
                     second: _HomeCardData(
-                      title: 'User List',
+                      title: 'Members List',
                       imagePath: 'assets/images/userlist.png',
                       color: Colors.red,
                       onTap: () {
@@ -683,13 +683,14 @@ class _HomeScreenState extends State<HomeScreen> {
 
       case 1:
         if (context.mounted) {
-          Navigator.push(context, MaterialPageRoute(builder: (_) => ContactScreen()));
+          Navigator.push(context, MaterialPageRoute(builder: (_) => ContactScreen(color: Colors.red,)));
         }
         break;
 
       case 2:
         if (context.mounted) {
-          Navigator.push(context, MaterialPageRoute(builder: (_) => DeveloperScreen()));
+          Navigator.push(context, MaterialPageRoute(
+              builder: (context)=>DeveloperScreen(color: Colors.red,)));
         }
         break;
     }

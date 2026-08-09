@@ -1,3 +1,4 @@
+import 'package:Agragami/cachehelper/toast.dart';
 import 'package:flutter/material.dart';
 
 import '../../../auth/widgets/text_field.dart';
@@ -44,18 +45,20 @@ class _EditDataScreenState extends State<EditDataScreen> {
         userId: widget.userId,
         newAmount: double.parse(_amountController.text),
       );
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Money updated successfully!')),
-      );
+      CustomToast().showToast(context,'Money updated successfully!', Colors.green);
       Navigator.pop(context); // Back to previous screen
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: $e')),
-      );
+      CustomToast().showToast(context,'Error: $e', Colors.red);
     } finally {
       setState(() => _isLoading = false);
     }
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    _amountController.dispose();
+
   }
   @override
   Widget build(BuildContext context) {
@@ -78,9 +81,12 @@ class _EditDataScreenState extends State<EditDataScreen> {
             ),
           ),
           SizedBox(height: 20,),
-          CustomTextField(
-            controller: _amountController,
-            labelText: 'Amount',),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: CustomTextField(
+              controller: _amountController,
+              labelText: 'Amount',),
+          ),
           SizedBox(height: 20,),
           Container(
             padding:EdgeInsets.all(5),

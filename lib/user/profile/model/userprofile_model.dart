@@ -51,7 +51,7 @@ class UserProfileModel {
       'email': email,
       'phone': phone,
       'address': address,
-      'userId': address,
+      'userId': userId,
       'nomineeName': nomineeName,
       'nomineeRelation': nomineeRelation,
       'nid': nid,

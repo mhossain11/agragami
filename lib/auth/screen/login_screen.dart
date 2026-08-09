@@ -1,6 +1,7 @@
-
 import 'package:Agragami/auth/screen/register_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import '../../admin/home/screen/adminhome_screen.dart';
 import '../../cachehelper/chechehelper.dart';
@@ -23,14 +24,21 @@ class _LoginScreenState extends State<LoginScreen> {
   bool isLoading = false;
  final AuthService _authService = AuthService();
   bool isLoggedIn = false;
+
 @override
   void initState(){
     super.initState();
-    CacheHelper.init();
+    _loadUserId();
+    }
+
+  void _loadUserId() {
+    final savedUserId = CacheHelper().getString('userId');
+    print("Loaded User ID => $savedUserId");
+
+    if (savedUserId != null && savedUserId.isNotEmpty) {
+      emailController.text = savedUserId;
+    }
   }
-
-
-
   void login()async{
     // ✅ Form validation
     if (!_formKey.currentState!.validate()) {
@@ -45,6 +53,7 @@ class _LoginScreenState extends State<LoginScreen> {
       email: emailController.text,
       password: passwordController.text,
     );
+    TextInput.finishAutofillContext();
       setState(() {
         isLoading = false;
       });
@@ -101,13 +110,13 @@ class _LoginScreenState extends State<LoginScreen> {
             key: _formKey,
             child: SizedBox(
               height: MediaQuery.of(context).size.height,
-              child: Padding(padding: EdgeInsets.all(10),
+              child: Padding(padding: EdgeInsets.all(10.r),
               child: Column(
                 children: [
                   Padding(
-                    padding: const EdgeInsets.only(top: 10.0,left: 8,right: 8),
+                    padding:  EdgeInsets.only(top: 10.0.r,left: 8.r,right: 8.r),
                     child: Image.asset('assets/images/image_b.png',
-                      fit: BoxFit.fitHeight,height: 180,width: 200,),
+                      fit: BoxFit.fitHeight,height: 200.h,width: 200.w,),
                   ),
                   SizedBox(
                     width: double.infinity,
@@ -115,31 +124,48 @@ class _LoginScreenState extends State<LoginScreen> {
                         mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Text('Create an',style: TextStyle(color: Colors.green,
-                            fontSize: 25,fontWeight: FontWeight.w200),),
+                            fontSize: 25.sp,fontWeight: FontWeight.w200),),
                         Text(' account',style: TextStyle(color: Colors.red,
-                            fontSize: 25,fontWeight: FontWeight.w200),),
+                            fontSize: 25.sp,fontWeight: FontWeight.w200),),
                       ],
                     ),
                   ),
-                  SizedBox(height: 20,),
-                  Center(child: CustomTextField(controller: emailController,validator: (value){
-                    if(value!.isEmpty){
-                      return 'Please enter an email';
-                    }
-                    if(!value.contains('@')){
-                      return 'Please enter a valid email';
-                    }
-                    if(!value.contains('.')){
-                      return 'Please enter a valid email';
-                    }
-                    final emailRegex = RegExp(r'^[^@]+@[^@]+\.[^@]+');
-                    if (!emailRegex.hasMatch(value.trim())) {
-                      return 'Enter a valid email address';
-                    }
+                  SizedBox(height: 20.h,),
+                  Center(child: CustomTextField(
+                    controller: emailController,
+                    autofillHints: const [AutofillHints.email],
+                    validator: (value) {
+                      if (value == null || value.trim().isEmpty) {
+                        return 'Please enter Email or User ID';
+                      }
 
-                  },labelText: 'Email',)),
-                  SizedBox(height: 10,),
-                  Center(child: CustomTextFieldPassword(controller: passwordController,validator: (value){
+                      // Email হলে Email validation
+                      if (value.contains('@')) {
+                        final emailRegex =
+                        RegExp(r'^[^@]+@[^@]+\.[^@]+$');
+
+                        if (!emailRegex.hasMatch(value.trim())) {
+                          return 'Enter a valid email';
+                        }
+                      }
+
+                      // User ID হলে validation
+                      else {
+                        final userIdRegex =
+                        RegExp(r'^AG\d{4}U\d{3}$');
+
+                        if (!userIdRegex.hasMatch(value.trim())) {
+                          return 'Enter a valid User ID';
+                        }
+                      }
+
+                      return null;
+                    },labelText: 'Email',)),
+                  SizedBox(height: 10.h,),
+                  Center(child: CustomTextFieldPassword(
+                    controller: passwordController,
+                    autofillHints: const [AutofillHints.password],
+                    validator: (value){
                     if (value == null || value.isEmpty) {
                       return 'Password is required';
                     }
@@ -157,7 +183,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
                     return null; // ✅ valid
                   },labelText: 'Password',)),
-                  SizedBox(height: 10,),
+                  SizedBox(height: 10.h,),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
@@ -170,11 +196,11 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                           );
                         },
-                        child: const Text(
+                        child: Text(
                           "Forgot Password?",
                           style: TextStyle(
                             color: Colors.blue,
-                            fontSize: 16,
+                            fontSize: 16.sp,
                             fontWeight: FontWeight.w400,
                             decoration: TextDecoration.underline,
                           ),
@@ -183,27 +209,30 @@ class _LoginScreenState extends State<LoginScreen> {
                     ],
                   ),
 
-                  SizedBox(height: 10,),
+                  SizedBox(height: 10.h,),
                   isLoading? Center(child: CircularProgressIndicator(),):
                   Center(
                     child: SizedBox(
-                      width: 150,
-                      child: ElevatedButton(
-                          onPressed:login,
-                          child: Text('Login')),
+                      width: 150.w,
+                      child: SizedBox(
+                        width: 150.w,
+                        child: ElevatedButton(
+                            onPressed:login,
+                            child: Text('Login')),
+                      ),
                     ),
                   ),
-                  SizedBox(height: 20,),
+                  SizedBox(height: 20.h,),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
                       Text('Don\'t have an account?',style: TextStyle(
-                          fontSize: 18,color: Colors.grey),),
+                          fontSize: 18.sp,color: Colors.grey),),
                       TextButton(onPressed: (){
-                            Navigator.pushAndRemoveUntil(context, MaterialPageRoute(
-                                builder: (context)=>RegisterScreen()),(route)=>false);
+                            Navigator.push(context, MaterialPageRoute(
+                                builder: (context)=>RegisterScreen()),);
                       }, child: Text('Sign Up',style: TextStyle(color: Colors.blue,
-                          fontSize: 18,letterSpacing: -1))
+                          fontSize: 18.sp,letterSpacing: -1))
                       ),
                     ],
                   )
