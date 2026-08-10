@@ -1,4 +1,5 @@
 import 'package:Agragami/user/home/screen/home_screen.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -31,8 +32,8 @@ class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
   Future<Widget> _checkLogin() async {
-    final isLoggedIn =await CacheHelper().getLoggedIn();
-    final role = await CacheHelper().getString('isRole');
+    final isLoggedIn =CacheHelper().getLoggedIn();
+    final role = CacheHelper().getString('isRole');
 
     if (isLoggedIn) {
       if (role == "admin") {
@@ -46,7 +47,6 @@ class MyApp extends StatelessWidget {
       return const LoginScreen();
     }
   }
-
   @override
   Widget build(BuildContext context) {
     return GetMaterialApp(

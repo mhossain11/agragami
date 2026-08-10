@@ -8,7 +8,7 @@ class SavingMoneyService {
 
 
   /// 🔍 Search user by user_id and return UserModel or null
-  Future<UserModel?> searchUserById(String userId) async {
+  Future<  UserModel?> searchUserById(String userId) async {
     try {
       final snapshot = await _firestore
           .collection('users')
@@ -36,6 +36,7 @@ class SavingMoneyService {
     required String userId,
     required double amount,
     required String paymentMethod,
+    required String datetime,
   }) async {
     try {
       final String? userDocId = await CacheHelper().getString('userDocId');
@@ -48,7 +49,7 @@ class SavingMoneyService {
           .add({
         'amount': amount,
         'payment_method': paymentMethod,
-        'date&time': Timestamp.now(),
+        'date&time': datetime,
       });
       await CacheHelper().setString('moneyDocID', docRef.id);
       print('MoneyDocId:${docRef.id}');

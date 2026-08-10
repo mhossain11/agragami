@@ -70,8 +70,18 @@ class UsersListScreen extends StatelessWidget {
                             child: ListTile(
                               leading: CircleAvatar(
                                 radius: 25,
-                                backgroundColor: Colors.blue.shade100,
-                                child: const Icon(Icons.person, color: Colors.black87),
+                                backgroundColor: Colors.teal.shade100,
+                                backgroundImage: user['profileImage'] != null &&
+                                    user['profileImage'].toString().isNotEmpty
+                                    ? NetworkImage(user['profileImage'])
+                                    : null,
+                                child: user['profileImage'] == null ||
+                                    user['profileImage'].toString().isEmpty
+                                    ? const Icon(
+                                  Icons.person,
+                                  color: Colors.teal,
+                                )
+                                    : null,
                               ),
                               title: Text(
                                 user['name'] ?? 'N/A',

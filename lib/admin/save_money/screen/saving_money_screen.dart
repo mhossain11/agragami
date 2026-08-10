@@ -1,5 +1,6 @@
 import 'package:Agragami/cachehelper/toast.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 import '../../../auth/widgets/text_field.dart';
 import '../../../cachehelper/chechehelper.dart';
@@ -21,9 +22,10 @@ class _SavingMoneyScreenState extends State<SavingMoneyScreen> {
   final TextEditingController _searchController = TextEditingController();
   final TextEditingController _amountController = TextEditingController();
   final SavingMoneyService _savingMoneyService = SavingMoneyService();
+  final TextEditingController _dateController = TextEditingController();
   //final AdminHomeService _adminHomeService = AdminHomeService();
-  String _selectedMethod ='Cache Money'; // dropdown value
-  final List<String> _methods = ['Nogod', 'Bkash', 'Cache Money', 'cheque','Upay'];
+  String _selectedMethod ='Cash Money'; // dropdown value
+  final List<String> _methods = ['Nogod', 'Bkash', 'Cash Money', 'cheque','Upay','Bank'];
   final LogService _logService = LogService();
   UserModel? _userData;
   String? currentAmount ;
@@ -120,6 +122,7 @@ class _SavingMoneyScreenState extends State<SavingMoneyScreen> {
         userId: _searchController.text,
         paymentMethod: _selectedMethod,
         amount: double.parse(_amountController.text),
+        datetime: _dateController.text,
       );
 
       setState(() {
@@ -137,7 +140,21 @@ class _SavingMoneyScreenState extends State<SavingMoneyScreen> {
       setState(() => _isLoading = false);
     }
   }
+  Future<void> _selectDate() async {
+    DateTime? pickedDate = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime(2020),
+      lastDate: DateTime(2100),
+    );
 
+    if (pickedDate != null) {
+      setState(() {
+        _dateController.text =
+            DateFormat('dd MMM yyyy').format(pickedDate);
+      });
+    }
+  }
   @override
   void dispose() {
     super.dispose();
@@ -193,10 +210,29 @@ class _SavingMoneyScreenState extends State<SavingMoneyScreen> {
                       elevation: 4,
                       shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12)),
-                      child: ListTile(
-                        title: Text(_userData!.name),
-                        subtitle: Text(_userData!.email),
-                        trailing: Text("ID: ${_userData!.userid}"),
+                      child: Column(
+                        children: [
+                          CircleAvatar(
+                            radius: 50,
+                            backgroundColor: Colors.teal.shade100,
+                            backgroundImage: _userData!.profileImage != null &&
+                                _userData!.profileImage.toString().isNotEmpty
+                                ? NetworkImage(_userData!.profileImage!)
+                                : null,
+                            child: _userData!.profileImage == null ||
+                                _userData!.profileImage.toString().isEmpty
+                                ? const Icon(
+                              Icons.person,
+                              color: Colors.teal,
+                            )
+                                : null,
+                          ),
+                          ListTile(
+                            title: Text(_userData!.name),
+                            subtitle: Text(_userData!.email),
+                            trailing: Text("ID: ${_userData!.userid}"),
+                          ),
+                        ],
                       ),
                     ),
                   ),
@@ -232,6 +268,22 @@ class _SavingMoneyScreenState extends State<SavingMoneyScreen> {
                       ),
                     ),
 
+                    const SizedBox(height: 20),
+                    /// Date
+                    TextFormField(
+                      controller: _dateController,
+                      readOnly: true,
+                      onTap: _selectDate,
+                      decoration: InputDecoration(
+                        labelText: 'Select Date',
+                        suffixIcon:
+                        const Icon(Icons.calendar_month),
+                        border: OutlineInputBorder(
+                          borderRadius:
+                          BorderRadius.circular(10),
+                        ),
+                      ),
+                    ),
                     Container(
                         padding:EdgeInsets.all(5),
                         width: 200,

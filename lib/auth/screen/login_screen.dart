@@ -33,6 +33,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   void _loadUserId() {
     final savedUserId = CacheHelper().getString('userId');
+   // final savedUserId = CacheHelper().getString('adminId');
     print("Loaded User ID => $savedUserId");
 
     if (savedUserId != null && savedUserId.isNotEmpty) {
@@ -53,17 +54,18 @@ class _LoginScreenState extends State<LoginScreen> {
       email: emailController.text,
       password: passwordController.text,
     );
-    TextInput.finishAutofillContext();
-      setState(() {
-        isLoading = false;
-      });
 
+    TextInput.finishAutofillContext();
+
+    setState(() {
+      isLoading = false;
+    });
     if(result == "admin"){
-      await CacheHelper().setLoggedIn(true); // ✅ Save login state
+      await CacheHelper().setLoggedIn(false); // ✅ Save login state
       Navigator.pushReplacement(context, MaterialPageRoute(
           builder: (context)=>AdminHomeScreen()));
     }else if(result == "user"){
-      await CacheHelper().setLoggedIn(true); // ✅ Save login state
+      await CacheHelper().setLoggedIn(false); // ✅ Save login state
       Navigator.pushReplacement(context, MaterialPageRoute(
           builder: (context)=>HomeScreen()));
     }else{
@@ -152,7 +154,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       // User ID হলে validation
                       else {
                         final userIdRegex =
-                        RegExp(r'^AG\d{4}U\d{3}$');
+                        RegExp(r'^AG\d{4}[UA]\d{3}$');
 
                         if (!userIdRegex.hasMatch(value.trim())) {
                           return 'Enter a valid User ID';

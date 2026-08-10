@@ -139,7 +139,7 @@ class UserMoneyInfoScreen extends StatelessWidget {
                         Text('Email: $email',
                             style: const TextStyle(
                                 fontSize: 14, fontWeight: FontWeight.w600)),
-                        Text('Cell Number:: $phone',
+                        Text('Cell Number: $phone',
                             style: const TextStyle(
                                 fontSize: 14, fontWeight: FontWeight.w600)),
                         Text('NID: $nid',
@@ -200,9 +200,20 @@ class UserMoneyInfoScreen extends StatelessWidget {
                      final moneyDocId = moneyDocs[index].id;
                     final amount = data['amount'] ?? 0;
                     final paymentMethod = data['payment_method'] ?? '';
-                    final dateTime = (data['date&time'] as Timestamp).toDate();
-                    final formattedDate =
-                    DateFormat('dd MMM yyyy, hh:mm a').format(dateTime);
+
+                    String formattedDate = '';
+
+                    final dateValue = data['date&time'];
+
+                    if (dateValue is Timestamp) {
+                      final dateTime = dateValue.toDate();
+                      formattedDate =
+                          DateFormat('dd MMM yyyy, hh:mm a').format(dateTime);
+                    } else if (dateValue is String) {
+                      formattedDate = dateValue;
+                    } else {
+                      formattedDate = 'No Date';
+                    }
 
                     return Card(
                       margin: const EdgeInsets.symmetric(

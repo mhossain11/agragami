@@ -4,12 +4,13 @@ import 'package:Agragami/auth/widgets/text_field.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
+import '../../../cachehelper/chechehelper.dart';
 import '../../../cachehelper/toast.dart';
 import '../../../user/profile/service/userprofile_service.dart';
 
 class ProfileScreen extends StatefulWidget {
-  final String userId;
-  const ProfileScreen({super.key, required this.userId});
+
+  const ProfileScreen({super.key});
 
   @override
   State<ProfileScreen> createState() => _ProfileScreenState();
@@ -18,6 +19,7 @@ class ProfileScreen extends StatefulWidget {
 class _ProfileScreenState extends State<ProfileScreen> {
   final _formKey = GlobalKey<FormState>();
   bool _isEditing = false;
+
   final _profileService = UserProfileService();
 
   final _nameController = TextEditingController();
@@ -32,15 +34,26 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   String? _profileImageUrl;
   File? _selectedImage;
+  String? userId= "";
+  String? profileImage= "";
 
   @override
   void initState() {
     super.initState();
     _loadUserData();
+    getName();
+  }
+  Future<void> getName() async {
+     userId = CacheHelper().getString('userId');
+     profileImage = CacheHelper().getString('profileImage');
+
+     setState(() {
+       _profileImageUrl = profileImage;
+     });
   }
 
   Future<void> _loadUserData() async {
-    final user = await _profileService.getUserById(widget.userId);
+    final user = await _profileService.getUserById(userId!);
     if (user != null) {
       setState(() {
         _nameController.text = user.name;
@@ -59,7 +72,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Future<void> _saveChanges() async {
     if (_formKey.currentState!.validate()) {
-      await _profileService.updateUser(widget.userId, {
+      await _profileService.updateUser(userId!, {
         'name': _nameController.text.trim(),
         'email': _emailController.text.trim(),
         'phone': _phoneController.text.trim(),

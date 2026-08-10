@@ -31,7 +31,7 @@ class AdminHomeScreen extends StatefulWidget {
   State<AdminHomeScreen> createState() => _AdminHomeScreenState();
 }
 
-class _AdminHomeScreenState extends State<AdminHomeScreen> {
+class _AdminHomeScreenState extends State<AdminHomeScreen> with WidgetsBindingObserver {
   final FirebaseAuth _auth = FirebaseAuth.instance;
    final AdminHomeService _adminHomeService = AdminHomeService();
    final NoteService _noteService = NoteService();
@@ -45,9 +45,11 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
   @override
   void initState(){
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     countTota();
     getName();
   }
+
   Future<String?> getName() async {
     final userName =  await CacheHelper().getString('names');
     final userDocId =  await CacheHelper().getString('userDocId');
@@ -124,7 +126,20 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
     }
   }
 
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
 
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) async {
+    if (state == AppLifecycleState.detached) {
+      await FirebaseAuth.instance.signOut();
+      await CacheHelper().setLoggedIn(false);
+    }
+  }
 
 
   @override
@@ -685,7 +700,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
 
       case 1:
         Navigator.push(context, MaterialPageRoute(
-            builder: (context)=>ProfileScreen(userId: DocId)));
+            builder: (context)=>ProfileScreen()));
         break;
 
       case 2:

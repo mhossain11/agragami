@@ -48,6 +48,7 @@ class AuthService {
         'created_at': Timestamp.now(),
       });
       // userCredential.user!.uid
+      await CacheHelper().setString('userId', user_id.trim().toString());
       return 'success';
     } on FirebaseAuthException catch (e) {
       if (e.code == 'email-already-in-use') {
@@ -70,7 +71,7 @@ class AuthService {
       String emails = email.trim();
 
       // যদি Email না হয়, তাহলে user_id ধরে email বের করো
-      if (!email.contains('@')) {
+      if (!emails.contains('@')) {
         final snapshot = await _firestore
             .collection('users')
             .where(
@@ -78,6 +79,11 @@ class AuthService {
           isEqualTo: email.trim(),
         ).limit(1)
             .get();
+        print("Found Docs: ${snapshot.docs.length}");
+
+        if (snapshot.docs.isNotEmpty) {
+          print(snapshot.docs.first.data());
+        }
 
         if (snapshot.docs.isEmpty) {
           return 'User ID not found';
@@ -109,10 +115,12 @@ class AuthService {
       await CacheHelper().setString('adminId', userDoc['user_id'].toString());
       await CacheHelper().setString('userId', userDoc['user_id'].toString());
       await CacheHelper().setString('email', userDoc['email'].toString());
+      await CacheHelper().setString('profileImage',userDoc['profileImage'].toString());
       await CacheHelper().setString('userDocId', userDoc.id.toString());
       print("Saved User ID: ${userDoc['user_id']}");
       final test = CacheHelper().getString('userId');
       print("Read After Save => $test");
+      print("Role => ${userDoc['role']}");
       if (userDoc.exists) {
         return userDoc['role'] as String;
       } else {

@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 
 import '../../../cachehelper/toast.dart';
 import '../../../res/apptextstyle.dart';
+import '../../home/widgets/fullimage.dart';
 import 'UsermoneyInfo_screen.dart';
 
 
@@ -70,44 +71,183 @@ class UserListScreen extends StatelessWidget {
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12),
                             ),
-                            child: Column(
-                              children: [
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Padding(
-                                      padding: const EdgeInsets.only(left: 8.0),
-                                      child: Text('UserDocID: $userDocId',style: AppTextStyles.style10_bold,)
-                                    ),
-                                    IconButton(
-                                      icon: const Icon(Icons.copy, color: Colors.blue),
-                                      onPressed: () async {
-                                        await Clipboard.setData(ClipboardData(text: userDocId)); // ✅ Copy to clipboard
-                                        CustomToast().showToast(context,'Copied: $userDocId', Colors.green);
-                                      },
-                                    ),
-                                  ],
-                                ),
-                                ListTile(
-                                  leading: CircleAvatar(
-                                    backgroundColor: Colors.teal.shade100,
-                                    child: const Icon(Icons.person, color: Colors.teal),
+                            child: Padding(
+                              padding: const EdgeInsets.all(12),
+                              child: Column(
+                                children: [
+
+                                  // UserDocID
+                                  Row(
+                                    mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Expanded(
+                                        child: Text(
+                                          'UserDocID: $userDocId',
+                                          style: AppTextStyles.style10_bold,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                      IconButton(
+                                        icon: const Icon(
+                                          Icons.copy,
+                                          color: Colors.blue,
+                                        ),
+                                        onPressed: () async {
+                                          await Clipboard.setData(
+                                            ClipboardData(text: userDocId),
+                                          );
+
+                                          CustomToast().showToast(
+                                            context,
+                                            'Copied: $userDocId',
+                                            Colors.green,
+                                          );
+                                        },
+                                      ),
+                                    ],
                                   ),
-                                  title: Text(
-                                    user['name']?? 'No Name',maxLines: 2,
-                                    style: AppTextStyles.small_bold,
+
+                                  Row(
+                                    crossAxisAlignment:
+                                    CrossAxisAlignment.start,
+                                    children: [
+
+                                      // Profile Icon
+                                      GestureDetector(
+                                        onTap: () {
+                                          final imageUrl =
+                                              user['profileImage']?.toString() ?? '';
+
+
+                                          if (imageUrl.isEmpty) {
+                                            ScaffoldMessenger.of(context).showSnackBar(
+                                              const SnackBar(
+                                                duration: Duration(seconds:2),
+                                                backgroundColor: Colors.red,
+                                                content: Text('No image found'),
+                                              ),
+                                            );
+                                            return;
+                                          }
+
+                                          showImageDialog(context, imageUrl);
+                                        },
+                                        child: CircleAvatar(
+                                          radius: 25,
+                                          backgroundColor: Colors.teal.shade100,
+                                          backgroundImage: user['profileImage'] != null &&
+                                              user['profileImage'].toString().isNotEmpty
+                                              ? NetworkImage(user['profileImage'])
+                                              : null,
+                                          child: user['profileImage'] == null ||
+                                              user['profileImage'].toString().isEmpty
+                                              ? const Icon(
+                                            Icons.person,
+                                            color: Colors.teal,
+                                          )
+                                              : null,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              user['name'] ?? 'No Name',
+                                              style:
+                                              AppTextStyles.small_bold,
+                                            ),
+
+                                            const SizedBox(height: 4),
+
+                                            Text(
+                                              user['email'] ?? 'N/A',
+                                              style: AppTextStyles
+                                                  .style10_normal,
+                                              overflow:
+                                              TextOverflow.ellipsis,
+                                            ),
+
+
+                                            const SizedBox(height: 8),
+
+                                          ],
+                                        ),
+                                      ),
+
+                                      // User Info
+                                      const SizedBox(width: 12),
+
+
+                                    ],
                                   ),
-                                  subtitle: Text('${user['email'] ?? 'N/A'}',overflow: TextOverflow.ellipsis,maxLines: 1,
-                                  style: AppTextStyles.style10_normal,),
-                                  trailing: Text(
-                                    'ID: ${user['user_id'] ?? 'N/A'}',
-                                    style: const TextStyle(
-                                      color: Colors.teal,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                ),
-                              ],
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.end,
+
+                                    children: [
+                                      Container(
+                                        padding:
+                                        const EdgeInsets.symmetric(
+                                          horizontal: 10,
+                                          vertical: 5,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: Colors.teal
+                                              .withOpacity(0.1),
+                                          borderRadius:
+                                          BorderRadius.circular(
+                                              20),
+                                        ),
+                                        child: Text(
+                                          user['user_id'] ?? 'N/A',
+                                          style: const TextStyle(
+                                              color: Colors.teal,
+                                              fontWeight:
+                                              FontWeight.bold,
+                                              fontSize: 12
+                                          ),
+                                        ),
+                                      ),
+
+                                      // Copy User ID
+                                      IconButton(
+                                        icon: const Icon(
+                                          Icons.copy,
+                                          color: Colors.blue,
+                                        ),
+                                        onPressed: () async {
+                                          final userId =
+                                              user['user_id']
+                                                  ?.toString() ??
+                                                  '';
+
+                                          if (userId.isEmpty) {
+                                            CustomToast().showToast(
+                                              context,
+                                              'User ID not found',
+                                              Colors.red,
+                                            );
+                                            return;
+                                          }
+
+                                          await Clipboard.setData(
+                                            ClipboardData(text: userId),
+                                          );
+
+                                          CustomToast().showToast(
+                                            context,
+                                            'Copied: $userId',
+                                            Colors.green,
+                                          );
+                                        },
+                                      ),
+                                    ],
+                                  )
+                                ],
+                              ),
                             ),
                           ),
                         ),

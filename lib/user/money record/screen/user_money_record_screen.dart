@@ -110,7 +110,7 @@ class _UserMoneyRecordScreenState extends State<UserMoneyRecordScreen> {
                     final payMethod = data['payment_method'];
                     final dateTime = (data['date&time'] as Timestamp).toDate();
                     final formattedDate =
-                    DateFormat('dd MMM yyyy, hh:mm a').format(dateTime);
+                    DateFormat('dd-MM-yyyy hh:mm a').format(dateTime);
 
                     return Card(
                       margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
@@ -124,7 +124,7 @@ class _UserMoneyRecordScreenState extends State<UserMoneyRecordScreen> {
                                 child: Text(
                                   'MoneyID: $moneyDocId',
                                   style: const TextStyle(
-                                      fontSize: 16, fontWeight: FontWeight.bold),
+                                      fontSize: 14, fontWeight: FontWeight.bold),
                                 ),
                               ),
                               IconButton(
@@ -146,7 +146,7 @@ class _UserMoneyRecordScreenState extends State<UserMoneyRecordScreen> {
                               style: const TextStyle(
                                   fontSize: 18, fontWeight: FontWeight.bold),
                             ),
-                            subtitle: Text(formattedDate),
+                            subtitle: Text(formattedDate,style: TextStyle(fontSize: 10),),
                             trailing: Text('PayMethod: $payMethod'),
                           ),
                         ],
