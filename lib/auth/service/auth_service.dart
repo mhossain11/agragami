@@ -12,6 +12,7 @@ class AuthService {
   //Firebase Authentication instance
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
+
   // FireStore instance
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
