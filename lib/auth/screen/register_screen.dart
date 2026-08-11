@@ -120,9 +120,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   }
 
   Future<void> _signUp() async {
-    if (!_formKey.currentState!.validate()) {
-      return;
-    }
+    if (!_formKey.currentState!.validate()) return;
 
     if (profileImageFile == null) {
       CustomToast().showToast(
@@ -140,24 +138,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     try {
       final userId = useridController.text.trim();
 
-      // 1️⃣ Upload image first
-      final imageUrl = await _authService.uploadProfileImage(
-        imageFile: profileImageFile!,
-        userId: userId,
-      );
-
-      if (imageUrl == null || imageUrl.isEmpty) {
-        CustomToast().showToast(
-          context,
-          'Image upload failed',
-          Colors.red,
-        );
-        return;
-      }
-
-      print("Image URL => $imageUrl");
-
-      // 2️⃣ Create user with image URL
+      // 1️⃣ Signup First
       final result = await _authService.signup(
         name: nameController.text.trim(),
         email: emailController.text.trim(),
@@ -170,7 +151,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         nomineeName: nomineeNameController.text.trim(),
         nomineeRelation: nomineeRelationController.text.trim(),
         user_id: userId,
-        profileImage: imageUrl,
+        profileImage: '',
       );
 
       if (result != 'success') {
@@ -182,7 +163,21 @@ class _RegisterScreenState extends State<RegisterScreen> {
         return;
       }
 
-      // 3️⃣ Update auth collection
+      // 2️⃣ Upload Image After Auth User Created
+      final imageUrl = await _authService.uploadProfileImage(
+        imageFile: profileImageFile!,
+        userId: userId,
+      );
+
+      // 3️⃣ Update Firestore Image URL
+      if (imageUrl != null && imageUrl.isNotEmpty) {
+        await _authService.updateProfileImageByUserId(
+          userId: userId,
+          imageUrl: imageUrl,
+        );
+      }
+
+      // 4️⃣ Update auth collection
       await _authService.addUserDoneFieldById(userId);
 
       if (!mounted) return;
@@ -425,6 +420,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             SizedBox(height: 10.h,),
                             //button
                             SizedBox(
+
                               width: 250.w,
                               child: ElevatedButton(
                                   onPressed: _signUp,

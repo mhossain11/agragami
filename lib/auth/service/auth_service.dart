@@ -76,6 +76,23 @@ class AuthService {
     }
   }
 
+  Future<void> updateProfileImageByUserId({
+    required String userId,
+    required String imageUrl,
+  }) async {
+    final snapshot = await _firestore
+        .collection('users')
+        .where('user_id', isEqualTo: userId)
+        .limit(1)
+        .get();
+
+    if (snapshot.docs.isNotEmpty) {
+      await snapshot.docs.first.reference.update({
+        'profileImage': imageUrl,
+      });
+    }
+  }
+
   Future<String?> uploadProfileImage({
     required File imageFile,
     required String userId,
