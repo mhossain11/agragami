@@ -64,7 +64,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       if (!mounted) return 0;
       setState(() => _isLoading = true);
 
-      final totalUsers = await _homeService.getAllUsersTotalAmountStream().first;
+      final totalUsers = await _homeService.getAllUsersTotalAmount();
 
       if (!mounted) return 0;
       setState(() => _isLoading = false);
@@ -265,12 +265,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      /*const Icon(
-                        Icons.person,
-                        color: Colors.red,
-                        size: 22,
-                      ),*/
-                     // const SizedBox(width: 8),
                       Text(
                         name,
                         style: const TextStyle(

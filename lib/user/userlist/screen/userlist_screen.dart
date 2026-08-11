@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 
+import '../../../admin/home/widgets/fullimage.dart';
+
 class UsersListScreen extends StatelessWidget {
   final CollectionReference usersCollection = FirebaseFirestore.instance
       .collection('users');
@@ -73,30 +75,50 @@ class UsersListScreen extends StatelessWidget {
                           child: Padding(
                             padding: const EdgeInsets.all(5.0),
                             child: ListTile(
-                              leading: CircleAvatar(
-                                radius: 30,
-                                backgroundColor: Colors.teal.shade100,
-                                child: ClipOval(
-                                  child: user['profileImage'] != null &&
-                                      user['profileImage'].toString().isNotEmpty
-                                      ? CachedNetworkImage(
-                                    imageUrl: user['profileImage'],
-                                    width: 60,
-                                    height: 60,
-                                    fit: BoxFit.cover,
-                                    placeholder: (context, url) =>
-                                    const CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                    ),
-                                    errorWidget: (context, url, error) =>
-                                    const Icon(
+                              leading: GestureDetector(
+                                onTap: () {
+                                  final imageUrl =
+                                      user['profileImage']?.toString() ?? '';
+
+
+                                  if (imageUrl.isEmpty) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        duration: Duration(seconds:2),
+                                        backgroundColor: Colors.red,
+                                        content: Text('No image found'),
+                                      ),
+                                    );
+                                    return;
+                                  }
+
+                                  showImageDialog(context, imageUrl);
+                                },
+                                child: CircleAvatar(
+                                  radius: 30,
+                                  backgroundColor: Colors.teal.shade100,
+                                  child: ClipOval(
+                                    child: user['profileImage'] != null &&
+                                        user['profileImage'].toString().isNotEmpty
+                                        ? CachedNetworkImage(
+                                      imageUrl: user['profileImage'],
+                                      width: 60,
+                                      height: 60,
+                                      fit: BoxFit.cover,
+                                      placeholder: (context, url) =>
+                                      const CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                      ),
+                                      errorWidget: (context, url, error) =>
+                                      const Icon(
+                                        Icons.person,
+                                        color: Colors.teal,
+                                      ),
+                                    )
+                                        : const Icon(
                                       Icons.person,
                                       color: Colors.teal,
                                     ),
-                                  )
-                                      : const Icon(
-                                    Icons.person,
-                                    color: Colors.teal,
                                   ),
                                 ),
                               ),

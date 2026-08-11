@@ -7,6 +7,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../../auth/screen/login_screen.dart';
 import '../../../cachehelper/chechehelper.dart';
@@ -673,8 +674,8 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> with WidgetsBindingOb
                     child: Card(
                       elevation: 5,
                       child: Container(
-                        height: 150,
-                        width: 150,
+                        height: 150.h,
+                        width: 150.w,
                         decoration: BoxDecoration(
                           //  color: Colors.blue.shade100,
                             borderRadius: BorderRadius.circular(10)
@@ -706,8 +707,8 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> with WidgetsBindingOb
                     child: Card(
                       elevation: 5,
                       child: Container(
-                        height: 150,
-                        width: 150,
+                        height: 150.h,
+                        width: 150.w,
                         decoration: BoxDecoration(
                           //  color: Colors.blue.shade300,
                             borderRadius: BorderRadius.circular(10)
@@ -743,8 +744,8 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> with WidgetsBindingOb
                 child: Card(
                   elevation: 5,
                   child: Container(
-                    height: 150,
-                    width: 150,
+                    height: 150.h,
+                    width: 150.w,
                     decoration: BoxDecoration(
                       //  color: Colors.blue.shade300,
                         borderRadius: BorderRadius.circular(10)
@@ -778,8 +779,8 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> with WidgetsBindingOb
                 child: Card(
                   elevation: 5,
                   child: Container(
-                    height: 150,
-                    width: 300,
+                    height: 150.h,
+                    width: 300.w,
                     decoration: BoxDecoration(
                       // color: Colors.blue.shade100,
                         borderRadius: BorderRadius.circular(10)

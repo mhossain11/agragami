@@ -1,64 +1,66 @@
-import 'package:async/async.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-class HomeService{
+
+class HomeService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
+  // Single user's total money
   Future<int> getUserTotalMoney(String userDocId) async {
     double total = 0;
 
-    final snapshot = await FirebaseFirestore.instance
-        .collection('users') // plural
+    final snapshot = await _firestore
+        .collection('users')
         .doc(userDocId)
         .collection('Money')
         .get();
 
-
-    for (var doc in snapshot.docs) {
+    for (final doc in snapshot.docs) {
       final data = doc.data();
       final amount = data['amount'];
-      double value = 0;
-      if (amount is int) {
-        value = amount.toDouble();
-      } else if (amount is double) value = amount;
-      else if (amount is String) value = double.tryParse(amount) ?? 0;
 
-      total += value;
+      if (amount is num) {
+        total += amount.toDouble();
+      } else if (amount is String) {
+        total += double.tryParse(amount) ?? 0;
+      }
     }
+
     return total.toInt();
   }
 
-  Stream<int> getAllUsersTotalAmountStream() {
-    final usersCollection = FirebaseFirestore.instance.collection('users');
+  // All users total money
+  Future<int> getAllUsersTotalAmount() async {
+    int total = 0;
 
-    // Listen to users collection
-    return usersCollection.snapshots().asyncExpand((usersSnapshot) {
-      // For each user, create a stream of their Money subcollection
-      final moneyStreams = usersSnapshot.docs.map((userDoc) {
-        final moneyCollection = usersCollection.doc(userDoc.id).collection('Money');
+    try {
+      final usersSnapshot =
+      await _firestore.collection('users').get();
 
-        // Listen to Money collection live
-        return moneyCollection.snapshots().map((QuerySnapshot moneySnapshot) {
-          int userTotal = 0;
+      for (final userDoc in usersSnapshot.docs) {
+        final moneySnapshot = await _firestore
+            .collection('users')
+            .doc(userDoc.id)
+            .collection('Money')
+            .get();
 
-          for (var moneyDoc in moneySnapshot.docs) {
-            final amount = moneyDoc['amount'];
-            if (amount is int) userTotal += amount;
-            else if (amount is double) userTotal += amount.toInt();
-            else if (amount is String) userTotal += int.tryParse(amount) ?? 0;
+        for (final moneyDoc in moneySnapshot.docs) {
+          final data = moneyDoc.data();
+          final amount = data['amount'];
+
+          if (amount is num) {
+            total += amount.toInt();
+          } else if (amount is String) {
+            total += int.tryParse(amount) ?? 0;
           }
+        }
+      }
 
-          return userTotal; // total for this user
-        });
-      }).toList();
+      print('🔥 ALL USERS TOTAL = $total');
 
-      // Combine all users' totals into one stream
-      return StreamZip<int>(moneyStreams).map((totals) {
-        return totals.fold(0, (sum, value) => sum + value);
-      });
-    });
+      return total;
+    } catch (e) {
+      print('❌ Total money error: $e');
+      return 0;
+    }
   }
-
-
-
 }
