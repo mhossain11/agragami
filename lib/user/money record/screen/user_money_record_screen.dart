@@ -108,10 +108,17 @@ class _UserMoneyRecordScreenState extends State<UserMoneyRecordScreen> {
                     final moneyDocId = moneyDocs[index].id;
                     final amount = data['amount'] ?? 00;
                     final payMethod = data['payment_method'];
-                    final dateTime = (data['date&time'] as Timestamp).toDate();
-                    final formattedDate =
-                    DateFormat('dd-MM-yyyy hh:mm a').format(dateTime);
+                    DateTime? dateTime;
+                    final rawDate = data['date&time'];
 
+                    if (rawDate is Timestamp) {
+                      dateTime = rawDate.toDate();
+                    } else if (rawDate is String) {
+                      dateTime = DateTime.tryParse(rawDate);
+                    }
+                    final formattedDate = dateTime != null
+                        ? DateFormat('dd-MM-yyyy hh:mm a').format(dateTime)
+                        : 'No Date';
                     return Card(
                       margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                       child: Column(
@@ -140,14 +147,15 @@ class _UserMoneyRecordScreenState extends State<UserMoneyRecordScreen> {
                             ],
                           ),
                           ListTile(
-                            leading: const Icon(Icons.monetization_on_outlined),
+                            leading: const Icon(Icons.account_balance_wallet
+                            ),
                             title: Text(
                               '৳ $amount',
                               style: const TextStyle(
                                   fontSize: 18, fontWeight: FontWeight.bold),
                             ),
                             subtitle: Text(formattedDate,style: TextStyle(fontSize: 10),),
-                            trailing: Text('PayMethod: $payMethod'),
+                            trailing: Text('$payMethod'),
                           ),
                         ],
                       ),

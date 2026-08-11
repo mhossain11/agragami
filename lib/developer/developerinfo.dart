@@ -9,11 +9,12 @@ class DeveloperInfo extends StatelessWidget {
   Color color ;
 
   final String _logo = 'assets/images/softkormo.png';
+  final String _whatsappLink = 'https://wa.me/8801687477579';
   final String _playStoreUrl =
       'https://play.google.com/store/apps/dev?id=7038737113790828648';
   final String _linkedinUrl =
       'https://www.linkedin.com/in/syed-faysal-hossain-885826196';
-  final String _profileUrl = 'http://faysalhossain.com/';
+  final String _profileUrl = 'http://faysalh.online';
 
   Future<void> _launchUrl(String url) async {
     final Uri uri = Uri.parse(url);
@@ -57,7 +58,11 @@ class DeveloperInfo extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           Text(
-            'Developed by Faysal Hossain',
+            'Developed by',
+            style: AppTextStyles.heading2.copyWith(fontWeight: FontWeight.bold),
+          ),
+          Text(
+            'Faysal Hossain',
             style: AppTextStyles.heading2.copyWith(fontWeight: FontWeight.bold),
           ),
           SizedBox(height: 4),
@@ -96,7 +101,7 @@ class DeveloperInfo extends StatelessWidget {
                   tooltip: 'Profile',
                 ),
               ),
-              SizedBox(width: 10,),
+              SizedBox(width: 5,),
               SizedBox(
                 height: 50.h,
                 width: 50.w,
@@ -104,6 +109,16 @@ class DeveloperInfo extends StatelessWidget {
                   onPressed: () => _launchUrl(_linkedinUrl),
                   icon:  Image.asset('assets/images/linkedin.png',),
                   tooltip: 'LinkedIn Profile',
+                ),
+              ),
+              SizedBox(width: 10,),
+              SizedBox(
+                height: 50.h,
+                width: 50.w,
+                child: IconButton(
+                  onPressed: () => _launchUrl(_whatsappLink),
+                  icon:  Image.asset('assets/images/whatsapp.png',),
+                  tooltip: 'Whatsapp',
                 ),
               ),
             ],

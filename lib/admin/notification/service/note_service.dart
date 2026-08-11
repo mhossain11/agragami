@@ -89,6 +89,23 @@ class NoteService{
     if (snapshot.docs.isNotEmpty) return snapshot.docs.first.id;
     return null;
   }
+  Future<void> updateNotification({
+    required String adminDocId,
+    required String notificationId,
+    required String title,
+    required String message,
+  }) async {
+    await _firestore
+        .collection('users')
+        .doc(adminDocId)
+        .collection('notification')
+        .doc(notificationId)
+        .update({
+      'title': title,
+      'message': message,
+      'updated_at': Timestamp.now(),
+    });
+  }
 
 
 

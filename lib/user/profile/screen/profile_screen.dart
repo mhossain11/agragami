@@ -1,9 +1,12 @@
 import 'dart:io';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 
+import '../../../auth/screen/login_screen.dart';
+import '../../../cachehelper/chechehelper.dart';
 import '../../../cachehelper/toast.dart';
 import '../../../user/profile/service/userprofile_service.dart';
 import 'package:Agragami/auth/widgets/text_field.dart';
@@ -57,6 +60,62 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
         _profileImageUrl = user.profileImage; // 🔹 Add this field in your user model
       });
     }
+  }
+  Future<void> _logout(BuildContext context) async {
+    try {
+      // Firebase logout
+      await FirebaseAuth.instance.signOut();
+
+      // Local data clear
+      await CacheHelper().clear();
+
+      if (!context.mounted) return;
+
+      // Login screen
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(
+          builder: (_) => const LoginScreen(),
+        ),
+            (route) => false,
+      );
+    } catch (e) {
+      debugPrint('Logout Error: $e');
+    }
+  }
+
+  void _showLogoutDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: const Text('Logout'),
+          content: const Text(
+            'Are you sure you want to logout?',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(dialogContext);
+              },
+              child: const Text('Cancel'),
+            ),
+
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red,
+                foregroundColor: Colors.white,
+              ),
+              onPressed: () async {
+                Navigator.pop(dialogContext);
+                await _logout(context);
+              },
+              child: const Text('Logout'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   Future<void> _pickImage() async {
@@ -158,153 +217,185 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
           ),
         ],
       ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : Padding(
-        padding: const EdgeInsets.all(16),
-        child: SingleChildScrollView(
-          child: Form(
-            key: _formKey,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const SizedBox(height: 10),
+      body:  Stack(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: SingleChildScrollView(
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const SizedBox(height: 10),
 
-                // 🔹 Profile Image
-                Center(
-                  child: /*Stack(
-                    alignment: Alignment.bottomRight,
-                    children: [
-                      CircleAvatar(
-                        radius: 60,
-                        backgroundImage: _selectedImage != null
-                            ? FileImage(_selectedImage!)
-                            : (_profileImageUrl != null && _profileImageUrl!.isNotEmpty)
-                            ? NetworkImage(_profileImageUrl!) as ImageProvider
-                            : const AssetImage('assets/images/image_profile.png'),
-                      ),
-                      if (_isEditing)
-                        Positioned(
-                          bottom: 0,
-                          right: 4,
-                          child: GestureDetector(
-                            onTap: _pickImage,
-                            child: Container(
-                              padding: const EdgeInsets.all(8),
-                              decoration: const BoxDecoration(
-                                color: Colors.blue,
-                                shape: BoxShape.circle,
-                              ),
-                              child: const Icon(Icons.camera_alt,
-                                  color: Colors.white, size: 20),
-                            ),
-                          ),
-                        ),
-                    ],
-                  ),*/
-                  Stack(
-                    alignment: Alignment.bottomRight,
-                    children: [
-                      CircleAvatar(
-                        radius: 60,
-                        backgroundImage: _selectedImage != null
-                            ? FileImage(_selectedImage!)
-                            : (_profileImageUrl?.isNotEmpty ?? false)
-                            ? CachedNetworkImageProvider(
-                          _profileImageUrl!,
-                        )
-                            : const AssetImage(
-                          'assets/images/image_profile.png',
-                        ) as ImageProvider,
-                      ),
-                      if (_isEditing)
-                        Positioned(
-                          bottom: 0,
-                          right: 4,
-                          child: GestureDetector(
-                            onTap: _pickImage,
-                            child: Container(
-                              padding: const EdgeInsets.all(8),
-                              decoration: const BoxDecoration(
-                                color: Colors.blue,
-                                shape: BoxShape.circle,
-                              ),
-                              child: const Icon(
-                                Icons.camera_alt,
-                                color: Colors.white,
-                                size: 20,
+                    // 🔹 Profile Image
+                    Center(
+                      child: Stack(
+                        alignment: Alignment.bottomRight,
+                        children: [
+                          Container(
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: Colors.redAccent.shade400,
+                                width: 2,
                               ),
                             ),
+                            child: CircleAvatar(
+                              radius: 90,
+                              backgroundImage: _selectedImage != null
+                                  ? FileImage(_selectedImage!)
+                                  : (_profileImageUrl?.isNotEmpty ?? false)
+                                  ? CachedNetworkImageProvider(
+                                _profileImageUrl!,
+                              )
+                                  : const AssetImage(
+                                'assets/images/image_profile.png',
+                              ) as ImageProvider,
+                            ),
+                          ),
+                          if (_isEditing)
+                            Positioned(
+                              bottom: 0,
+                              right: 4,
+                              child: GestureDetector(
+                                onTap: _pickImage,
+                                child: Container(
+                                  padding: const EdgeInsets.all(8),
+                                  decoration: const BoxDecoration(
+                                    color: Colors.blue,
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: const Icon(
+                                    Icons.camera_alt,
+                                    color: Colors.white,
+                                    size: 20,
+                                  ),
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+
+                    // 🔹 Text Fields
+                    CustomTextField(
+                      controller: _nameController,
+                      labelText: 'Name',
+                      enabled: false,
+                      validator: (value) =>
+                      value!.isEmpty ? 'Please enter your name' : null,
+                    ),
+                    const SizedBox(height: 12),
+                    CustomTextField(
+                      controller: _emailController,
+                      labelText: 'Email',
+                      enabled: false,
+                    ),
+                    const SizedBox(height: 12),
+                    CustomTextField(
+                      controller: _userIdController,
+                      labelText: 'User_Id',
+                      enabled: false,
+                    ),
+                    const SizedBox(height: 12),
+                    CustomTextField(
+                      controller: _phoneController,
+                      labelText: 'Cell Number',
+                      enabled: _isEditing,
+                    ),
+                    const SizedBox(height: 12),
+                    CustomTextField(
+                      controller: _addressController,
+                      labelText: 'Address',
+                      maxLine: 2,
+                      enabled: _isEditing,
+                    ),
+                    const SizedBox(height: 12),
+                    CustomTextField(
+                      controller: _birthdateController,
+                      labelText: 'Date of Birth',
+                      enabled: _isEditing,
+                    ),
+                    const SizedBox(height: 12),
+                    CustomTextField(
+                      controller: _nidController,
+                      labelText: 'NID',
+                      enabled: false,
+                    ),
+                    const SizedBox(height: 12),
+                    CustomTextField(
+                      controller: _nomineeNameController,
+                      labelText: 'Nominee Name',
+                      enabled: false,
+                    ),
+                    const SizedBox(height: 12),
+                    CustomTextField(
+                      controller: _nomineeRelationController,
+                      labelText: ' Relation with Applicant',
+                      enabled: false,
+                    ),
+                    const SizedBox(height: 12),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 50,
+                      child: ElevatedButton.icon(
+                        onPressed: () {
+                          _showLogoutDialog(context);
+                        },
+                        icon: const Icon(Icons.logout),
+                        label: const Text(
+                          'Logout',
+                          style: TextStyle(
+                            fontSize: 17,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.red,
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                      ),
+                    ),
+
+
+                  ],
+                ),
+              ),
+            ),
+          ),
+          // Loading Overlay
+          if (_isLoading)
+            Positioned.fill(
+              child: Container(
+                color: Colors.black.withOpacity(0.4),
+                child: const Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      CircularProgressIndicator(
+                        color: Colors.white,
+                      ),
+                      SizedBox(height: 15),
+                      Text(
+                        'Uploading Image...',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                     ],
                   ),
                 ),
-                const SizedBox(height: 20),
-
-                // 🔹 Text Fields
-                CustomTextField(
-                  controller: _nameController,
-                  labelText: 'Name',
-                  enabled: false,
-                  validator: (value) =>
-                  value!.isEmpty ? 'Please enter your name' : null,
-                ),
-                const SizedBox(height: 12),
-                CustomTextField(
-                  controller: _emailController,
-                  labelText: 'Email',
-                  enabled: false,
-                ),
-                const SizedBox(height: 12),
-                CustomTextField(
-                  controller: _userIdController,
-                  labelText: 'User_Id',
-                  enabled: false,
-                ),
-                const SizedBox(height: 12),
-                CustomTextField(
-                  controller: _phoneController,
-                  labelText: 'Cell Number',
-                  enabled: _isEditing,
-                ),
-                const SizedBox(height: 12),
-                CustomTextField(
-                  controller: _addressController,
-                  labelText: 'Address',
-                  maxLine: 2,
-                  enabled: _isEditing,
-                ),
-                const SizedBox(height: 12),
-                CustomTextField(
-                  controller: _birthdateController,
-                  labelText: 'Date of Birth',
-                  enabled: _isEditing,
-                ),
-                const SizedBox(height: 12),
-                CustomTextField(
-                  controller: _nidController,
-                  labelText: 'NID',
-                  enabled: false,
-                ),
-                const SizedBox(height: 12),
-                CustomTextField(
-                  controller: _nomineeNameController,
-                  labelText: 'Nominee Name',
-                  enabled: false,
-                ),
-                const SizedBox(height: 12),
-                CustomTextField(
-                  controller: _nomineeRelationController,
-                  labelText: ' Relation with Applicant',
-                  enabled: false,
-                ),
-
-
-              ],
+              ),
             ),
-          ),
-        ),
+        ],
       ),
     );
   }

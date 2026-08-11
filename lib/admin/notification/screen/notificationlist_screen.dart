@@ -16,12 +16,14 @@ class NotificationListScreen extends StatefulWidget {
 class _NotificationListScreenState extends State<NotificationListScreen> {
  // ✅ single admin ID
   final NoteService _noteService = NoteService();
-
+  final TextEditingController titleController = TextEditingController();
+  final TextEditingController messageController = TextEditingController();
   final LogService _logService = LogService();
   String name='';
   String DocId='';
   String email='';
   String adminId='';
+  bool _isUpdating = false;
 
   @override
   void initState() {
@@ -86,7 +88,96 @@ class _NotificationListScreenState extends State<NotificationListScreen> {
       CustomToast().showToast(context, 'Notification deleted', Colors.green);
     }
   }
+  Future<void> _showEditDialog(
+      String notificationId,
+      String oldTitle,
+      String oldMessage,
+      ) async {
+    titleController.text = oldTitle;
+    messageController.text = oldMessage;
 
+    showDialog(
+      context: context,
+      builder: (context) {
+        return Stack(
+          children: [
+            AlertDialog(
+              title: const Text('Edit Notification'),
+              content: SingleChildScrollView(
+                child: Column(
+                  children: [
+                    TextField(
+                      controller: titleController,
+                      decoration: const InputDecoration(
+                        labelText: 'Title',
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    TextField(
+                      controller: messageController,
+                      maxLines: 4,
+                      decoration: const InputDecoration(
+                        labelText: 'Message',
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('Cancel'),
+                ),
+
+                ElevatedButton(
+                  onPressed: () async {
+                    await _noteService.updateNotification(
+                      adminDocId: widget.adminDocId,
+                      notificationId: notificationId,
+                      title: titleController.text.trim(),
+                      message: messageController.text.trim(),
+                    );
+
+                    await _logService.addLog(
+                      name: name,
+                      email: email,
+                      userid: adminId,
+                      oldData: oldTitle,
+                      newData: titleController.text.trim(),
+                      note: 'Notification Updated',
+                    );
+
+                    Navigator.pop(context);
+
+                    CustomToast().showToast(
+                      context,
+                      'Notification Updated',
+                      Colors.green,
+                    );
+                  },
+                  child: const Text('Update'),
+                ),
+              ],
+            ),
+            if (_isUpdating)
+              Container(
+                color: Colors.black26,
+                child: const Center(
+                  child: CircularProgressIndicator(),
+                ),
+              ),
+          ],
+        );
+      },
+    );
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    titleController.dispose();
+    messageController.dispose();
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -146,9 +237,37 @@ class _NotificationListScreenState extends State<NotificationListScreen> {
                         ),
                       ],
                     ),
-                    trailing: IconButton(
-                      icon: const Icon(Icons.delete, color: Colors.red, size: 20),
-                      onPressed: () => _confirmDelete(context, doc.id),
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+
+                        // Edit Button
+                        IconButton(
+                          icon: const Icon(
+                            Icons.edit,
+                            color: Colors.blue,
+                            size: 20,
+                          ),
+                          onPressed: () {
+                            _showEditDialog(
+                              doc.id,
+                              title,
+                              message,
+                            );
+                          },
+                        ),
+
+                        // Delete Button
+                        IconButton(
+                          icon: const Icon(
+                            Icons.delete,
+                            color: Colors.red,
+                            size: 20,
+                          ),
+                          onPressed: () =>
+                              _confirmDelete(context, doc.id),
+                        ),
+                      ],
                     ),
                   ),
                 ),

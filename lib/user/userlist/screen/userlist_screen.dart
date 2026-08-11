@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -61,27 +62,43 @@ class UsersListScreen extends StatelessWidget {
                       children: [
                         Card(
                           elevation: 3,
-                          margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                          shadowColor: Colors.redAccent.withOpacity(0.4),
+                          margin: const EdgeInsets.symmetric(
+                            vertical: 8,
+                            horizontal: 12,
+                          ),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(15),
                           ),
                           child: Padding(
-                            padding: const EdgeInsets.all(12.0),
+                            padding: const EdgeInsets.all(5.0),
                             child: ListTile(
                               leading: CircleAvatar(
-                                radius: 25,
+                                radius: 30,
                                 backgroundColor: Colors.teal.shade100,
-                                backgroundImage: user['profileImage'] != null &&
-                                    user['profileImage'].toString().isNotEmpty
-                                    ? NetworkImage(user['profileImage'])
-                                    : null,
-                                child: user['profileImage'] == null ||
-                                    user['profileImage'].toString().isEmpty
-                                    ? const Icon(
-                                  Icons.person,
-                                  color: Colors.teal,
-                                )
-                                    : null,
+                                child: ClipOval(
+                                  child: user['profileImage'] != null &&
+                                      user['profileImage'].toString().isNotEmpty
+                                      ? CachedNetworkImage(
+                                    imageUrl: user['profileImage'],
+                                    width: 60,
+                                    height: 60,
+                                    fit: BoxFit.cover,
+                                    placeholder: (context, url) =>
+                                    const CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                    ),
+                                    errorWidget: (context, url, error) =>
+                                    const Icon(
+                                      Icons.person,
+                                      color: Colors.teal,
+                                    ),
+                                  )
+                                      : const Icon(
+                                    Icons.person,
+                                    color: Colors.teal,
+                                  ),
+                                ),
                               ),
                               title: Text(
                                 user['name'] ?? 'N/A',

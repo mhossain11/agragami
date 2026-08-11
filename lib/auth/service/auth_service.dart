@@ -1,5 +1,9 @@
+import 'dart:io';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter/cupertino.dart';
 
 import '../../cachehelper/chechehelper.dart';
 
@@ -24,6 +28,7 @@ class AuthService {
     required String nid,
     required String nomineeName,
     required String nomineeRelation,
+    String? profileImage,
   }) async {
     try {
       UserCredential userCredential = await _auth
@@ -45,6 +50,8 @@ class AuthService {
         'nomineeName': nomineeName.trim(),
         'nomineeRelation': nomineeRelation.trim(),
         'uid': userCredential.user!.uid,
+        'profileImage': profileImage ?? '',
+
         'created_at': Timestamp.now(),
       });
       // userCredential.user!.uid
@@ -52,15 +59,51 @@ class AuthService {
       return 'success';
     } on FirebaseAuthException catch (e) {
       if (e.code == 'email-already-in-use') {
-        return 'This email is used.';
-      } else {
-        return e.message;
+        return 'This email is already used.';
       }
+
+      if (e.code == 'weak-password') {
+        return 'Password is too weak.';
+      }
+
+      if (e.code == 'invalid-email') {
+        return 'Invalid email address.';
+      }
+
+      return e.message ?? 'Authentication failed.';
     } catch (e) {
       return e.toString();
     }
   }
 
+  Future<String?> uploadProfileImage({
+    required File imageFile,
+    required String userId,
+  }) async {
+    try {
+      print("Uploading image for: $userId");
+      final ref = FirebaseStorage.instance
+          .ref()
+          .child('profile_images')
+          .child('$userId.jpg');
+
+      final uploadTask = ref.putFile(imageFile);
+
+      final snapshot = await uploadTask;
+      print("Upload State: ${snapshot.state}");
+
+      if (snapshot.state == TaskState.success) {
+        final downloadUrl = await ref.getDownloadURL();
+        print("Download URL: $downloadUrl");
+        return downloadUrl;
+      }
+      print("Upload failed");
+      return null;
+    } catch (e) {
+      debugPrint('Image upload error: $e');
+      return null;
+    }
+  }
 
   //Sing up
   Future<String?> Login({

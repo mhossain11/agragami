@@ -2,6 +2,8 @@ import 'package:Agragami/admin/profile/screen/profile_screen.dart';
 import 'package:Agragami/contact/screen/contact_screen.dart';
 import 'package:Agragami/user/profile/screen/profile_screen.dart';
 import 'package:badges/badges.dart' as badges;
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
@@ -12,6 +14,7 @@ import '../../about_us/screen/aboutus_screen.dart';
 import '../../money record/screen/user_money_record_screen.dart';
 import '../../notification/screen/user_notification_screen.dart';
 import '../../notification/service/user_notification_service.dart';
+import '../../profile/service/userprofile_service.dart';
 import '../../userlist/screen/userlist_screen.dart';
 import '../service/home_service.dart';
 
@@ -27,13 +30,11 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   final UserNotificationService _notificationService = UserNotificationService();
   final HomeService _homeService = HomeService();
 
-
   bool _isLoading = false;
   String userDocId = '';
   String name = '';
   String DocId = '';
   int totalTk = 0;
-  String profileImage = '';
 
   @override
   void initState() {
@@ -41,7 +42,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     WidgetsBinding.instance.addObserver(this);
     _initData();
     FocusManager.instance.primaryFocus?.unfocus();
-    getProfileImage();
 
   }
 
@@ -51,15 +51,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     await countTotal();
   }
 
-  Future<void> getProfileImage() async {
-    final image = await CacheHelper().getString('profileImage');
 
-    if (!mounted) return;
-
-    setState(() {
-      profileImage = image ?? '';
-    });
-  }
 
   Future<void> countTotal() async {
     final totalUsers = await totalMoney();
@@ -95,6 +87,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       name = userName ?? '';
       DocId = userDocId ?? '';
     });
+    print("DocId => $DocId");
   }
 
   Future<void> getUserDocId() async {
@@ -121,29 +114,91 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        leading: GestureDetector(
-          onTap: () {
-            Navigator.push(context, MaterialPageRoute(builder: (cotexte)=>ProfileScreen()));
-          },
-          child: Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: CircleAvatar(
-              radius: 20,
-              backgroundColor: Colors.grey.shade200,
-              child: ClipOval(
-                child: Image.network(
-                  profileImage,
-                  width: 60,
-                  height: 60,
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) {
-                    print(error);
-                    return const Icon(Icons.person);
-                  },
+        leading:DocId.isEmpty
+            ? const Padding(
+          padding: EdgeInsets.all(8),
+          child: CircleAvatar(
+            child: Icon(Icons.person),
+          ),
+        )
+            : StreamBuilder<DocumentSnapshot>(
+          stream: FirebaseFirestore.instance
+              .collection('users')
+              .doc(DocId) // Firebase UID
+              .snapshots(),
+          builder: (context, snapshot) {
+
+            String profileImage = '';
+
+            if (snapshot.hasData && snapshot.data!.exists) {
+              final data =
+              snapshot.data!.data() as Map<String, dynamic>;
+
+              profileImage =
+                  data['profileImage']?.toString() ?? '';
+            }
+
+            return GestureDetector(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => UserProfileScreen(
+                      userId: DocId,
+                    ),
+                  ),
+                );
+              },
+              child: Padding(
+                padding: const EdgeInsets.all(8),
+                child: Container(
+                  padding: const EdgeInsets.all(2),
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: Colors.redAccent,
+                      width: 2,
+                    ),
+                  ),
+                  child: CircleAvatar(
+                    radius: 20,
+                    backgroundColor: Colors.grey.shade200,
+                    child: ClipOval(
+                      child: profileImage.isNotEmpty
+                          ? CachedNetworkImage(
+                        imageUrl: profileImage,
+                        width: 40,
+                        height: 40,
+                        fit: BoxFit.cover,
+
+                        placeholder:
+                            (context, url) =>
+                        const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child:
+                          CircularProgressIndicator(
+                            strokeWidth: 2,
+                          ),
+                        ),
+
+                        errorWidget:
+                            (context, url, error) =>
+                        const Icon(
+                          Icons.person,
+                          color: Colors.red,
+                        ),
+                      )
+                          : const Icon(
+                        Icons.person,
+                        color: Colors.red,
+                      ),
+                    ),
+                  ),
                 ),
               ),
-            ),
-          ),
+            );
+          },
         ),
         title: const Text('Home'),
         backgroundColor: Colors.red,
@@ -192,13 +247,42 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
           children: [
             // User Name
             Padding(
-              padding: const EdgeInsets.all(10.0),
+              padding: const EdgeInsets.all(10),
               child: Align(
                 alignment: Alignment.centerLeft,
-                child: Text(
-                  name,
-                  style: const TextStyle(
-                      fontSize: 25, color: Colors.red, fontWeight: FontWeight.bold),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 18,
+                    vertical: 8,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.red.withOpacity(0.08),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: Colors.red.withOpacity(0.3),
+                    ),
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      /*const Icon(
+                        Icons.person,
+                        color: Colors.red,
+                        size: 22,
+                      ),*/
+                     // const SizedBox(width: 8),
+                      Text(
+                        name,
+                        style: const TextStyle(
+                          fontSize: 22,
+                          color: Colors.red,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+
+
+                    ],
+                  ),
                 ),
               ),
             ),
