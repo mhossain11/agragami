@@ -1,3 +1,4 @@
+/*
 import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -5,7 +6,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/cupertino.dart';
 
-import '../../cachehelper/chechehelper.dart';
+import '../../core/cachehelper/chechehelper.dart';
+
+
 
 
 class AuthService {
@@ -195,7 +198,7 @@ class AuthService {
     }
   }
 
-//check  user_id by auth collection list
+//
   Future<Map<String, dynamic>?> checkUserAdminRole(String inputUserId) async {
     try {
       // 🔹 প্রথমে auth collection থেকে সব doc নিয়ে loop করব
@@ -332,3 +335,4 @@ class AuthService {
     }
   }
 }
+*/

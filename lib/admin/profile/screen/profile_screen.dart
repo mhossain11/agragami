@@ -1,15 +1,15 @@
 import 'dart:io';
 
-import 'package:Agragami/auth/widgets/text_field.dart';
+import '../../../auth/login/prasentation/screen/login_screen.dart';
+import '../../../core/cachehelper/chechehelper.dart';
+import '../../../core/cachehelper/toast.dart';
+import '../../../core/widgets/text_field.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
-import '../../../auth/screen/login_screen.dart';
-import '../../../cachehelper/chechehelper.dart';
-import '../../../cachehelper/toast.dart';
 import '../../../user/profile/service/userprofile_service.dart';
 
 class ProfileScreen extends StatefulWidget {

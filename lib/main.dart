@@ -1,25 +1,31 @@
-import 'package:Agragami/user/home/screen/home_screen.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:Agragami/user/home/presentation/screen/home_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:get/get_core/src/get_main.dart';
+import 'package:get/get_instance/src/extension_instance.dart';
 import 'package:get/get_navigation/src/root/get_material_app.dart';
 
 import 'admin/home/screen/adminhome_screen.dart';
-import 'auth/screen/login_screen.dart';
-import 'cachehelper/chechehelper.dart';
-import 'cachehelper/theme.dart';
+import 'auth/login/prasentation/screen/login_screen.dart';
+import 'core/cachehelper/chechehelper.dart';
+import 'core/cachehelper/theme.dart';
+import 'core/routes/app_pages.dart';
+import 'core/services/CacheService.dart';
 
 Future main() async{
   WidgetsFlutterBinding.ensureInitialized();
-  // Lock orientation to portrait only
   await SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
   ]);
+
   await Firebase.initializeApp();
   await CacheHelper.init();
+  // Register CacheService
+  await Get.putAsync<CacheService>(() => CacheService().init(),);
+
   runApp(ScreenUtilInit(
     designSize: Size(360, 690),
     minTextAdapt: true,
@@ -31,7 +37,7 @@ Future main() async{
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  Future<Widget> _checkLogin() async {
+   /*_checkLogin() {
     final isLoggedIn =CacheHelper().getLoggedIn();
     final role = CacheHelper().getString('isRole');
 
@@ -46,29 +52,16 @@ class MyApp extends StatelessWidget {
     } else {
       return const LoginScreen();
     }
-  }
+  }*/
   @override
   Widget build(BuildContext context) {
     return GetMaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Flutter Demo',
       theme: themeData().somitiTheme,
-      home: FutureBuilder(
-          future: _checkLogin(),
-          builder: (context,snapshot){
-        if(snapshot.connectionState == ConnectionState.waiting){
-           Center(child: CircularProgressIndicator(),);
-          return const Scaffold(
-            body: Center(child: CircularProgressIndicator()),
-          );
-
-        }else if(snapshot.hasData){
-          return snapshot.data!;
-        }else{
-          return const LoginScreen();
-        }
-
-          }),
+      initialRoute: AppPages.getInitialRoute(),
+      getPages: AppPages.pages,
+      //home:_checkLogin(),
     );
   }
 

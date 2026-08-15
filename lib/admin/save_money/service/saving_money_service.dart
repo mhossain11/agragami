@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-import '../../../cachehelper/chechehelper.dart';
+import '../../../core/cachehelper/chechehelper.dart';
 import '../model/usermodel.dart';
 
 class SavingMoneyService {

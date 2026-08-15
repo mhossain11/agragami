@@ -6,17 +6,19 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get_core/src/get_main.dart';
+import 'package:get/get_navigation/src/extension_navigation.dart';
 
-import '../../../auth/screen/login_screen.dart';
-import '../../../cachehelper/chechehelper.dart';
-import '../../../developer/developer_screen.dart';
-import '../../about_us/screen/aboutus_screen.dart';
-import '../../money record/screen/user_money_record_screen.dart';
-import '../../notification/screen/user_notification_screen.dart';
-import '../../notification/service/user_notification_service.dart';
-import '../../profile/service/userprofile_service.dart';
-import '../../userlist/screen/userlist_screen.dart';
-import '../service/home_service.dart';
+import '../../../../auth/login/prasentation/screen/login_screen.dart';
+import '../../../../core/cachehelper/chechehelper.dart';
+import '../../../../core/routes/app_routes.dart';
+import '../../../../developer/developer_screen.dart';
+import '../../../about_us/screen/aboutus_screen.dart';
+import '../../../money record/screen/user_money_record_screen.dart';
+import '../../../notification/screen/user_notification_screen.dart';
+import '../../../notification/service/user_notification_service.dart';
+import '../../../userlist/screen/userlist_screen.dart';
+import '../../service/home_service.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -380,13 +382,14 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         await CacheHelper().setLoggedIn(false);
         Future.delayed(const Duration(milliseconds: 100), () {
           if (context.mounted) {
-            Navigator.pushAndRemoveUntil(
+            /*Navigator.pushAndRemoveUntil(
               context,
               MaterialPageRoute(
                 builder: (_) => const LoginScreen(),
               ),
                   (route) => false,
-            );
+            );*/
+            Get.offAllNamed(AppRoutes.login);
           }
         });
         break;
@@ -499,7 +502,8 @@ class NotificationBadgeWidget extends StatelessWidget {
                   if (!context.mounted) return;
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (_) => UserNotificationScreen(adminDocIds: adminDocIds)),
+                    MaterialPageRoute(builder: (_) =>
+                        UserNotificationScreen(adminDocIds: adminDocIds)),
                   );
                 },
               ),
@@ -510,3 +514,37 @@ class NotificationBadgeWidget extends StatelessWidget {
     );
   }
 }
+
+/*
+
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+
+import '../../widgets/balance_card.dart';
+import '../controller/home_controller.dart';
+
+class HomeScreen extends GetView<HomeController> {
+  const HomeScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text("Home"),
+      ),
+      body: Center(
+        child: Obx(
+              () {
+            if (controller.isLoading.value) {
+              return const CircularProgressIndicator();
+            }
+
+            return BalanceCard(
+              amount: controller.totalAmount.value,
+            );
+          },
+        ),
+      ),
+    );
+  }
+}*/

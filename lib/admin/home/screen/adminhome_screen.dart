@@ -8,10 +8,14 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:get/get_core/src/get_main.dart';
+import 'package:get/get_navigation/src/extension_navigation.dart';
 
-import '../../../auth/screen/login_screen.dart';
-import '../../../cachehelper/chechehelper.dart';
+
+import '../../../auth/login/prasentation/screen/login_screen.dart';
 import '../../../contact/screen/contact_screen.dart';
+import '../../../core/cachehelper/chechehelper.dart';
+import '../../../core/routes/app_routes.dart';
 import '../../deleteid/screen/deleteid_screen.dart';
 import '../../id_create/screen/edit_id_screen.dart';
 import '../../id_list/screen/id_list_screen.dart';
@@ -817,13 +821,14 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> with WidgetsBindingOb
         await CacheHelper().setLoggedIn(false);
         Future.delayed(const Duration(milliseconds: 100), () {
           if (context.mounted) {
-            Navigator.pushAndRemoveUntil(
+            /*Navigator.pushAndRemoveUntil(
               context,
               MaterialPageRoute(
                 builder: (_) => const LoginScreen(),
               ),
                   (route) => false,
-            );
+            );*/
+            Get.offAllNamed(AppRoutes.login);
           }
         });
         break;

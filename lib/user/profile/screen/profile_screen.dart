@@ -5,11 +5,12 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 
-import '../../../auth/screen/login_screen.dart';
-import '../../../cachehelper/chechehelper.dart';
-import '../../../cachehelper/toast.dart';
+
+import '../../../auth/login/prasentation/screen/login_screen.dart';
+import '../../../core/cachehelper/chechehelper.dart';
+import '../../../core/cachehelper/toast.dart';
 import '../../../user/profile/service/userprofile_service.dart';
-import 'package:Agragami/auth/widgets/text_field.dart';
+import '../../../core/widgets/text_field.dart';
 
 class UserProfileScreen extends StatefulWidget {
   final String userId;
