@@ -30,22 +30,17 @@ class AuthRemoteDataSource {
   }
 
   Future<QuerySnapshot<Map<String,dynamic>>> findUserByUserId(
-      String userId,
-      ) {
+      String userId ) {
 
     return firestore.users
         .where(
-      'user_id',
-      isEqualTo: userId,
-    )
+      'user_id', isEqualTo: userId,)
         .limit(1)
         .get();
   }
 
-  Future<DocumentSnapshot<Map<String,dynamic>>>
-  getUserByUid(
-      String uid,
-      ) {
+  Future<DocumentSnapshot<Map<String,dynamic>>> getUserByUid(
+      String uid,) {
 
     return firestore.users
         .doc(uid)

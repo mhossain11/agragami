@@ -108,6 +108,8 @@ class AuthRepositoryImpl implements AuthRepository {
         'uid': uid,
         'name': request.name,
         'email': request.email,
+        'fatherName': request.fatherName,
+        'motherName': request.motherName,
         'role': request.role,
         'user_id': request.userId,
         'phone': request.phone,

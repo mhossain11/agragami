@@ -124,6 +124,30 @@ class RegisterScreen extends GetView<AuthController> {
                       ),
 
                       SizedBox(height: 10.h),
+                      TextFormField(
+                        controller: controller.motherName,
+                        decoration: const InputDecoration(
+                          labelText: "Mother Name",
+                          border: OutlineInputBorder(),
+                        ),
+                        autovalidateMode: AutovalidateMode.onUserInteraction,
+                        validator: (value)=> AppValidators.email(value),
+
+                      ),
+
+                      SizedBox(height: 10.h),
+                      TextFormField(
+                        controller: controller.fatherName,
+                        decoration: const InputDecoration(
+                          labelText: "Father Name",
+                          border: OutlineInputBorder(),
+                        ),
+                        autovalidateMode: AutovalidateMode.onUserInteraction,
+                        validator: (value)=> AppValidators.email(value),
+
+                      ),
+
+                      SizedBox(height: 10.h),
 
                       TextFormField(
                         controller: controller.phoneController,

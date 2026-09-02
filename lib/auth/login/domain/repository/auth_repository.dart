@@ -21,7 +21,7 @@ abstract class AuthRepository {
 
   // Pick Image
   Future<File?> pickImage();
-
+  //image upload
   Future<String?> uploadProfileImage({
     required File imageFile,
     required String userId,

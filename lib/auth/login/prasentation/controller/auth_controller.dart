@@ -29,6 +29,8 @@ class AuthController extends GetxController {
   // =========================
 
   final userIdController = TextEditingController();
+  final fatherName = TextEditingController();
+  final motherName = TextEditingController();
   final nameController = TextEditingController();
   final phoneController = TextEditingController();
   final addressController = TextEditingController();
@@ -232,6 +234,8 @@ class AuthController extends GetxController {
         name: nameController.text.trim(),
         email: emailController.text.trim(),
         password: passwordController.text.trim(),
+        fatherName: fatherName.text.trim(),
+        motherName: motherName.text.trim(),
         role: selectedRole.value,
         phone: phoneController.text.trim(),
         address: addressController.text.trim(),
