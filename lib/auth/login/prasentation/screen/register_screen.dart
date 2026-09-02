@@ -125,25 +125,23 @@ class RegisterScreen extends GetView<AuthController> {
 
                       SizedBox(height: 10.h),
                       TextFormField(
-                        controller: controller.motherName,
+                        controller: controller.motherNameController,
                         decoration: const InputDecoration(
                           labelText: "Mother Name",
                           border: OutlineInputBorder(),
                         ),
                         autovalidateMode: AutovalidateMode.onUserInteraction,
-                        validator: (value)=> AppValidators.email(value),
 
                       ),
 
                       SizedBox(height: 10.h),
                       TextFormField(
-                        controller: controller.fatherName,
+                        controller: controller.fatherNameController,
                         decoration: const InputDecoration(
                           labelText: "Father Name",
                           border: OutlineInputBorder(),
                         ),
                         autovalidateMode: AutovalidateMode.onUserInteraction,
-                        validator: (value)=> AppValidators.email(value),
 
                       ),
 
@@ -195,6 +193,15 @@ class RegisterScreen extends GetView<AuthController> {
                         ),
                       ),
 
+                      SizedBox(height: 10.h),
+                      TextFormField(
+                        controller: controller.bloodController,
+                        decoration: const InputDecoration(
+                          labelText: "Blood Group",
+                          border: OutlineInputBorder(),
+                        ),
+                        autovalidateMode: AutovalidateMode.onUserInteraction,
+                      ),
                       SizedBox(height: 10.h),
 
                       TextFormField(

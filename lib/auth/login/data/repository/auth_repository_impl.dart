@@ -115,6 +115,7 @@ class AuthRepositoryImpl implements AuthRepository {
         'phone': request.phone,
         'address': request.address,
         'birthdate': request.birthdate,
+        'blood': request.blood,
         'nid': request.nid,
         'nomineeName': request.nomineeName,
         'nomineeRelation': request.nomineeRelation,

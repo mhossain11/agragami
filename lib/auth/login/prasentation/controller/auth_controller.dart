@@ -29,13 +29,14 @@ class AuthController extends GetxController {
   // =========================
 
   final userIdController = TextEditingController();
-  final fatherName = TextEditingController();
-  final motherName = TextEditingController();
+  final fatherNameController = TextEditingController();
+  final motherNameController = TextEditingController();
   final nameController = TextEditingController();
   final phoneController = TextEditingController();
   final addressController = TextEditingController();
   final birthdateController = TextEditingController();
   final nidController = TextEditingController();
+  final bloodController = TextEditingController();
   final nomineeNameController = TextEditingController();
   final nomineeRelationController = TextEditingController();
   final confirmPasswordController = TextEditingController();
@@ -234,12 +235,13 @@ class AuthController extends GetxController {
         name: nameController.text.trim(),
         email: emailController.text.trim(),
         password: passwordController.text.trim(),
-        fatherName: fatherName.text.trim(),
-        motherName: motherName.text.trim(),
+        fatherName: fatherNameController.text.trim(),
+        motherName: motherNameController.text.trim(),
         role: selectedRole.value,
         phone: phoneController.text.trim(),
         address: addressController.text.trim(),
         birthdate: birthdateController.text.trim(),
+        blood: bloodController.text.trim(),
         nid: nidController.text.trim(),
         nomineeName: nomineeNameController.text.trim(),
         nomineeRelation: nomineeRelationController.text.trim(),
@@ -295,8 +297,11 @@ class AuthController extends GetxController {
     nameController.dispose();
     phoneController.dispose();
     addressController.dispose();
+    fatherNameController.dispose();
+    motherNameController.dispose();
     birthdateController.dispose();
     nidController.dispose();
+    bloodController.dispose();
     nomineeNameController.dispose();
     nomineeRelationController.dispose();
     confirmPasswordController.dispose();
@@ -307,10 +312,13 @@ class AuthController extends GetxController {
     userIdController.clear();
     nameController.clear();
     emailController.clear();
+    fatherNameController.clear();
+    motherNameController.clear();
     phoneController.clear();
     addressController.clear();
     birthdateController.clear();
     nidController.clear();
+    bloodController.clear();
     nomineeNameController.clear();
     nomineeRelationController.clear();
     passwordController.clear();
