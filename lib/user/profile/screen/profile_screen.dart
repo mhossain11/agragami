@@ -33,6 +33,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   final _userIdController = TextEditingController();
   final _nomineeNameController = TextEditingController();
   final _nidController = TextEditingController();
+  final _bloodController = TextEditingController();
   final _birthdateController = TextEditingController();
   final _nomineeRelationController = TextEditingController();
 
@@ -54,6 +55,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
         _phoneController.text = user.phone;
         _addressController.text = user.address;
         _userIdController.text = user.userId;
+        _bloodController.text = user.blood;
         _nomineeNameController.text = user.nomineeName;
         _nomineeRelationController.text = user.nomineeRelation;
         _nidController.text = user.nid;
@@ -170,6 +172,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
         'address': _addressController.text.trim(),
         'user_id': _userIdController.text.trim(),
         'nomineeName': _nomineeNameController.text.trim(),
+        'blood':_bloodController.text.trim(),
         'nid': _nidController.text.trim(),
         'birthdate': _birthdateController.text.trim(),
         'profileImage': imageUrl ?? '',
@@ -194,6 +197,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     _userIdController.dispose();
     _nomineeNameController.dispose();
     _nidController.dispose();
+    _bloodController.dispose();
     _birthdateController.dispose();
     _nomineeRelationController.dispose();
     super.dispose();
@@ -326,6 +330,12 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                       labelText: 'NID',
                       enabled: false,
                     ),
+                    CustomTextField(
+                      controller: _bloodController,
+                      labelText: 'Blood Group',
+                      enabled: _isEditing,
+                    ),
+                    const SizedBox(height: 12),
                     const SizedBox(height: 12),
                     CustomTextField(
                       controller: _nomineeNameController,
