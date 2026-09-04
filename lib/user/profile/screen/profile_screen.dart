@@ -6,7 +6,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 
 
-import '../../../auth/login/prasentation/screen/login_screen.dart';
+import '../../../auth/prasentation/screen/login_screen.dart';
 import '../../../core/cachehelper/chechehelper.dart';
 import '../../../core/cachehelper/toast.dart';
 import '../../../user/profile/service/userprofile_service.dart';

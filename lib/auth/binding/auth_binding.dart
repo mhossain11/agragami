@@ -20,9 +20,7 @@ class AuthBinding extends Bindings {
     // =========================
 
     Get.lazyPut<FirebaseAuthService>(
-          () => FirebaseAuthService(
-        FirebaseAuth.instance,
-      ),
+          () => FirebaseAuthService(FirebaseAuth.instance),
     );
 
     // =========================
@@ -30,8 +28,7 @@ class AuthBinding extends Bindings {
     // =========================
 
     Get.lazyPut<FirestoreService>(
-          () => FirestoreService.instance,
-    );
+          () => FirestoreService.instance,);
 
     // =========================
     // Auth Remote DataSource

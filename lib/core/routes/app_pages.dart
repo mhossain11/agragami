@@ -1,9 +1,10 @@
+import 'package:Agragami/user/home/binding/home_binding.dart';
 import 'package:get/get.dart';
 
 
 import '../../admin/home/screen/adminhome_screen.dart';
-import '../../auth/login/binding/auth_binding.dart';
-import '../../auth/login/prasentation/screen/login_screen.dart';
+import '../../auth/binding/auth_binding.dart';
+import '../../auth/prasentation/screen/login_screen.dart';
 import '../../user/home/presentation/screen/home_screen.dart';
 import '../cachehelper/chechehelper.dart';
 import 'app_routes.dart';
@@ -46,7 +47,7 @@ class AppPages {
     GetPage(
       name: AppRoutes.home,
       page: () => const HomeScreen(),
-      binding: AuthBinding(),
+      binding: HomeBinding(),
       transition: Transition.fadeIn,
     ),
 

@@ -1,11 +1,11 @@
 
 import 'dart:io';
 
-import 'package:Agragami/auth/login/domain/model/register_model.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../../../../core/services/CacheService.dart';
+import '../../domain/model/register_model.dart';
 import '../../domain/repository/auth_repository.dart';
 import '../datasource/auth_remote_datasource.dart';
 
@@ -66,9 +66,7 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
-  Future<Map<String, dynamic>?> checkUserId(
-      String userId,
-      ) async {
+  Future<Map<String, dynamic>?> checkUserId(String userId,) async {
 
     return await remote.checkUserAdminRole(
       userId,
@@ -76,13 +74,9 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
-  Future<String> register(
-      RegisterRequest request,
-      ) async {
+  Future<String> register(RegisterRequest request,) async {
 
-    final duplicate = await remote.checkUserRole(
-      request.userId,
-    );
+    final duplicate = await remote.checkUserRole(request.userId,);
 
     if (duplicate?['exists'] == true) {
       return "User ID already exists";

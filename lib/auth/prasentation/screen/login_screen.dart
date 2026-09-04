@@ -113,7 +113,7 @@ class LoginScreen extends GetView<AuthController> {
                       ],
 
                       labelText:
-                      'Email or User ID',
+                      'ID/Email',
 
                       validator: (value) {
 
@@ -121,7 +121,7 @@ class LoginScreen extends GetView<AuthController> {
                             value.trim().isEmpty) {
 
                           return
-                            'Please enter Email or User ID';
+                            'Please enter Email or ID';
                         }
 
                         if (value.contains('@')) {
@@ -141,9 +141,8 @@ class LoginScreen extends GetView<AuthController> {
                         } else {
 
                           final userIdRegex =
-                          RegExp(
-                            r'^AG\d{4}[UA]\d{3}$',
-                          );
+                          RegExp(r'^AG\d{4}[UA]\d{3}$',);
+                         // RegExp(r'^AG\d{2}[MA]\d{3}$');
 
                           if (!userIdRegex.hasMatch(
                               value.trim())) {

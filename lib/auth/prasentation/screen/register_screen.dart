@@ -38,7 +38,7 @@ class RegisterScreen extends GetView<AuthController> {
                       controller: controller.userIdController,
                       enabled: !controller.showForm.value,
                       decoration: const InputDecoration(
-                        labelText: "User ID",
+                        labelText: "ID",
                         border: OutlineInputBorder(),
                       ),
                       autovalidateMode: AutovalidateMode.onUserInteraction,

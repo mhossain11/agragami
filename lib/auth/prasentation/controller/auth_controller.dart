@@ -5,13 +5,15 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 
 import '../../../../admin/home/screen/adminhome_screen.dart';
-import '../../../../core/cachehelper/chechehelper.dart';
 import '../../../../user/home/presentation/screen/home_screen.dart';
+import '../../../core/cachehelper/chechehelper.dart';
+import '../../../core/routes/app_pages.dart';
+import '../../../core/routes/app_routes.dart';
 import '../../domain/model/register_model.dart';
 import '../../domain/repository/auth_repository.dart';
 import '../screen/login_screen.dart';
 
-class AuthController extends GetxController {
+class AuthController extends GetxController with WidgetsBindingObserver {
 
   final AuthRepository repository;
 
@@ -69,6 +71,7 @@ class AuthController extends GetxController {
   void onInit() {
     super.onInit();
     loadUserId();
+    WidgetsBinding.instance.addObserver(this); // 👈 register observer
   }
 
   // =========================
@@ -79,9 +82,7 @@ class AuthController extends GetxController {
 
     final savedUserId = CacheHelper().getString('userId');
 
-    debugPrint(
-      'Loaded User ID => $savedUserId',
-    );
+    print('Loaded User ID => $savedUserId',);
 
     if (savedUserId != null && savedUserId.isNotEmpty) {
       emailController.text = savedUserId;
@@ -112,22 +113,15 @@ class AuthController extends GetxController {
       TextInput.finishAutofillContext();
 
       if (result == 'admin') {
-
-        await CacheHelper()
-            .setLoggedIn(true);
-
-        Get.offAll(
-              () => const AdminHomeScreen(),
-        );
+        await CacheHelper().setLoggedIn(true);
+        await CacheHelper().setString('userId', emailController.text.trim());
+        Get.offAllNamed(AppRoutes.adminHome);
 
       } else if (result == 'user') {
 
-        await CacheHelper()
-            .setLoggedIn(true);
-
-        Get.offAll(
-              () => const HomeScreen(),
-        );
+        await CacheHelper().setLoggedIn(true);
+        await CacheHelper().setString('userId', emailController.text.trim());
+        Get.offAllNamed(AppRoutes.home);
 
       } else {
 
@@ -286,6 +280,26 @@ class AuthController extends GetxController {
     await CacheHelper().clear();
 
     Get.offAllNamed('/login');
+  }
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+
+    debugPrint('App Lifecycle => $state');
+
+    if (state == AppLifecycleState.paused) {
+      // App গেছে background এ
+      _autoLogoutOnBackground();
+    }
+  }
+
+  Future<void> _autoLogoutOnBackground() async {
+    // শুধু login থাকা অবস্থায় logout করবো
+    final isLoggedIn = CacheHelper().getLoggedIn();
+    if (!isLoggedIn) return;
+
+    await repository.logout();
+    await CacheHelper().clear();
   }
 
   @override

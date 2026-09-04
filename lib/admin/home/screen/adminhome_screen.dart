@@ -12,7 +12,6 @@ import 'package:get/get_core/src/get_main.dart';
 import 'package:get/get_navigation/src/extension_navigation.dart';
 
 
-import '../../../auth/login/prasentation/screen/login_screen.dart';
 import '../../../contact/screen/contact_screen.dart';
 import '../../../core/cachehelper/chechehelper.dart';
 import '../../../core/routes/app_routes.dart';
