@@ -7,6 +7,7 @@ import 'package:image_picker/image_picker.dart';
 import '../../../../core/services/CacheService.dart';
 import '../../domain/model/register_model.dart';
 import '../../domain/repository/auth_repository.dart';
+import '../../domain/repository/loginResult.dart';
 import '../datasource/auth_remote_datasource.dart';
 
 class AuthRepositoryImpl implements AuthRepository {
@@ -17,9 +18,11 @@ class AuthRepositoryImpl implements AuthRepository {
     required this.remote,
     required this.cacheService,
   });
+
   final ImagePicker _picker = ImagePicker();
+
   @override
-  Future<String?> login({
+  Future<LoginResult?> login({
     required String email,
     required String password,
   }) async {
@@ -29,16 +32,13 @@ class AuthRepositoryImpl implements AuthRepository {
     // User ID দিয়ে Login
     if (!loginEmail.contains('@')) {
       final snapshot =
-      await remote.findUserByUserId(
-        loginEmail,
-      );
+      await remote.findUserByUserId(loginEmail);
 
       if (snapshot.docs.isEmpty) {
-        return 'User ID not found';
+        throw Exception('User ID not found');
       }
 
-      loginEmail =
-      snapshot.docs.first['email'];
+      loginEmail = snapshot.docs.first['email'];
     }
 
     // Firebase Auth Login
@@ -46,12 +46,10 @@ class AuthRepositoryImpl implements AuthRepository {
 
     // Firestore User Data
     final userDoc =
-    await remote.getUserByUid(
-      credential.user!.uid,
-    );
+    await remote.getUserByUid(credential.user!.uid,);
 
     if (!userDoc.exists) {
-      return 'User data not found';
+      throw Exception('User data not found');
     }
 
     final data = userDoc.data()!;
@@ -62,7 +60,10 @@ class AuthRepositoryImpl implements AuthRepository {
       userDoc.id,
     );
 
-    return data['role'];
+    return LoginResult(
+      role: data['role'] ?? 'user',
+      userId: data['user_id'] ?? '', // 👈 এখানেই actual userId পাওয়া যাচ্ছে
+    );
   }
 
   @override

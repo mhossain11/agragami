@@ -1,10 +1,11 @@
 import 'dart:io';
 
 import '../model/register_model.dart';
+import 'loginResult.dart';
 
 abstract class AuthRepository {
 
-  Future<String?> login({
+  Future<LoginResult?> login({
     required String email,
     required String password,
   });

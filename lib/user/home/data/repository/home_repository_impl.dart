@@ -15,7 +15,8 @@ class HomeRepositoryImpl implements HomeRepository{
   Future<HomeData> localCachedUserInfo() async{
     final name = CacheHelper().getString('names') ?? '';
     final docId = CacheHelper().getString('userDocId') ?? '';
-    return HomeData(name: name, userDocId: docId);
+    final userId = CacheHelper().getString('userId') ?? '';
+    return HomeData(name: name, userDocId: docId,userId: userId);
   }
 
   @override

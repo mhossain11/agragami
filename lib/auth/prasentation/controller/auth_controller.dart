@@ -112,22 +112,30 @@ class AuthController extends GetxController with WidgetsBindingObserver {
 
       TextInput.finishAutofillContext();
 
-      if (result == 'admin') {
-        await CacheHelper().setLoggedIn(true);
-        await CacheHelper().setString('userId', emailController.text.trim());
+      if (result == null) {
+        Get.snackbar(
+          'Login Failed',
+          'Something went wrong',
+          snackPosition: SnackPosition.BOTTOM,
+        );
+        return;
+      }
+
+      await CacheHelper().setLoggedIn(true);
+      await CacheHelper().setString('userId', result.userId); // 👈 Firestore এর real user_id
+      await CacheHelper().setString('isRole', result.role);
+
+      if (result.role == 'admin') {
         Get.offAllNamed(AppRoutes.adminHome);
 
-      } else if (result == 'user') {
-
-        await CacheHelper().setLoggedIn(true);
-        await CacheHelper().setString('userId', emailController.text.trim());
+      } else if (result.role == 'user') {
         Get.offAllNamed(AppRoutes.home);
 
       } else {
 
         Get.snackbar(
           'Login Failed',
-          result ?? 'Something went wrong',
+          'Something went wrong',
           snackPosition:
           SnackPosition.BOTTOM,
         );
@@ -141,9 +149,8 @@ class AuthController extends GetxController with WidgetsBindingObserver {
 
       Get.snackbar(
         'Error',
-        'Something went wrong',
-        snackPosition:
-        SnackPosition.BOTTOM,
+        e.toString().replaceFirst('Exception: ', ''),
+        snackPosition: SnackPosition.BOTTOM,
       );
 
     } finally {
