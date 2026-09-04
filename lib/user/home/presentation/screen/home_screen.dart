@@ -1,8 +1,8 @@
   import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../../../core/routes/app_routes.dart';
 import '../../../about_us/screen/aboutus_screen.dart';
-import '../../../money record/screen/user_money_record_screen.dart';
 import '../../../profile/screen/profile_screen.dart';
 import '../../../userlist/screen/userlist_screen.dart';
 import '../../widgets/buildCardRow.dart';
@@ -180,9 +180,7 @@ class HomeScreen extends GetView<HomeController> {
                         title: 'Transaction Report',
                         imagePath: 'assets/images/transactional.png',
                         color: Colors.red,
-                        onTap: () => Navigator.push(context,
-                            MaterialPageRoute(builder: (_) => UserMoneyRecordScreen())),
-                      ),
+                        onTap: () => Get.toNamed(AppRoutes.moneyRecord),),
                       second: HomeCardData(
                         title: 'Members List',
                         imagePath: 'assets/images/userlist.png',

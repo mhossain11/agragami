@@ -6,6 +6,8 @@ import '../../admin/home/screen/adminhome_screen.dart';
 import '../../auth/binding/auth_binding.dart';
 import '../../auth/prasentation/screen/login_screen.dart';
 import '../../user/home/presentation/screen/home_screen.dart';
+import '../../user/money record/binding/moneyRecordBinding.dart';
+import '../../user/money record/presentation/screen/user_money_record_screen.dart';
 import '../cachehelper/chechehelper.dart';
 import 'app_routes.dart';
 
@@ -48,6 +50,13 @@ class AppPages {
       name: AppRoutes.home,
       page: () => const HomeScreen(),
       binding: HomeBinding(),
+      transition: Transition.fadeIn,
+    ),
+
+    GetPage(
+      name: AppRoutes.moneyRecord,
+      page: () => const UserMoneyRecordScreen(),
+      binding: MoneyRecordBinding(),
       transition: Transition.fadeIn,
     ),
 

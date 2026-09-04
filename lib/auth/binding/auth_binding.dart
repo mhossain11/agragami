@@ -6,7 +6,7 @@ import '../../../core/services/firebase_auth_service.dart';
 import '../../../core/services/firestore_service.dart';
 
 import '../data/datasource/auth_remote_datasource.dart';
-import '../data/repository/auth_repository_impl.dart';
+import '../data/repository_impl/auth_repository_impl.dart';
 import '../domain/repository/auth_repository.dart';
 import '../prasentation/controller/auth_controller.dart';
 
