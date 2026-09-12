@@ -1,13 +1,15 @@
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import '../../../core/cachehelper/chechehelper.dart';
 import '../../../core/cachehelper/toast.dart';
+import '../../../core/services/firebase_auth_service.dart';
+import '../../../core/services/firestore_service.dart';
 import '../../../core/widgets/text_field.dart';
 import '../../../res/apptextstyle.dart';
 import '../../edit_data/screen/editdata_screen.dart';
-import '../../home/service/adminhome_service.dart';
 import '../../log/service/log_service.dart';
 import '../model/usermodel.dart';
 import '../service/saving_money_service.dart';
@@ -22,6 +24,7 @@ class SavingMoneyScreen extends StatefulWidget {
 class _SavingMoneyScreenState extends State<SavingMoneyScreen> {
   final TextEditingController _searchController = TextEditingController();
   final TextEditingController _amountController = TextEditingController();
+  final TextEditingController _receivedByController = TextEditingController();
   final SavingMoneyService _savingMoneyService = SavingMoneyService();
   final TextEditingController _dateController = TextEditingController();
   //final AdminHomeService _adminHomeService = AdminHomeService();
@@ -113,17 +116,81 @@ class _SavingMoneyScreenState extends State<SavingMoneyScreen> {
     }
   }
 
+  Future<double> getCurrentMonthTotal() async {
+    final String? userDocId =
+    CacheHelper().getString('userDocId');
+
+    if (userDocId == null || userDocId.isEmpty) {
+      throw Exception('User document ID not found');
+    }
+
+    final now = DateTime.now();
+
+    final startOfMonth = DateTime(
+      now.year,
+      now.month,
+      1,
+    );
+
+    final startOfNextMonth = DateTime(
+      now.year,
+      now.month + 1,
+      1,
+    );
+
+    final snapshot = await  FirestoreService.instance.users
+        .doc(userDocId)
+        .collection('Money')
+        .where(
+      'create_time',
+      isGreaterThanOrEqualTo: Timestamp.fromDate(startOfMonth),
+    )
+        .where(
+      'create_time',
+      isLessThan: Timestamp.fromDate(startOfNextMonth),
+    )
+        .get();
+
+    double total = 0;
+
+    for (final doc in snapshot.docs) {
+      final amount = doc.data()['amount'];
+
+      if (amount is num) {
+        total += amount.toDouble();
+      } else if (amount is String) {
+        total += double.tryParse(amount) ?? 0;
+      }
+    }
+
+    return total;
+  }
+
   Future<void> _handleAddMoney() async {
     if (_amountController.text.isEmpty) return;
 
     setState(() => _isLoading = true);
 
     try {
+      final double amount =
+      double.parse(_amountController.text.trim());
+
+      // এই মাসের আগের total
+      final double previousTotal =
+      await getCurrentMonthTotal();
+
+      // নতুন amount যোগ করে এই মাসের total
+      final double totalAmount =
+          previousTotal + amount;
+
       await _savingMoneyService.addMoney(
         userId: _searchController.text,
         paymentMethod: _selectedMethod,
         amount: double.parse(_amountController.text),
         datetime: _dateController.text,
+        createTime:DateTime.now(),
+        receivedBy: _receivedByController.text,
+        totalAmount: totalAmount.toString(),
       );
 
       setState(() {
@@ -161,6 +228,7 @@ class _SavingMoneyScreenState extends State<SavingMoneyScreen> {
     super.dispose();
     _searchController.dispose();
     _amountController.dispose();
+    _receivedByController.dispose();
   }
 
   @override
@@ -285,6 +353,11 @@ class _SavingMoneyScreenState extends State<SavingMoneyScreen> {
                         ),
                       ),
                     ),
+                    const SizedBox(height: 20),
+                    CustomTextField(controller: _receivedByController,
+                      labelText: 'Received By/In Name',),
+                    const SizedBox(height: 20),
+                    //button
                     Container(
                         padding:EdgeInsets.all(5),
                         width: 200,

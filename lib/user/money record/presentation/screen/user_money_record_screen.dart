@@ -352,7 +352,7 @@ class UserMoneyRecordScreen extends GetView<MoneyRecordController> {
               width: double.infinity,
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [Colors.red.shade600, Colors.red.shade400],
+                  colors: [Colors.red.shade400, Colors.red.shade400],
                   begin: Alignment.centerLeft,
                   end: Alignment.centerRight,
                 ),
@@ -373,12 +373,7 @@ class UserMoneyRecordScreen extends GetView<MoneyRecordController> {
                     children: [
                       Text(
                         'Total Balance',
-                        style: TextStyle(color: Colors.white70, fontSize: 13),
-                      ),
-                      SizedBox(height: 4),
-                      Text(
-                        'Sum of all records',
-                        style: TextStyle(color: Colors.white54, fontSize: 11),
+                        style: TextStyle(color: Colors.white, fontSize: 16),
                       ),
                     ],
                   ),

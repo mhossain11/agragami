@@ -2,7 +2,8 @@ import 'package:Agragami/user/home/binding/home_binding.dart';
 import 'package:get/get.dart';
 
 
-import '../../admin/home/screen/adminhome_screen.dart';
+import '../../admin/home/binding/admin_home_binding.dart';
+import '../../admin/home/view/admin_home_screen.dart';
 import '../../auth/binding/auth_binding.dart';
 import '../../auth/prasentation/screen/login_screen.dart';
 import '../../user/home/presentation/screen/home_screen.dart';
@@ -42,7 +43,7 @@ class AppPages {
     GetPage(
       name: AppRoutes.adminHome,
       page: () => const AdminHomeScreen(),
-      binding: AuthBinding(),
+      binding: AdminHomeBinding(),
       transition: Transition.fadeIn,
     ),
 
