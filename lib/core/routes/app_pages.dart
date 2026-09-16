@@ -1,3 +1,4 @@
+import 'package:Agragami/admin/monthly_paid&unpaid_report/view/screen/monthlyReport_screen.dart';
 import 'package:Agragami/admin/monthly_report/binding/moneyRecordBinding.dart';
 import 'package:Agragami/admin/monthly_report/view/screen/monthlyReport_screen.dart';
 import 'package:Agragami/user/home/binding/home_binding.dart';
@@ -6,6 +7,7 @@ import 'package:get/get.dart';
 
 import '../../admin/home/binding/admin_home_binding.dart';
 import '../../admin/home/view/admin_home_screen.dart';
+import '../../admin/monthly_paid&unpaid_report/binding/moneyRecordBinding.dart';
 import '../../auth/binding/auth_binding.dart';
 import '../../auth/prasentation/screen/login_screen.dart';
 import '../../user/home/presentation/screen/home_screen.dart';
@@ -67,6 +69,13 @@ class AppPages {
       name: AppRoutes.monthlyReport,
       page: () => MonthlyReportPage(),
       binding: MonthlyReportBinding(),
+      transition: Transition.fadeIn,
+    ),
+
+    GetPage(
+      name: AppRoutes.monthlyPaidUnpaidReport,
+      page: () => MonthlyPaidUnpaidReportPage(),
+      binding: MonthlyPaidUnpaidReportBinding(),
       transition: Transition.fadeIn,
     ),
 

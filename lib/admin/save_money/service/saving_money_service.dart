@@ -37,7 +37,7 @@ class SavingMoneyService {
     required String userId,
     required double amount,
     required String paymentMethod,
-    required String datetime,
+    required DateTime datetime,
     required String receivedBy,
     required DateTime createTime,
     required String totalAmount,
@@ -49,19 +49,27 @@ class SavingMoneyService {
         throw Exception('User document ID not found');
       }
 
-      // Step 2: Money subcollection এ add করা
-      final docRef= await _firestore
+      // Step 2: Money subcollection এ add কর
+
+      final docRef = _firestore
           .collection('users')
-          .doc(userDocId)
-          .collection('Money');
-        /*  .add({
-        'amount': amount,
-        'payment_method': paymentMethod,
-        'date&time': datetime,
-        'create_time':createTime,
-        'received_by': receivedBy,
-        'total_amount': totalAmount
-      });*/
+          .doc(userDocId);
+
+
+      // ==========================================
+      // MONEY COLLECTION
+      // ==========================================
+
+      final moneyCollection = docRef.collection('Money');
+
+      // ==========================================
+      // CURRENT MONTH
+      // ==========================================
+
+      final paymentMonth =
+          '${datetime.year}-'
+          '${datetime.month.toString().padLeft(2, '0')}';
+
       final DateTime startOfMonth = DateTime(
         createTime.year,
         createTime.month,
@@ -74,18 +82,17 @@ class SavingMoneyService {
         1,
       );
 
-      final snapshot = await docRef
+      final snapshot = await moneyCollection
           .where(
-        'create_time',
+        'date&time',
         isGreaterThanOrEqualTo:
         Timestamp.fromDate(startOfMonth),
       )
           .where(
-        'create_time',
+        'date&time',
         isLessThan:
         Timestamp.fromDate(startOfNextMonth),
-      )
-          .get();
+      ).get();
 
       // Current month's total
       double monthlyTotal = 0;
@@ -104,7 +111,7 @@ class SavingMoneyService {
 
       monthlyTotal += amount;
 
-      final moneyCollection = await docRef.add({
+      final moneyDoc = await moneyCollection.add({
         'amount': amount,
         'payment_method': paymentMethod,
         'date&time': datetime,
@@ -114,8 +121,16 @@ class SavingMoneyService {
         // ⭐ Current month's total
         'total_amount': monthlyTotal,
       });
+
+      await docRef.update({
+        'payment_status.$paymentMonth': true,
+        'total_amount': monthlyTotal,
+      });
+
       await CacheHelper().setString('moneyDocID', moneyCollection.id);
       print('MoneyDocId:${moneyCollection.id}');
+      print('Payment Status Updated: '
+            '$paymentMonth = true',);
       print('Money added successfully!');
     } catch (e) {
       print('Error adding money: $e');

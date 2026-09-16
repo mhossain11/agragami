@@ -1,3 +1,4 @@
+import 'package:Agragami/admin/monthly_paid&unpaid_report/view/screen/monthlyReport_screen.dart';
 import 'package:Agragami/admin/monthly_report/view/screen/monthlyReport_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -53,12 +54,17 @@ class AdminHomeScreen extends GetView<AdminHomeController> {
                 ),
               ),
               const SizedBox(height: 10),
-              DashboardMenuCard(
-                assetPath: 'assets/images/notes.png',
-                label: 'Monthly Reports',
-                width: 300,
-                maxLines: 2,
-                onTap: () => Get.to(() => MonthlyReportPage()),
+              _buildRow(
+                left: DashboardMenuCard(
+                  assetPath: 'assets/images/taka.png',
+                  label: 'Monthly Report',
+                  onTap: () => Get.to(() => MonthlyReportPage()),
+                ),
+                right: DashboardMenuCard(
+                  assetPath: 'assets/images/userlist.png',
+                  label: 'Paid & Unpaid Report',
+                  onTap: () => Get.to(() => MonthlyPaidUnpaidReportPage()),
+                ),
               ),
               _buildRow(
                 left: DashboardMenuCard(

@@ -6,6 +6,7 @@ abstract class AppRoutes {
   static const String adminHome = '/adminHome';
   static const String register = '/register';
   static const String monthlyReport = '/monthlyReport';
+  static const String monthlyPaidUnpaidReport = '/monthlyPaidUnpaidReport';
 
   static const String skills = '/skills';
   static const String projects = '/projects';

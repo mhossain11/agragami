@@ -183,11 +183,15 @@ class _SavingMoneyScreenState extends State<SavingMoneyScreen> {
       final double totalAmount =
           previousTotal + amount;
 
+      final DateTime selectedDate =
+      DateFormat('dd MMM yyyy')
+          .parse(_dateController.text);
+
       await _savingMoneyService.addMoney(
         userId: _searchController.text,
         paymentMethod: _selectedMethod,
         amount: double.parse(_amountController.text),
-        datetime: _dateController.text,
+        datetime: selectedDate,
         createTime:DateTime.now(),
         receivedBy: _receivedByController.text,
         totalAmount: totalAmount.toString(),
@@ -212,8 +216,8 @@ class _SavingMoneyScreenState extends State<SavingMoneyScreen> {
     DateTime? pickedDate = await showDatePicker(
       context: context,
       initialDate: DateTime.now(),
-      firstDate: DateTime(2020),
-      lastDate: DateTime(2100),
+      firstDate: DateTime(2026),
+      lastDate: DateTime(3000),
     );
 
     if (pickedDate != null) {
