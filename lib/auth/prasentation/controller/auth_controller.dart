@@ -283,7 +283,7 @@ class AuthController extends GetxController with WidgetsBindingObserver {
   Future<void> logout() async {
     await repository.logout();
 
-    await CacheHelper().clear();
+    await CacheHelper().clearSession();
 
     Get.offAllNamed('/login');
   }
@@ -305,7 +305,7 @@ class AuthController extends GetxController with WidgetsBindingObserver {
     if (!isLoggedIn) return;
 
     await repository.logout();
-    await CacheHelper().clear();
+    await CacheHelper().clearSession();
   }
 
   @override
