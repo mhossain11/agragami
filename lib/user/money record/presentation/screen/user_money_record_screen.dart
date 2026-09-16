@@ -389,56 +389,128 @@ class UserMoneyRecordScreen extends GetView<MoneyRecordController> {
               ),
             ),
 
-            // =====================
-            // Data Table Card
-            // =====================
+            /// =====================
+            /// Data Table Card
+            /// =====================
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(14, 4, 14, 14),
                 child: Container(
                   decoration: BoxDecoration(
                     color: Colors.white,
-                    borderRadius: BorderRadius.circular(16),
+                    borderRadius: BorderRadius.circular(18),
+                    border: Border.all(
+                      color: Colors.grey.shade200,
+                      width: 1,
+                    ),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.05),
-                        blurRadius: 8,
-                        offset: const Offset(0, 2),
+                        color: Colors.black.withOpacity(0.04),
+                        blurRadius: 12,
+                        offset: const Offset(0, 4),
                       ),
                     ],
                   ),
                   clipBehavior: Clip.antiAlias,
-                  child: SingleChildScrollView(
+                  child: controller.records.isEmpty
+                      ? Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: Colors.red.shade50,
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(
+                            Icons.receipt_long_rounded,
+                            size: 34,
+                            color: Colors.red.shade400,
+                          ),
+                        ),
+                        const SizedBox(height: 14),
+                        Text(
+                          'No Payment Records',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.grey.shade800,
+                          ),
+                        ),
+                        const SizedBox(height: 5),
+                        Text(
+                          'No payment data found for this period.',
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: Colors.grey.shade500,
+                          ),
+                        ),
+                      ],
+                    ),
+                  )
+                      : SingleChildScrollView(
                     child: SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
                       child: DataTable(
-                        headingRowHeight: 48,
-                        dataRowMinHeight: 52,
-                        dataRowMaxHeight: 56,
+                        headingRowHeight: 52,
+                        dataRowMinHeight: 62,
+                        dataRowMaxHeight: 68,
+
+                        // =====================
+                        // Header Background
+                        // =====================
                         headingRowColor: WidgetStateProperty.all(
                           Colors.red.shade50,
                         ),
+
+                        // =====================
+                        // Header Text
+                        // =====================
                         headingTextStyle: TextStyle(
                           color: Colors.red.shade700,
-                          fontWeight: FontWeight.bold,
+                          fontWeight: FontWeight.w700,
                           fontSize: 13,
                         ),
-                        dataTextStyle: const TextStyle(
+
+                        // =====================
+                        // Body Text
+                        // =====================
+                        dataTextStyle: TextStyle(
                           fontSize: 13,
-                          color: Colors.black87,
+                          color: Colors.grey.shade800,
                         ),
-                        dividerThickness: 0.4,
-                        columnSpacing: 28,
+
+                        dividerThickness: 0.5,
+
+                        columnSpacing: 30,
+
+                        horizontalMargin: 18,
+
                         columns: const [
-                          DataColumn(label: Text('SL')),
-                          DataColumn(label: Text('Money ID')),
-                          DataColumn(label: Text('Amount')),
-                          DataColumn(label: Text('Method')),
-                          DataColumn(label: Text('Date & Time')),
-                          DataColumn(label: Text('Received By')),
-                          DataColumn(label: Text('Total Amount')),
-                          DataColumn(label: Text('')), // copy icon column
+                          DataColumn(
+                            label: Text('SL'),
+                          ),
+                          DataColumn(
+                            label: Text('Money ID'),
+                          ),
+                          DataColumn(
+                            label: Text('Amount'),
+                          ),
+                          DataColumn(
+                            label: Text('Method'),
+                          ),
+                          DataColumn(
+                            label: Text('Date & Time'),
+                          ),
+                          DataColumn(
+                            label: Text('Received By'),
+                          ),
+                          DataColumn(
+                            label: Text(''),
+                          ),
                         ],
+
                         rows: controller.records.asMap().entries.map((entry) {
                           final index = entry.key;
                           final record = entry.value;
@@ -452,95 +524,227 @@ class UserMoneyRecordScreen extends GetView<MoneyRecordController> {
 
                           return DataRow(
                             color: WidgetStateProperty.all(
-                              isEven ? Colors.white : Colors.grey.shade50,
+                              isEven
+                                  ? Colors.white
+                                  : Colors.grey.shade50.withOpacity(0.6),
                             ),
                             cells: [
-                              DataCell(
-                                Text(
-                                  '${index + 1}', // 👈 Serial Number
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.w600,
-                                    color: Colors.black54,
-                                  ),
-                                ),
-                              ),
-                              DataCell(
-                                Text(
-                                  record.id,
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                              ),
-                              DataCell(
-                                Text(
-                                  '৳ ${record.amount.toStringAsFixed(0)}',
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.green,
-                                  ),
-                                ),
-                              ),
+
+                              // =====================
+                              // SL
+                              // =====================
                               DataCell(
                                 Container(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 10, vertical: 4),
+                                  width: 30,
+                                  height: 30,
+                                  alignment: Alignment.center,
                                   decoration: BoxDecoration(
-                                    color: Colors.blue.shade50,
-                                    borderRadius: BorderRadius.circular(20),
+                                    color: Colors.red.shade50,
+                                    shape: BoxShape.circle,
                                   ),
                                   child: Text(
-                                    record.paymentMethod,
+                                    '${index + 1}',
                                     style: TextStyle(
-                                      color: Colors.blue.shade700,
                                       fontSize: 12,
-                                      fontWeight: FontWeight.w600,
+                                      fontWeight: FontWeight.w700,
+                                      color: Colors.red.shade700,
                                     ),
                                   ),
                                 ),
                               ),
+
+                              // =====================
+                              // Money ID
+                              // =====================
                               DataCell(
-                                Text(
-                                  formattedDate,
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: Colors.grey.shade600,
-                                  ),
-                                ),
-                              ),
-                              DataCell(
-                                Text(
-                                  record.receivedBy,
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: Colors.grey.shade600,
-                                  ),
-                                ),
-                              ),
-                              DataCell(                                        // 👈 নতুন cell
-                                Text(
-                                  '৳ ${controller.totalForRecord(record.id).toStringAsFixed(0)}',
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.w600,
-                                    color: Colors.orange.shade800,
-                                  ),
-                                ),
-                              ),
-                              DataCell(
-                                IconButton(
-                                  icon: Icon(Icons.copy_rounded,
-                                      color: Colors.grey.shade500, size: 18),
-                                  onPressed: () async {
-                                    await Clipboard.setData(
-                                        ClipboardData(text: record.id));
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content: Text('Copied: ${record.id}'),
-                                        behavior: SnackBarBehavior.floating,
-                                        backgroundColor: Colors.black87,
+                                Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(
+                                      Icons.receipt_rounded,
+                                      size: 17,
+                                      color: Colors.grey.shade500,
+                                    ),
+                                    const SizedBox(width: 7),
+                                    Text(
+                                      record.id,
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.w600,
+                                        fontSize: 12,
                                       ),
-                                    );
-                                  },
+                                    ),
+                                  ],
+                                ),
+                              ),
+
+                              // =====================
+                              // Amount
+                              // =====================
+                              DataCell(
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 11,
+                                    vertical: 7,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: Colors.green.shade50,
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  child: Text(
+                                    '৳ ${record.amount.toStringAsFixed(0)}',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.w800,
+                                      color: Colors.green.shade700,
+                                      fontSize: 13,
+                                    ),
+                                  ),
+                                ),
+                              ),
+
+                              // =====================
+                              // Payment Method
+                              // =====================
+                              DataCell(
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 11,
+                                    vertical: 6,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: Colors.blue.shade50,
+                                    borderRadius: BorderRadius.circular(20),
+                                    border: Border.all(
+                                      color: Colors.blue.shade100,
+                                    ),
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(
+                                        Icons.payment_rounded,
+                                        size: 14,
+                                        color: Colors.blue.shade700,
+                                      ),
+                                      const SizedBox(width: 5),
+                                      Text(
+                                        record.paymentMethod,
+                                        style: TextStyle(
+                                          color: Colors.blue.shade700,
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w700,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+
+                              // =====================
+                              // Date & Time
+                              // =====================
+                              DataCell(
+                                Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.all(7),
+                                      decoration: BoxDecoration(
+                                        color: Colors.orange.shade50,
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      child: Icon(
+                                        Icons.calendar_month_rounded,
+                                        size: 16,
+                                        color: Colors.orange.shade700,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 9),
+                                    Text(
+                                      formattedDate,
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w600,
+                                        color: Colors.grey.shade700,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+
+                              // =====================
+                              // Received By
+                              // =====================
+                              DataCell(
+                                Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    CircleAvatar(
+                                      radius: 15,
+                                      backgroundColor: Colors.purple.shade50,
+                                      child: Icon(
+                                        Icons.person_rounded,
+                                        size: 17,
+                                        color: Colors.purple.shade600,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      record.receivedBy,
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w600,
+                                        color: Colors.grey.shade700,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+
+                              // =====================
+                              // Copy Button
+                              // =====================
+                              DataCell(
+                                Container(
+                                  width: 34,
+                                  height: 34,
+                                  decoration: BoxDecoration(
+                                    color: Colors.grey.shade100,
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: IconButton(
+                                    padding: EdgeInsets.zero,
+                                    splashRadius: 20,
+                                    icon: Icon(
+                                      Icons.copy_rounded,
+                                      color: Colors.grey.shade600,
+                                      size: 17,
+                                    ),
+                                    onPressed: () async {
+                                      await Clipboard.setData(
+                                        ClipboardData(
+                                          text: record.id,
+                                        ),
+                                      );
+
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(
+                                        SnackBar(
+                                          content: Text(
+                                            'Copied: ${record.id}',
+                                          ),
+                                          behavior:
+                                          SnackBarBehavior.floating,
+                                          backgroundColor: Colors.black87,
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                            BorderRadius.circular(10),
+                                          ),
+                                          duration:
+                                          const Duration(seconds: 1),
+                                        ),
+                                      );
+                                    },
+                                  ),
                                 ),
                               ),
                             ],

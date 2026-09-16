@@ -12,10 +12,6 @@ class MonthlyController extends GetxController {
 
   final RxBool isLoading = false.obs;
 
-  final RxList<Map<String, dynamic>>
-  unpaidUsers =
-      <Map<String, dynamic>>[].obs;
-
   final RxInt selectedYear =
       DateTime.now().year.obs;
 
@@ -25,8 +21,6 @@ class MonthlyController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-
-    // প্রথমবার page open হলেই report load হবে
     loadReport();
   }
 
@@ -73,4 +67,3 @@ class MonthlyController extends GetxController {
     loadReport();
   }
 }
-

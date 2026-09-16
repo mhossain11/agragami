@@ -90,7 +90,7 @@ class MonthlyService {
         // -------------------------
 
         final timestamp =
-        data['date&tim'];
+        data['create_time'];
 
         if (timestamp is! Timestamp) {
           print(
@@ -183,60 +183,6 @@ class MonthlyService {
 
     return result;
   }
-
-  Future<List<Map<String, dynamic>>> getUnpaidMembers({
-    required int year,
-    required int month,
-  }) async {
-    final List<Map<String, dynamic>>
-    unpaidUsers = [];
-
-    final paymentMonth =
-        '${year}-'
-        '${month.toString().padLeft(2, '0')}';
-
-    final usersSnapshot =
-    await firestoreService.users.get();
-
-    for (final userDoc
-    in usersSnapshot.docs) {
-      final userData =
-      userDoc.data();
-
-      final paymentStatus =
-      userData['payment_status'];
-
-      bool isPaid = false;
-
-      if (paymentStatus
-      is Map<String, dynamic>) {
-        isPaid =
-            paymentStatus[paymentMonth] ==
-                true;
-      }
-
-      // No true status = unpaid
-      if (!isPaid) {
-        unpaidUsers.add({
-          'userDocumentId':
-          userDoc.id,
-
-          'userId':
-          userData['user_id']
-              ?.toString() ??
-              userDoc.id,
-
-          'userName':
-          userData['name']
-              ?.toString() ??
-              '',
-        });
-      }
-    }
-
-    return unpaidUsers;
-  }
-
 
   double _toDouble(dynamic value) {
     if (value == null) {
