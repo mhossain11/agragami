@@ -7,7 +7,7 @@ import 'package:get/get.dart';
 import '../../../admin/id_create/screen/create_id_screen.dart';
 import '../../../contact/screen/contact_screen.dart';
 import '../../../developer/developer_screen.dart';
-import '../../deleteid/screen/deleteid_screen.dart';
+import '../../delete_User/screen/deleteid_screen.dart';
 import '../../id_list/screen/id_list_screen.dart';
 import '../../log/screen/log_screen.dart';
 import '../../moneydelete/screen/moneydelete_screen.dart';
@@ -109,7 +109,7 @@ class AdminHomeScreen extends GetView<AdminHomeController> {
                 label: 'Delete Id',
                 width: 150.w,
                 height: 150.h,
-                onTap: () => Get.to(() => DeleteIdScreen()),
+                onTap: () => Get.to(() => DeleteUserScreen()),
               ),
               const SizedBox(height: 10),
               DashboardMenuCard(

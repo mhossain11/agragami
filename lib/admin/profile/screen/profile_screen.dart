@@ -61,6 +61,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         _birthdateController.text = user.birthdate;
         _profileImageUrl = user.profileImage; // 🔹 Add this field in your user model
       });
+      await CacheHelper().setString('email', _emailController.text.trim());
     }
   }
   Future<void> _logout(BuildContext context) async {
