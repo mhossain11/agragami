@@ -387,7 +387,7 @@ class _DeleteUserScreenState extends State<DeleteUserScreen> {
         userid: adminId,
         oldData: 'N/A',
         newData: userId,
-        note: 'User ID: $userId deleted',
+        note: 'User ID: $userId deleted All money record',
       );
 
       if (!mounted) return;

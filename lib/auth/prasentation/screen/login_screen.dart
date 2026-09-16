@@ -141,8 +141,8 @@ class LoginScreen extends GetView<AuthController> {
                         } else {
 
                           final userIdRegex =
-                          RegExp(r'^AG\d{4}[UA]\d{3}$',);
-                         // RegExp(r'^AG\d{2}[MA]\d{3}$');
+                         // RegExp(r'^AG\d{4}[UA]\d{3}$',);
+                          RegExp(r'^AG\d{2}[MA]\d{3}$');
 
                           if (!userIdRegex.hasMatch(
                               value.trim())) {

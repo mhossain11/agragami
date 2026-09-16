@@ -56,12 +56,12 @@ class AdminHomeScreen extends GetView<AdminHomeController> {
               const SizedBox(height: 10),
               _buildRow(
                 left: DashboardMenuCard(
-                  assetPath: 'assets/images/taka.png',
+                  assetPath: 'assets/images/report.png',
                   label: 'Monthly Report',
                   onTap: () => Get.to(() => MonthlyReportPage()),
                 ),
                 right: DashboardMenuCard(
-                  assetPath: 'assets/images/userlist.png',
+                  assetPath: 'assets/images/paid&unpaid.png',
                   label: 'Paid & Unpaid Report',
                   maxLines: 2,
                   onTap: () => Get.to(() => MonthlyPaidUnpaidReportPage()),
@@ -106,7 +106,8 @@ class AdminHomeScreen extends GetView<AdminHomeController> {
               ),
               DashboardMenuCard(
                 assetPath: 'assets/images/delete_id.png',
-                label: 'Delete Id',
+                label: 'Delete All Money Records',
+                maxLines: 2,
                 width: 150.w,
                 height: 150.h,
                 onTap: () => Get.to(() => DeleteUserScreen()),
