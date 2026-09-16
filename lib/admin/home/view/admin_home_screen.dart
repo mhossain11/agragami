@@ -63,6 +63,7 @@ class AdminHomeScreen extends GetView<AdminHomeController> {
                 right: DashboardMenuCard(
                   assetPath: 'assets/images/userlist.png',
                   label: 'Paid & Unpaid Report',
+                  maxLines: 2,
                   onTap: () => Get.to(() => MonthlyPaidUnpaidReportPage()),
                 ),
               ),

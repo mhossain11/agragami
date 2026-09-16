@@ -396,7 +396,12 @@ class _SavingMoneyScreenState extends State<SavingMoneyScreen> {
                               name: _userData!.name,
                               email: _userData!.email,
                               userId: _userData!.userid,
-                              money: currentAmount!,)));
+                              money: currentAmount!,
+                              paymentMethod: _selectedMethod,
+                              receivedBy: _receivedByController.text,
+                              dateTime: DateFormat('dd MMM yyyy').parse(_dateController.text,),
+                              moneyDocId: CacheHelper().getString('moneyDocID') ?? '',
+                            )));
 
 
                             _searchController.clear();

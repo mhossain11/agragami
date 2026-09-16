@@ -127,7 +127,7 @@ class SavingMoneyService {
         'total_amount': monthlyTotal,
       });
 
-      await CacheHelper().setString('moneyDocID', moneyCollection.id);
+      await CacheHelper().setString('moneyDocID', moneyDoc.id);
       print('MoneyDocId:${moneyCollection.id}');
       print('Payment Status Updated: '
             '$paymentMonth = true',);
