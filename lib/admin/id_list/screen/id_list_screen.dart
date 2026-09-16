@@ -1,3 +1,4 @@
+/*
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../../core/cachehelper/toast.dart';
@@ -14,6 +15,85 @@ class IdListScreen extends StatefulWidget {
 
 class _IdListScreenState extends State<IdListScreen> {
   final IdListService idListService = IdListService();
+
+  Future<void> _showDeleteDialog(
+      BuildContext context, {
+        required String docId,
+        required String userId,
+        required String userName,
+        required String type,
+      }) async {
+    final bool? confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: const Row(
+            children: [
+              Icon(
+                Icons.warning_amber_rounded,
+                color: Colors.red,
+              ),
+              SizedBox(width: 8),
+              Text('Delete ID?'),
+            ],
+          ),
+
+          content: Text(
+            'Are you sure you want to delete this ID?\n\n'
+                'User: $userName\n'
+                'User ID: $userId\n'
+                'Type: ${type.toUpperCase()}',
+          ),
+
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(dialogContext, false);
+              },
+              child: const Text('Cancel'),
+            ),
+
+            ElevatedButton.icon(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red,
+                foregroundColor: Colors.white,
+              ),
+              onPressed: () {
+                Navigator.pop(dialogContext, true);
+              },
+              icon: const Icon(Icons.delete),
+              label: const Text('Delete'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirmed != true) return;
+
+    try {
+      await idListService.deleteUser(
+        docId: docId,
+        type: type,
+      );
+
+      if (!context.mounted) return;
+
+      CustomToast().showToast(
+        context,
+        '$userId deleted successfully',
+        Colors.green,
+      );
+    } catch (e) {
+      if (!context.mounted) return;
+
+      CustomToast().showToast(
+        context,
+        'Delete failed: $e',
+        Colors.red,
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -198,6 +278,129 @@ class _IdListScreenState extends State<IdListScreen> {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+*/
+
+import 'package:flutter/material.dart';
+import '../service/id_list_service.dart';
+import '../widgets/id_user_card.dart';
+
+class IdListScreen extends StatefulWidget {
+  const IdListScreen({super.key});
+
+  @override
+  State<IdListScreen> createState() => _IdListScreenState();
+}
+
+class _IdListScreenState extends State<IdListScreen> {
+  final IdListService idListService = IdListService();
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('List of user id'),
+        centerTitle: true,
+      ),
+      body: StreamBuilder<List<Map<String, dynamic>>>(
+        stream: idListService.getUserList(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState ==
+              ConnectionState.waiting) {
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
+          }
+
+          if (snapshot.hasError) {
+            return Center(
+              child: Text(
+                'Error: ${snapshot.error}',
+              ),
+            );
+          }
+
+          final users = snapshot.data ?? [];
+
+          if (users.isEmpty) {
+            return const Center(
+              child: Text('No users found'),
+            );
+          }
+
+          final admins = users
+              .where((user) => user['type'] == 'admin')
+              .toList();
+
+          final normalUsers = users
+              .where((user) => user['type'] == 'user')
+              .toList();
+
+          _sort(admins);
+          _sort(normalUsers);
+
+          return ListView(
+            children: [
+              if (admins.isNotEmpty) ...[
+                _sectionTitle(
+                  'ADMIN LIST (${admins.length})',
+                  Colors.green.shade100,
+                ),
+                ...admins.map(
+                      (user) => IdUserCard(
+                    user: user,
+                    service: idListService,
+                  ),
+                ),
+              ],
+
+              if (normalUsers.isNotEmpty) ...[
+                _sectionTitle(
+                  'USER LIST (${normalUsers.length})',
+                  Colors.red.shade100,
+                ),
+                ...normalUsers.map(
+                      (user) => IdUserCard(
+                    user: user,
+                    service: idListService,
+                  ),
+                ),
+              ],
+            ],
+          );
+        },
+      ),
+    );
+  }
+
+  void _sort(List<Map<String, dynamic>> list) {
+    list.sort(
+          (a, b) => a['user_id']
+          .toString()
+          .compareTo(
+        b['user_id'].toString(),
+      ),
+    );
+  }
+
+  Widget _sectionTitle(
+      String title,
+      Color color,
+      ) {
+    return Container(
+      padding: const EdgeInsets.all(10),
+      color: color,
+      child: Center(
+        child: Text(
+          title,
+          style: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
       ),
     );
   }

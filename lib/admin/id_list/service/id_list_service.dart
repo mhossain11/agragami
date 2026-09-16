@@ -1,3 +1,4 @@
+/*
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:rxdart/rxdart.dart';
 
@@ -54,5 +55,80 @@ class IdListService{
         return allUsers;
       },
     );
+  }
+}*/
+
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:rxdart/rxdart.dart';
+
+class IdListService {
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
+  final String authId = 'HUbPbYgwEss4dIE4Uiv8';
+
+  Stream<List<Map<String, dynamic>>> getUserList() {
+    final adminStream = _firestore
+        .collection('auth')
+        .doc(authId)
+        .collection('admin')
+        .snapshots();
+
+    final userStream = _firestore
+        .collection('auth')
+        .doc(authId)
+        .collection('user')
+        .snapshots();
+
+    return Rx.combineLatest2(
+      adminStream,
+      userStream,
+          (
+          QuerySnapshot adminSnap,
+          QuerySnapshot userSnap,
+          ) {
+        final List<Map<String, dynamic>> allUsers = [];
+
+        // Admin
+        for (final doc in adminSnap.docs) {
+          final data = doc.data() as Map<String, dynamic>;
+
+          allUsers.add({
+            'docId': doc.id,
+            'user_id': data['user_id'] ?? 'N/A',
+            'user': data['user'] ?? 'N/A',
+            'type': 'admin',
+          });
+        }
+
+        // User
+        for (final doc in userSnap.docs) {
+          final data = doc.data() as Map<String, dynamic>;
+
+          allUsers.add({
+            'docId': doc.id,
+            'user_id': data['user_id'] ?? 'N/A',
+            'user': data['user'] ?? 'N/A',
+            'type': 'user',
+          });
+        }
+
+        return allUsers;
+      },
+    );
+  }
+
+  // 🔴 Delete Admin/User ID record
+  Future<void> deleteUser({
+    required String docId,
+    required String type,
+  }) async {
+    final collectionName = type == 'admin' ? 'admin' : 'user';
+
+    await _firestore
+        .collection('auth')
+        .doc(authId)
+        .collection(collectionName)
+        .doc(docId)
+        .delete();
   }
 }
