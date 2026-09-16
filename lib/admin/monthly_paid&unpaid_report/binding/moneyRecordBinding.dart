@@ -1,6 +1,7 @@
 import 'package:Agragami/admin/monthly_report/view/controller/monthly_controller.dart';
 import 'package:get/get.dart';
 import '../service/monthly_service.dart';
+import '../view/controller/monthly_controller.dart';
 
 
 class MonthlyPaidUnpaidReportBinding extends Bindings {
@@ -8,6 +9,6 @@ class MonthlyPaidUnpaidReportBinding extends Bindings {
   void dependencies() {
     Get.lazyPut<MonthlyService>(() => MonthlyService());
 
-    Get.lazyPut<MonthlyController>(() => MonthlyController());
+    Get.lazyPut<MonthlyPaidUnpaidController>(() => MonthlyPaidUnpaidController());
   }
 }

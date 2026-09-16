@@ -3,8 +3,6 @@ import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 
 import '../controller/monthly_controller.dart';
-import '../widgets/paidReportView.dart';
-import '../widgets/unpaidReportView.dart';
 
 class MonthlyReportPage extends StatelessWidget {
   MonthlyReportPage({super.key});
@@ -26,7 +24,7 @@ class MonthlyReportPage extends StatelessWidget {
     'December',
   ];
 
-  /*@override
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
@@ -154,167 +152,16 @@ class MonthlyReportPage extends StatelessWidget {
         ),
       ),
     );
-  }*/
-
-  @override
-  Widget build(BuildContext context) {
-    return DefaultTabController(
-      length: 2,
-      child: Scaffold(
-        appBar: AppBar(title: const Text('Monthly Report')),
-
-        body: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            children: [
-              // YEAR + MONTH
-              Row(
-                children: [
-                  Expanded(
-                    child: Obx(
-                      () => DropdownButtonFormField<int>(
-                        value: controller.selectedYear.value,
-                        decoration: const InputDecoration(
-                          labelText: 'Year',
-                          border: OutlineInputBorder(),
-                        ),
-                        items: List.generate(10, (index) {
-                          final year = DateTime.now().year - 5 + index;
-
-                          return DropdownMenuItem<int>(
-                            value: year,
-                            child: Text('$year'),
-                          );
-                        }),
-                        onChanged: (value) {
-                          if (value != null) {
-                            controller.changeYear(value);
-                          }
-                        },
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(width: 12),
-
-                  Expanded(
-                    child: Obx(
-                      () => DropdownButtonFormField<int>(
-                        value: controller.selectedMonth.value,
-                        decoration: const InputDecoration(
-                          labelText: 'Month',
-                          border: OutlineInputBorder(),
-                        ),
-                        items: List.generate(12, (index) {
-                          return DropdownMenuItem<int>(
-                            value: index + 1,
-                            child: Text(months[index]),
-                          );
-                        }),
-                        onChanged: (value) {
-                          if (value != null) {
-                            controller.changeMonth(value);
-                          }
-                        },
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-
-              const SizedBox(height: 16),
-
-              // SUMMARY
-              Obx(
-                () => Row(
-                  children: [
-                    Expanded(
-                      child: _summaryCard(
-                        'Total Members',
-                        '${controller.totalMembers}',
-                      ),
-                    ),
-
-                    const SizedBox(width: 8),
-
-                    Expanded(
-                      child: _summaryCard('Paid', '${controller.paidCount}'),
-                    ),
-
-                    const SizedBox(width: 8),
-
-                    Expanded(
-                      child: _summaryCard(
-                        'Unpaid',
-                        '${controller.unpaidCount}',
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              const SizedBox(height: 16),
-
-              // COLLECTION
-              Obx(
-                () => _summaryCard(
-                  'Total Collection',
-                  '৳${controller.totalCollection.toStringAsFixed(0)}',
-                ),
-              ),
-
-              const SizedBox(height: 16),
-
-              // TABS
-              const TabBar(
-                tabs: [
-                  Tab(text: 'Paid Members'),
-                  Tab(text: 'Unpaid Members'),
-                ],
-              ),
-
-              const SizedBox(height: 10),
-
-              Expanded(
-                child: Obx(() {
-                  if (controller.isLoading.value) {
-                    return const Center(child: CircularProgressIndicator());
-                  }
-
-                  return const TabBarView(
-                    children: [PaidReportView(), UnpaidReportView()],
-                  );
-                }),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
   }
 
 
 
-  Widget _summaryCard(String title, String value) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            Text(title, style: const TextStyle(fontSize: 14)),
-            const SizedBox(height: 6),
-            Text(
-              value,
-              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 
 
-  /*Widget _buildDataTable() {
+
+
+
+  Widget _buildDataTable() {
     final data = controller.report;
 
     return SingleChildScrollView(
@@ -415,5 +262,5 @@ class MonthlyReportPage extends StatelessWidget {
         ),
       ),
     );
-  }*/
+  }
 }

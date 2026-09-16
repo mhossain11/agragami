@@ -16,6 +16,8 @@ class MonthlyPaidUnpaidController extends GetxController {
   final RxList<Map<String, dynamic>> unpaidUsers =
       <Map<String, dynamic>>[].obs;
 
+  final RxSet<String> sentUsers = <String>{}.obs;
+
   final RxBool isLoading = false.obs;
 
   final RxInt selectedYear =
@@ -23,6 +25,14 @@ class MonthlyPaidUnpaidController extends GetxController {
 
   final RxInt selectedMonth =
       DateTime.now().month.obs;
+
+  bool isMessageSent(String userId) {
+    return sentUsers.contains(userId);
+  }
+
+  void markMessageSent(String userId) {
+    sentUsers.add(userId);
+  }
 
   @override
   void onInit() {

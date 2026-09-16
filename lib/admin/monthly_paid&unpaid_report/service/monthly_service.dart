@@ -130,10 +130,10 @@ class MonthlyService {
       bool isPaid = false;
 
       if (paymentStatus is Map) {
-        isPaid =
-            paymentStatus[paymentMonth] == true;
+        isPaid = paymentStatus[paymentMonth] == true;
       }
 
+      // Paid না হলে unpaid
       if (!isPaid) {
         result.add({
           'userDocumentId': userDoc.id,
@@ -144,6 +144,11 @@ class MonthlyService {
 
           'userName':
           userData['name']?.toString() ??
+              '',
+
+          // WhatsApp number
+          'phone':
+          userData['phone']?.toString() ??
               '',
         });
       }

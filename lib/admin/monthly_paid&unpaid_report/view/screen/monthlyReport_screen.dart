@@ -171,7 +171,7 @@ class MonthlyPaidUnpaidReportPage extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text(title,textAlign: TextAlign.center, style: const TextStyle(fontSize: 14)),
+            Text(title,textAlign: TextAlign.center, style: const TextStyle(fontSize: 14,fontWeight: FontWeight.bold)),
             const SizedBox(height: 6),
             Text(
               value,textAlign: TextAlign.center,
