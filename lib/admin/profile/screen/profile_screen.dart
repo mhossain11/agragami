@@ -27,6 +27,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
   final _profileService = UserProfileService();
 
   final _nameController = TextEditingController();
+  final _motherNameController = TextEditingController();
+  final _fatherNameController = TextEditingController();
   final _emailController = TextEditingController();
   final _adminIdController = TextEditingController();
   final _phoneController = TextEditingController();
@@ -52,6 +54,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
       setState(() {
         _nameController.text = user.name;
         _emailController.text = user.email;
+        _motherNameController.text = user.motherName;
+        _fatherNameController.text = user.fatherName;
         _phoneController.text = user.phone;
         _addressController.text = user.address;
         _userIdController.text = user.userId;
@@ -167,6 +171,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
       await _profileService.updateUser(
           widget.userId, {
         'name': _nameController.text.trim(),
+        'motherName':_motherNameController.text.trim(),
+        'fatherName':_fatherNameController.text.trim(),
         'email': _emailController.text.trim(),
         'phone': _phoneController.text.trim(),
         'address': _addressController.text.trim(),
@@ -189,6 +195,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   void dispose() {
     _nameController.dispose();
+    _motherNameController.dispose();
+    _fatherNameController.dispose();
     _emailController.dispose();
     _addressController.dispose();
     _phoneController.dispose();
@@ -283,6 +291,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       enabled:_isEditing ,
                       validator: (value) =>
                       value!.isEmpty ? 'Please enter your name' : null,
+                    ),
+                    const SizedBox(height: 12),
+                    CustomTextField(
+                      controller: _motherNameController,
+                      labelText: 'Mother Name',
+                      enabled: false,
+                      validator: (value) =>
+                      value!.isEmpty ? 'Please enter your mother name' : null,
+                    ),
+                    const SizedBox(height: 12),
+                    CustomTextField(
+                      controller: _fatherNameController,
+                      labelText: 'Father Name',
+                      enabled: false,
+                      validator: (value) =>
+                      value!.isEmpty ? 'Please enter your father name' : null,
                     ),
                     const SizedBox(height: 12),
                       CustomTextField(
