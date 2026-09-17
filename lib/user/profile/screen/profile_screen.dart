@@ -311,7 +311,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                     CustomTextField(
                       controller: _motherNameController,
                       labelText: 'Mother Name',
-                      enabled: false,
+                      enabled: _isEditing,
                       validator: (value) =>
                       value!.isEmpty ? 'Please enter your mother name' : null,
                     ),
@@ -319,7 +319,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                     CustomTextField(
                       controller: _fatherNameController,
                       labelText: 'Father Name',
-                      enabled: false,
+                      enabled: _isEditing,
                       validator: (value) =>
                       value!.isEmpty ? 'Please enter your father name' : null,
                     ),
@@ -354,12 +354,12 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                       labelText: 'NID',
                       enabled: false,
                     ),
+                    const SizedBox(height: 12),
                     CustomTextField(
                       controller: _bloodController,
                       labelText: 'Blood Group',
                       enabled: _isEditing,
                     ),
-                    const SizedBox(height: 12),
                     const SizedBox(height: 12),
                     CustomTextField(
                       controller: _nomineeNameController,

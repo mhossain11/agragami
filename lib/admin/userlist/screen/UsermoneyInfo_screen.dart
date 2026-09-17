@@ -9,11 +9,14 @@ import '../service/userlist_service.dart';
 class UserMoneyInfoScreen extends StatelessWidget {
   final String userId;
   final String name;
+  final String fatherName;
+  final String motherName;
   final String email;
   final String phone;
   final String nid;
   final String birthdate;
   final String address;
+  final String blood;
   final String nomineeName;
   final String nomineeRelation;
 
@@ -24,11 +27,14 @@ class UserMoneyInfoScreen extends StatelessWidget {
     super.key,
     required this.userId,
     required this.name,
+    required this.fatherName,
+    required this.motherName,
     required this.email,
     required this.phone,
     required this.nid,
     required this.birthdate,
     required this.address,
+    required this.blood,
     required this.nomineeName,
     required this.nomineeRelation,
   });
@@ -74,6 +80,12 @@ class UserMoneyInfoScreen extends StatelessWidget {
                           Text('Email: $email',
                               style: const TextStyle(
                                   fontSize: 14, fontWeight: FontWeight.w600)),
+                          Text('Father Name: $fatherName',
+                              style: const TextStyle(
+                                  fontSize: 14, fontWeight: FontWeight.w600)),
+                          Text('Mother Name: $motherName',
+                              style: const TextStyle(
+                                  fontSize: 14, fontWeight: FontWeight.w600)),
                           Text('Cell Number: $phone',
                               style: const TextStyle(
                                   fontSize: 14, fontWeight: FontWeight.w600)),
@@ -81,6 +93,9 @@ class UserMoneyInfoScreen extends StatelessWidget {
                               style: const TextStyle(
                                   fontSize: 14, fontWeight: FontWeight.w600)),
                           Text('Date of Birth: $birthdate',
+                              style: const TextStyle(
+                                  fontSize: 14, fontWeight: FontWeight.w600)),
+                          Text('Blood Group: $blood',
                               style: const TextStyle(
                                   fontSize: 14, fontWeight: FontWeight.w600)),
                           Text('Address: $address',
@@ -139,6 +154,12 @@ class UserMoneyInfoScreen extends StatelessWidget {
                         Text('Email: $email',
                             style: const TextStyle(
                                 fontSize: 14, fontWeight: FontWeight.w600)),
+                        Text('Father Name: $fatherName',
+                            style: const TextStyle(
+                                fontSize: 14, fontWeight: FontWeight.w600)),
+                        Text('Mother Name: $motherName',
+                            style: const TextStyle(
+                                fontSize: 14, fontWeight: FontWeight.w600)),
                         Text('Cell Number: $phone',
                             style: const TextStyle(
                                 fontSize: 14, fontWeight: FontWeight.w600)),
@@ -146,6 +167,9 @@ class UserMoneyInfoScreen extends StatelessWidget {
                             style: const TextStyle(
                                 fontSize: 14, fontWeight: FontWeight.w600)),
                         Text('Date of Birth: $birthdate',
+                            style: const TextStyle(
+                                fontSize: 14, fontWeight: FontWeight.w600)),
+                        Text('Blood Group: $blood',
                             style: const TextStyle(
                                 fontSize: 14, fontWeight: FontWeight.w600)),
                         Text('Address: $address',

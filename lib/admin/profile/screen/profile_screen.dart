@@ -36,6 +36,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   final _addressController = TextEditingController();
   final _nidController = TextEditingController();
   final _birthdateController = TextEditingController();
+  final _bloodController = TextEditingController();
   final _nomineeNameController = TextEditingController();
   final _nomineeRelationController = TextEditingController();
   bool _isLoading = false;
@@ -62,6 +63,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         _nomineeNameController.text = user.nomineeName;
         _nomineeRelationController.text = user.nomineeRelation;
         _nidController.text = user.nid;
+        _bloodController.text = user.blood;
         _birthdateController.text = user.birthdate;
         _profileImageUrl = user.profileImage; // 🔹 Add this field in your user model
       });
@@ -179,6 +181,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         'user_id': _userIdController.text.trim(),
         'nomineeName': _nomineeNameController.text.trim(),
         'nid': _nidController.text.trim(),
+        'blood':_bloodController.text.trim(),
         'birthdate': _birthdateController.text.trim(),
         'profileImage': imageUrl ?? '',
       });
@@ -203,6 +206,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     _userIdController.dispose();
     _nomineeNameController.dispose();
     _nidController.dispose();
+    _bloodController.dispose();
     _birthdateController.dispose();
     _nomineeRelationController.dispose();
     super.dispose();
@@ -294,9 +298,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                     const SizedBox(height: 12),
                     CustomTextField(
+                      controller: _emailController,
+                      labelText: 'Email',
+                      enabled:  false,
+                    ),
+                    const SizedBox(height: 12),
+                    CustomTextField(
                       controller: _motherNameController,
                       labelText: 'Mother Name',
-                      enabled: false,
+                      enabled: _isEditing,
                       validator: (value) =>
                       value!.isEmpty ? 'Please enter your mother name' : null,
                     ),
@@ -304,16 +314,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     CustomTextField(
                       controller: _fatherNameController,
                       labelText: 'Father Name',
-                      enabled: false,
+                      enabled: _isEditing,
                       validator: (value) =>
                       value!.isEmpty ? 'Please enter your father name' : null,
                     ),
-                    const SizedBox(height: 12),
-                      CustomTextField(
-                        controller: _emailController,
-                        labelText: 'Email',
-                        enabled:  false,
-                      ),
                     const SizedBox(height: 12),
                     CustomTextField(
                       controller: _adminIdController,
@@ -350,6 +354,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       enabled:  _isEditing,
                       validator: (value) =>
                       value!.isEmpty ? 'Please enter your birthdate' : null,
+                    ),
+                    const SizedBox(height: 12),
+                    CustomTextField(
+                      controller: _bloodController,
+                      labelText: 'Blood Group',
+                      enabled: _isEditing,
                     ),
                     const SizedBox(height: 12),
                     CustomTextField(

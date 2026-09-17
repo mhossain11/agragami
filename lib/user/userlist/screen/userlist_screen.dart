@@ -139,6 +139,7 @@ class UsersListScreen extends StatelessWidget {
                                     _infoRow('Email', user['email']),
                                     _infoRow('Number', user['phone']),
                                     _infoRow('Birthdate', _formatBirthdate(user['birthdate'])),
+                                    _infoRow('blood', user['blood']),
                                     _infoRow('Address', _getAddress(user)),
                                   ],
                                 ),

@@ -53,15 +53,18 @@ class UserListScreen extends StatelessWidget {
                           onTap: (){
                             Navigator.push(context,MaterialPageRoute(builder: (context)=>
                                 UserMoneyInfoScreen (
-                                  userId: user['user_id'],
-                                  name: user['name'],
-                                  email: user['email'],
-                                  phone: user['phone'],
-                                  nid: user['nid'],
-                                  birthdate: user['birthdate'],
-                                  address: user['address'],
-                                  nomineeName: user['nomineeName'],
-                                  nomineeRelation: user['nomineeRelation'],
+                                  userId: user['user_id']??'N/A',
+                                  name: user['name']??'N/A',
+                                  email: user['email']??'N/A',
+                                  fatherName: user['fatherName']??'N/A',
+                                  motherName: user['motherName']??'N/A',
+                                  phone: user['phone']??'N/A',
+                                  nid: user['nid']??'N/A',
+                                  birthdate: user['birthdate']??'N/A',
+                                  address: user['address']??'N/A',
+                                  blood: user['blood']??'N/A',
+                                  nomineeName: user['nomineeName']??'N/A',
+                                  nomineeRelation: user['nomineeRelation']??'N/A',
                                 )));
                           },
                           child: Card(
