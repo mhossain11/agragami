@@ -6,6 +6,7 @@ import 'package:get/get.dart';
 
 import '../../../admin/id_create/screen/create_id_screen.dart';
 import '../../../contact/screen/contact_screen.dart';
+import '../../../core/routes/app_routes.dart';
 import '../../../developer/developer_screen.dart';
 import '../../delete_User/screen/deleteid_screen.dart';
 import '../../id_list/screen/id_list_screen.dart';
@@ -120,6 +121,15 @@ class AdminHomeScreen extends GetView<AdminHomeController> {
                 height: 150.h,
                 maxLines: 2,
                 onTap: () => Get.to(() => UserMoneyScreen()),
+              ),
+              const SizedBox(height: 10),
+              DashboardMenuCard(
+                assetPath: 'assets/images/transactional.png',
+                label: 'Money Receipt',
+                width: 300.w,
+                height: 150.h,
+                maxLines: 2,
+                onTap: () => Get.toNamed(AppRoutes.adminMonthlyReceipt),
               ),
             ],
           ),

@@ -9,6 +9,16 @@ class SavingMoneyService {
 
   /// 🔍 Search user by user_id and return UserModel or null
   Future<  UserModel?> searchUserById(String userId) async {
+    final result = await searchUserWithDocId(userId);
+    return result?.user;
+  }
+
+  /// 🔍 Search user by user_id and also return its Firestore document id.
+  /// The doc id is cached under 'userDocId' (same side effect as before,
+  /// `addMoney` reads it back from there).
+  Future<({UserModel user, String userDocId})?> searchUserWithDocId(
+    String userId,
+  ) async {
     try {
       final snapshot = await _firestore
           .collection('users')
@@ -17,12 +27,11 @@ class SavingMoneyService {
           .get();
 
       if (snapshot.docs.isNotEmpty) {
-        final data = snapshot.docs.first.data();
-
-        String userDocId = snapshot.docs.first.id;
+        final doc = snapshot.docs.first;
+        final String userDocId = doc.id;
         await CacheHelper().setString('userDocId', userDocId);
 
-        return UserModel.fromJson(data);
+        return (user: UserModel.fromJson(doc.data()), userDocId: userDocId);
       } else {
         return null;
       }

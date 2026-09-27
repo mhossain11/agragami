@@ -89,40 +89,78 @@ class AuthRepositoryImpl implements AuthRepository {
     final uid =
         credential.user!.uid;
 
-    // Upload Image
-    final imageUrl =
-    await remote.uploadProfileImage(
-      imageFile: request.profileImage,
-      userId: request.userId,
-    );
+    // Iske baad ke har step par rollback: wrna Firebase Auth me orphan
+    // account reh jaata (dobara register karne par "email already in use")
+    // aur Firestore doc ban chuka ho toh "User ID already exists" aa jata tha.
+    var userDocCreated = false;
 
-    // Save Firestore
-    await remote.createUser(
-      uid: uid,
-      data: {
-        'uid': uid,
-        'name': request.name,
-        'email': request.email,
-        'fatherName': request.fatherName,
-        'motherName': request.motherName,
-        'role': request.role,
-        'user_id': request.userId,
-        'phone': request.phone,
-        'address': request.address,
-        'birthdate': request.birthdate,
-        'blood': request.blood,
-        'nid': request.nid,
-        'nomineeName': request.nomineeName,
-        'nomineeRelation': request.nomineeRelation,
-        'profileImage': imageUrl,
-        'created_at': FieldValue.serverTimestamp(),
-      },
-    );
-    await remote.addUserDoneField(
-      request.userId,
-    );
+    try {
+
+      // Upload Image
+      final imageUrl =
+      await remote.uploadProfileImage(
+        imageFile: request.profileImage,
+        userId: request.userId,
+      );
+
+      // Save Firestore
+      await remote.createUser(
+        uid: uid,
+        data: {
+          'uid': uid,
+          'name': request.name,
+          'email': request.email,
+          'fatherName': request.fatherName,
+          'motherName': request.motherName,
+          'role': request.role,
+          'user_id': request.userId,
+          'phone': request.phone,
+          'address': request.address,
+          'birthdate': request.birthdate,
+          'blood': request.blood,
+          'nid': request.nid,
+          'nomineeName': request.nomineeName,
+          'nomineeRelation': request.nomineeRelation,
+          'profileImage': imageUrl,
+          'created_at': FieldValue.serverTimestamp(),
+        },
+      );
+
+      userDocCreated = true;
+
+      await remote.addUserDoneField(
+        request.userId,
+      );
+
+    } catch (_) {
+
+      await _rollbackRegistration(
+        uid: uid,
+        deleteUserDoc: userDocCreated,
+      );
+
+      rethrow;
+    }
 
     return "success";
+  }
+
+  // Best-effort rollback: rollback khud fail ho toh bhi original error hi
+  // propagate honi chahiye.
+  Future<void> _rollbackRegistration({
+    required String uid,
+    required bool deleteUserDoc,
+  }) async {
+
+    if (deleteUserDoc) {
+      try {
+        await remote.deleteUserDocument(uid: uid);
+      } catch (_) {}
+    }
+
+    try {
+      await remote.deleteCurrentUser();
+    } catch (_) {}
   }
   @override
   Future<File?> pickImage() async {
@@ -130,7 +168,9 @@ class AuthRepositoryImpl implements AuthRepository {
     final XFile? file =
     await _picker.pickImage(
       source: ImageSource.gallery,
-      imageQuality: 70,
+      imageQuality: 60,
+      maxWidth: 600,
+      maxHeight: 600,
     );
 
     if (file == null) {
@@ -139,7 +179,7 @@ class AuthRepositoryImpl implements AuthRepository {
 
     return File(file.path);
   }
-  
+
   @override
   Future<String?> uploadProfileImage({
     required File imageFile,

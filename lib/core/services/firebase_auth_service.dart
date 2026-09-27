@@ -48,4 +48,14 @@ class FirebaseAuthService {
       password: password.trim(),
     );
   }
+
+  // Registration rollback ke liye: jo naya account abhi bana hai use delete
+  // kare taaki "email already in use" wala orphan account na reh jaaye.
+  Future<void> deleteCurrentUser() async {
+    final user = _auth.currentUser;
+
+    if (user == null) return;
+
+    await user.delete();
+  }
 }

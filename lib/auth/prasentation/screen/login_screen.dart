@@ -6,6 +6,7 @@ import 'package:get/get_state_manager/src/rx_flutter/rx_obx_widget.dart';
 import 'package:get/get_state_manager/src/simple/get_view.dart';
 import '../../../../core/widgets/text_field.dart';
 import '../../../../forgot_password/screen/forgotpassword_screen.dart';
+import '../../binding/auth_binding.dart';
 import 'register_screen.dart';
 import '../controller/auth_controller.dart';
 
@@ -287,8 +288,7 @@ class LoginScreen extends GetView<AuthController> {
                           onPressed: () {
 
                             Get.to(
-                                  () =>
-                              const RegisterScreen(),
+                                  () => const RegisterScreen()
                             );
                           },
 

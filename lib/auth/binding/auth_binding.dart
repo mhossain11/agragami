@@ -9,6 +9,7 @@ import '../data/datasource/auth_remote_datasource.dart';
 import '../data/repository_impl/auth_repository_impl.dart';
 import '../domain/repository/auth_repository.dart';
 import '../prasentation/controller/auth_controller.dart';
+import '../prasentation/controller/auth_register_controller.dart';
 
 class AuthBinding extends Bindings {
 
@@ -59,5 +60,15 @@ class AuthBinding extends Bindings {
     Get.lazyPut<AuthController>(
           () => AuthController(Get.find<AuthRepository>(),),
     );
+
+    // fenix: true -> RegisterScreen is pushed with Get.to() (no binding of
+    // its own), so the controller is linked to the register route and its
+    // factory was deleted on pop -> '"RegisterController" not found' on the
+    // next visit. fenix keeps the factory alive across that pop.
+    Get.lazyPut<RegisterController>(
+          () => RegisterController(Get.find<AuthRepository>(),),
+      fenix: true,
+    );
+
   }
 }

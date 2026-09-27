@@ -66,6 +66,22 @@ class AuthRemoteDataSource {
         .set(data);
   }
 
+  // =========================
+  // Registration rollback
+  // =========================
+
+  Future<void> deleteCurrentUser() {
+    return authService.deleteCurrentUser();
+  }
+
+  Future<void> deleteUserDocument({
+    required String uid,
+  }) {
+    return firestore.users
+        .doc(uid)
+        .delete();
+  }
+
 
   // Check User Already Exists
   Future<Map<String, dynamic>?> checkUserRole(

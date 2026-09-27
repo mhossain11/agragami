@@ -8,6 +8,8 @@ import 'package:get/get.dart';
 import '../../admin/home/binding/admin_home_binding.dart';
 import '../../admin/home/view/admin_home_screen.dart';
 import '../../admin/monthly_paid&unpaid_report/binding/moneyRecordBinding.dart';
+import '../../admin/receipt/binding/admin_monthly_receipt_binding.dart';
+import '../../admin/receipt/screen/admin_monthly_receipt_screen.dart';
 import '../../auth/binding/auth_binding.dart';
 import '../../auth/prasentation/screen/login_screen.dart';
 import '../../user/home/presentation/screen/home_screen.dart';
@@ -76,6 +78,13 @@ class AppPages {
       name: AppRoutes.monthlyPaidUnpaidReport,
       page: () => MonthlyPaidUnpaidReportPage(),
       binding: MonthlyPaidUnpaidReportBinding(),
+      transition: Transition.fadeIn,
+    ),
+
+    GetPage(
+      name: AppRoutes.adminMonthlyReceipt,
+      page: () => const AdminMonthlyReceiptScreen(),
+      binding: AdminMonthlyReceiptBinding(),
       transition: Transition.fadeIn,
     ),
 

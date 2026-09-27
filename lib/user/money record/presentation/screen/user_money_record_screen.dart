@@ -491,9 +491,7 @@ class UserMoneyRecordScreen extends GetView<MoneyRecordController> {
                           DataColumn(
                             label: Text('SL'),
                           ),
-                          DataColumn(
-                            label: Text('Money ID'),
-                          ),
+
                           DataColumn(
                             label: Text('Amount'),
                           ),
@@ -507,6 +505,9 @@ class UserMoneyRecordScreen extends GetView<MoneyRecordController> {
                             label: Text('Received By'),
                           ),
                           DataColumn(
+                            label: Text('Money ID'),
+                          ),
+                          DataColumn(
                             label: Text(''),
                           ),
                         ],
@@ -516,7 +517,7 @@ class UserMoneyRecordScreen extends GetView<MoneyRecordController> {
                           final record = entry.value;
 
                           final formattedDate = record.dateTime != null
-                              ? DateFormat('dd-MM-yyyy hh:mm a')
+                              ? DateFormat('dd-MM-yyyy')//hh:mm a
                               .format(record.dateTime!)
                               : 'No Date';
 
@@ -550,30 +551,6 @@ class UserMoneyRecordScreen extends GetView<MoneyRecordController> {
                                       color: Colors.red.shade700,
                                     ),
                                   ),
-                                ),
-                              ),
-
-                              // =====================
-                              // Money ID
-                              // =====================
-                              DataCell(
-                                Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Icon(
-                                      Icons.receipt_rounded,
-                                      size: 17,
-                                      color: Colors.grey.shade500,
-                                    ),
-                                    const SizedBox(width: 7),
-                                    Text(
-                                      record.id,
-                                      style: const TextStyle(
-                                        fontWeight: FontWeight.w600,
-                                        fontSize: 12,
-                                      ),
-                                    ),
-                                  ],
                                 ),
                               ),
 
@@ -694,6 +671,29 @@ class UserMoneyRecordScreen extends GetView<MoneyRecordController> {
                                         fontSize: 12,
                                         fontWeight: FontWeight.w600,
                                         color: Colors.grey.shade700,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              // =====================
+                              // Money ID
+                              // =====================
+                              DataCell(
+                                Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(
+                                      Icons.receipt_rounded,
+                                      size: 17,
+                                      color: Colors.grey.shade500,
+                                    ),
+                                    const SizedBox(width: 7),
+                                    Text(
+                                      record.id,
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.w600,
+                                        fontSize: 12,
                                       ),
                                     ),
                                   ],

@@ -3,10 +3,10 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
 import '../../../../core/widgets/text_field.dart';
-import '../controller/auth_controller.dart';
+import '../controller/auth_register_controller.dart';
 import '../widgets/appValidators.dart';
 
-class RegisterScreen extends GetView<AuthController> {
+class RegisterScreen extends GetView<RegisterController> {
   const RegisterScreen({super.key});
 
   @override
