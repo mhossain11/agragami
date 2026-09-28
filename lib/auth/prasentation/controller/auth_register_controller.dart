@@ -33,6 +33,24 @@ class RegisterController extends GetxController {
   final passwordController = TextEditingController();
   final confirmPasswordController = TextEditingController();
 
+  /// Single source for every text controller so onClose never misses one.
+  List<TextEditingController> get _textControllers => [
+        userIdController,
+        fatherNameController,
+        motherNameController,
+        nameController,
+        phoneController,
+        addressController,
+        birthdateController,
+        nidController,
+        bloodController,
+        nomineeNameController,
+        nomineeRelationController,
+        emailController,
+        passwordController,
+        confirmPasswordController,
+      ];
+
   // =========================
   // Form
   // =========================
@@ -49,7 +67,7 @@ class RegisterController extends GetxController {
 
   final selectedRole = 'user'.obs;
 
-  Rx<File?> profileImage = Rx<File?>(null);
+  final Rx<File?> profileImage = Rx<File?>(null);
 
   // =========================
   // Find User ID
@@ -57,11 +75,10 @@ class RegisterController extends GetxController {
 
   Future<void> searchUserId() async {
 
-    if (userIdController.text.trim().isEmpty) {
-      Get.snackbar(
-        "Error",
-        "Please enter User ID",
-      );
+    final userId = userIdController.text.trim();
+
+    if (userId.isEmpty) {
+      _snackbar("Error", "Please enter User ID");
       return;
     }
 
@@ -69,23 +86,17 @@ class RegisterController extends GetxController {
 
       isLoadingId.value = true;
 
-      final result = await repository.checkUserId(
-        userIdController.text.trim(),
-      );
+      final result = await repository.checkUserId(userId);
 
       if (result != null) {
 
-        selectedRole.value =
-            result['role'] ?? 'user';
+        selectedRole.value = result['role'] ?? 'user';
 
         showForm.value = true;
 
       } else {
 
-        Get.snackbar(
-          "Failed",
-          "User ID not found",
-        );
+        _snackbar("Failed", "User ID not found");
       }
 
     } finally {
@@ -118,12 +129,7 @@ class RegisterController extends GetxController {
     }
 
     if (profileImage.value == null) {
-
-      Get.snackbar(
-        "Image Required",
-        "Please select profile image",
-      );
-
+      _snackbar("Image Required", "Please select profile image");
       return;
     }
 
@@ -131,71 +137,77 @@ class RegisterController extends GetxController {
 
       isLoading.value = true;
 
-      final request = RegisterRequest(
-        userId: userIdController.text.trim(),
-        name: nameController.text.trim(),
-        email: emailController.text.trim(),
-        password: passwordController.text.trim(),
-        fatherName: fatherNameController.text.trim(),
-        motherName: motherNameController.text.trim(),
-        role: selectedRole.value,
-        phone: phoneController.text.trim(),
-        address: addressController.text.trim(),
-        birthdate: birthdateController.text.trim(),
-        blood: bloodController.text.trim(),
-        nid: nidController.text.trim(),
-        nomineeName: nomineeNameController.text.trim(),
-        nomineeRelation: nomineeRelationController.text.trim(),
-        profileImage: profileImage.value!,
-      );
+      final request = _buildRegisterRequest();
 
       final result = await repository.register(request);
 
       if (result == "success") {
-
-        // Save the fresh user id: LoginScreen's ID/Email field prefills from
-        // this key (AuthController.loadUserId reads it).
-        await CacheHelper().setString(
-          'userId',
-          request.userId,
-        );
-
-        // Get.back() PEHLE: GetX ka back() agar koi snackbar khula dekhta hai
-        // toh woh use close karke return ho jaata tha - route pop hi nahi hota
-        // tha aur success snackbar turant gayab ho jata tha.
-        Get.back();
-
-        // Login route neeche zinda hai - uska prefill abhi refresh kar do
-        // (warna onInit ek hi baar chalta hai aur field khali dikhta).
-        if (Get.isRegistered<AuthController>()) {
-          Get.find<AuthController>().loadUserId();
-        }
-
-        Get.snackbar(
-          "Success",
-          "Registration Successful",
-        );
-
+        await _onRegistrationSuccess(request.userId);
       } else {
-
-        Get.snackbar(
-          "Failed",
-          result,
-        );
+        _snackbar("Failed", result);
       }
 
     } catch (e) {
 
-      Get.snackbar(
-        "Error",
-        e.toString(),
-      );
+      _snackbar("Error", e.toString());
 
     } finally {
 
       isLoading.value = false;
     }
   }
+
+  /// Reads every field once (trimmed) for the repository.
+  RegisterRequest _buildRegisterRequest() {
+    return RegisterRequest(
+      userId: _text(userIdController),
+      name: _text(nameController),
+      email: _text(emailController),
+      password: _text(passwordController),
+      fatherName: _text(fatherNameController),
+      motherName: _text(motherNameController),
+      role: selectedRole.value,
+      phone: _text(phoneController),
+      address: _text(addressController),
+      birthdate: _text(birthdateController),
+      blood: _text(bloodController),
+      nid: _text(nidController),
+      nomineeName: _text(nomineeNameController),
+      nomineeRelation: _text(nomineeRelationController),
+      profileImage: profileImage.value!,
+    );
+  }
+
+  Future<void> _onRegistrationSuccess(String userId) async {
+
+    // Save the fresh user id: LoginScreen's ID/Email field prefills from
+    // this key (AuthController.loadUserId reads it).
+    await CacheHelper().setString('userId', userId);
+
+    // Get.back() PEHLE: GetX ka back() agar koi snackbar khula dekhta hai
+    // toh woh use close karke return ho jaata tha - route pop hi nahi hota
+    // tha aur success snackbar turant gayab ho jata tha.
+    Get.back();
+
+    // Login route neeche zinda hai - uska prefill abhi refresh kar do
+    // (warna onInit ek hi baar chalta hai aur field khali dikhta).
+    if (Get.isRegistered<AuthController>()) {
+      Get.find<AuthController>().loadUserId();
+    }
+
+    _snackbar("Success", "Registration Successful");
+  }
+
+  // =========================
+  // Helpers
+  // =========================
+
+  /// One place for the register flow's snackbars (title + message).
+  void _snackbar(String title, String message) {
+    Get.snackbar(title, message);
+  }
+
+  String _text(TextEditingController controller) => controller.text.trim();
 
   // =========================
   // Dispose
@@ -204,20 +216,9 @@ class RegisterController extends GetxController {
   @override
   void onClose() {
 
-    userIdController.dispose();
-    fatherNameController.dispose();
-    motherNameController.dispose();
-    nameController.dispose();
-    phoneController.dispose();
-    addressController.dispose();
-    birthdateController.dispose();
-    nidController.dispose();
-    bloodController.dispose();
-    nomineeNameController.dispose();
-    nomineeRelationController.dispose();
-    emailController.dispose();
-    passwordController.dispose();
-    confirmPasswordController.dispose();
+    for (final controller in _textControllers) {
+      controller.dispose();
+    }
 
     super.onClose();
   }

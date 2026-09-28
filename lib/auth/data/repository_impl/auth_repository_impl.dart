@@ -106,24 +106,11 @@ class AuthRepositoryImpl implements AuthRepository {
       // Save Firestore
       await remote.createUser(
         uid: uid,
-        data: {
-          'uid': uid,
-          'name': request.name,
-          'email': request.email,
-          'fatherName': request.fatherName,
-          'motherName': request.motherName,
-          'role': request.role,
-          'user_id': request.userId,
-          'phone': request.phone,
-          'address': request.address,
-          'birthdate': request.birthdate,
-          'blood': request.blood,
-          'nid': request.nid,
-          'nomineeName': request.nomineeName,
-          'nomineeRelation': request.nomineeRelation,
-          'profileImage': imageUrl,
-          'created_at': FieldValue.serverTimestamp(),
-        },
+        data: _buildUserDocument(
+          uid: uid,
+          request: request,
+          imageUrl: imageUrl,
+        ),
       );
 
       userDocCreated = true;
@@ -134,6 +121,7 @@ class AuthRepositoryImpl implements AuthRepository {
 
     } catch (_) {
 
+
       await _rollbackRegistration(
         uid: uid,
         deleteUserDoc: userDocCreated,
@@ -143,6 +131,33 @@ class AuthRepositoryImpl implements AuthRepository {
     }
 
     return "success";
+  }
+
+  /// Firestore document for a new member - keeps register() readable and
+  /// the field names in one place. (Firestore structure must not change.)
+  Map<String, dynamic> _buildUserDocument({
+    required String uid,
+    required RegisterRequest request,
+    required String? imageUrl,
+  }) {
+    return {
+      'uid': uid,
+      'name': request.name,
+      'email': request.email,
+      'fatherName': request.fatherName,
+      'motherName': request.motherName,
+      'role': request.role,
+      'user_id': request.userId,
+      'phone': request.phone,
+      'address': request.address,
+      'birthdate': request.birthdate,
+      'blood': request.blood,
+      'nid': request.nid,
+      'nomineeName': request.nomineeName,
+      'nomineeRelation': request.nomineeRelation,
+      'profileImage': imageUrl,
+      'created_at': FieldValue.serverTimestamp(),
+    };
   }
 
   // Best-effort rollback: rollback khud fail ho toh bhi original error hi
@@ -193,8 +208,6 @@ class AuthRepositoryImpl implements AuthRepository {
 
   @override
   Future<void> logout() async {
-
-   // await cacheService.clear();
 
     await remote.authService.logout();
   }

@@ -523,6 +523,7 @@ class UserMoneyRecordScreen extends GetView<MoneyRecordController> {
 
                           final isEven = index % 2 == 0;
 
+
                           return DataRow(
                             color: WidgetStateProperty.all(
                               isEven

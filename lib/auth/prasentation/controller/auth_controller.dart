@@ -12,7 +12,7 @@ import '../../domain/model/register_model.dart';
 import '../../domain/repository/auth_repository.dart';
 import '../screen/login_screen.dart';
 
-class AuthController extends GetxController with WidgetsBindingObserver {
+class AuthController extends GetxController {
 
   final AuthRepository repository;
 
@@ -35,7 +35,6 @@ class AuthController extends GetxController with WidgetsBindingObserver {
   void onInit() {
     super.onInit();
     loadUserId();
-    WidgetsBinding.instance.addObserver(this); // 👈 register observer
   }
 
   // =========================
@@ -74,7 +73,7 @@ class AuthController extends GetxController with WidgetsBindingObserver {
         password: passwordController.text,
       );
 
-      TextInput.finishAutofillContext();
+      //TextInput.finishAuto fillContext();
 
       if (result == null) {
         Get.snackbar(
@@ -85,7 +84,7 @@ class AuthController extends GetxController with WidgetsBindingObserver {
         return;
       }
 
-      await CacheHelper().setLoggedIn(true);
+      await CacheHelper().setLoggedIn(false);
       await CacheHelper().setString('userId', result.userId); // 👈 Firestore এর real user_id
       await CacheHelper().setString('isRole', result.role);
 
@@ -133,30 +132,11 @@ class AuthController extends GetxController with WidgetsBindingObserver {
   }
 
 
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    super.didChangeAppLifecycleState(state);
-
-    debugPrint('App Lifecycle => $state');
-
-    if (state == AppLifecycleState.paused) {
-      // App গেছে background এ
-      _autoLogoutOnBackground();
-    }
-  }
-
-  Future<void> _autoLogoutOnBackground() async {
-    // শুধু login থাকা অবস্থায় logout করবো
-    final isLoggedIn = CacheHelper().getLoggedIn();
-    if (!isLoggedIn) return;
-
-    await repository.logout();
-    await CacheHelper().clearSession();
-  }
+  // NOTE: Session must survive app background/kill — no forced auto-logout
+  // on lifecycle events. Logout happens only via the explicit logout action.
 
   @override
   void onClose() {
-    WidgetsBinding.instance.removeObserver(this);
     emailController.dispose();
     passwordController.dispose();
 

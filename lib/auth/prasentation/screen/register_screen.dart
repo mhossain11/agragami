@@ -5,16 +5,66 @@ import 'package:get/get.dart';
 import '../../../../core/widgets/text_field.dart';
 import '../controller/auth_register_controller.dart';
 import '../widgets/appValidators.dart';
+import '../widgets/image_picker.dart';
 
 class RegisterScreen extends GetView<RegisterController> {
   const RegisterScreen({super.key});
+
+  /// Repeated pattern for every plain text field on this screen:
+  /// label + outlined border + validation while typing.
+  TextFormField _field({
+    required TextEditingController controller,
+    required String label,
+    String? Function(String?)? validator,
+    TextInputType? keyboardType,
+    int maxLines = 1,
+    bool enabled = true,
+  }) {
+    return TextFormField(
+      controller: controller,
+      enabled: enabled,
+      keyboardType: keyboardType,
+      maxLines: maxLines,
+      autovalidateMode: AutovalidateMode.onUserInteraction,
+      decoration: InputDecoration(
+        labelText: label,
+        border: const OutlineInputBorder(),
+      ),
+      validator: validator,
+    );
+  }
+
+  /// Its own Obx: the loading spinner must not rebuild the whole form.
+  Widget _findIdButton() {
+    return SizedBox(
+      width: double.infinity,
+      child: ElevatedButton(
+        onPressed: controller.searchUserId,
+        child: Obx(() => controller.isLoadingId.value
+            ? const CircularProgressIndicator()
+            : const Text("Find ID")),
+      ),
+    );
+  }
+
+  /// Its own Obx: picking an image rebuilds only the avatar.
+  Widget _imagePicker() {
+    return Center(
+      child: Obx(() => ProfileImagePicker(
+            image: controller.profileImage.value,
+            onTap: controller.pickProfileImage,
+          )),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(),
+      // This Obx only reacts to showForm (form layout) and isLoading
+      // (overlay) - everything else is isolated below.
       body: Obx(
-            () => Stack(
+        () => Stack(
           children: [
             SingleChildScrollView(
               padding: EdgeInsets.all(16.r),
@@ -34,203 +84,116 @@ class RegisterScreen extends GetView<RegisterController> {
                     SizedBox(height: 20.h),
 
                     /// User ID
-                    TextFormField(
+                    _field(
                       controller: controller.userIdController,
+                      label: "ID",
                       enabled: !controller.showForm.value,
-                      decoration: const InputDecoration(
-                        labelText: "ID",
-                        border: OutlineInputBorder(),
-                      ),
-                      autovalidateMode: AutovalidateMode.onUserInteraction,
-                      validator: (value) => AppValidators.userId(value),
-
-
-
+                      validator: AppValidators.userId,
                     ),
 
                     SizedBox(height: 10.h),
 
-                    if (!controller.showForm.value)
-                      SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton(
-                          onPressed: controller.searchUserId,
-                          child: controller.isLoadingId.value
-                              ? const CircularProgressIndicator()
-                              : const Text("Find ID"),
-                        ),
-                      ),
+                    if (!controller.showForm.value) _findIdButton(),
 
                     SizedBox(height: 20.h),
 
                     if (controller.showForm.value) ...[
 
                       /// Image
-                      Center(
-                        child: GestureDetector(
-                          onTap: controller.pickProfileImage,
-                          child: Container(
-                            padding: const EdgeInsets.all(3),
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              border: Border.all(
-                                color: Colors.green,
-                                width: 2,
-                              ),
-                            ),
-                            child: CircleAvatar(
-                              radius: 55,
-                              backgroundColor: Colors.grey.shade200,
-                              backgroundImage: controller.profileImage.value != null
-                                  ? FileImage(controller.profileImage.value!)
-                                  : null,
-                              child: controller.profileImage.value == null
-                                  ? const Icon(
-                                Icons.camera_alt,
-                                size: 35,
-                                color: Colors.green,
-                              )
-                                  : null,
-                            ),
-                          ),
-                        ),
-                      ),
+                      _imagePicker(),
 
                       SizedBox(height: 20.h),
 
-                      TextFormField(
+                      _field(
                         controller: controller.nameController,
-                        decoration: const InputDecoration(
-                          labelText: "Name",
-                          border: OutlineInputBorder(),
-                        ),
-                        autovalidateMode: AutovalidateMode.onUserInteraction,
-                        validator: (value)=> AppValidators.requiredField(
-                          value,
-                          'Name',),
+                        label: "Name",
+                        validator: (value) =>
+                            AppValidators.requiredField(value, 'Name'),
                       ),
 
                       SizedBox(height: 10.h),
 
-                      TextFormField(
+                      _field(
                         controller: controller.emailController,
-                        decoration: const InputDecoration(
-                          labelText: "Email",
-                          border: OutlineInputBorder(),
-                        ),
-                        autovalidateMode: AutovalidateMode.onUserInteraction,
-                        validator: (value)=> AppValidators.email(value),
-
+                        label: "Email",
+                        validator: AppValidators.email,
                       ),
 
                       SizedBox(height: 10.h),
-                      TextFormField(
+
+                      _field(
                         controller: controller.motherNameController,
-                        decoration: const InputDecoration(
-                          labelText: "Mother Name",
-                          border: OutlineInputBorder(),
-                        ),
-                        autovalidateMode: AutovalidateMode.onUserInteraction,
-
+                        label: "Mother Name",
                       ),
 
                       SizedBox(height: 10.h),
-                      TextFormField(
+
+                      _field(
                         controller: controller.fatherNameController,
-                        decoration: const InputDecoration(
-                          labelText: "Father Name",
-                          border: OutlineInputBorder(),
-                        ),
-                        autovalidateMode: AutovalidateMode.onUserInteraction,
-
+                        label: "Father Name",
                       ),
 
                       SizedBox(height: 10.h),
 
-                      TextFormField(
+                      _field(
                         controller: controller.phoneController,
+                        label: "Phone",
                         keyboardType: TextInputType.phone,
-                        decoration: const InputDecoration(
-                          labelText: "Phone",
-                          border: OutlineInputBorder(),
-                        ),
-                        autovalidateMode: AutovalidateMode.onUserInteraction,
-                        validator: (value)=> AppValidators.phone(value),
-
+                        validator: AppValidators.phone,
                       ),
 
                       SizedBox(height: 10.h),
 
-                      TextFormField(
+                      _field(
                         controller: controller.birthdateController,
+                        label: "Birth Date",
                         keyboardType: TextInputType.datetime,
-                        decoration: const InputDecoration(
-                          labelText: "Birth Date",
-                          border: OutlineInputBorder(),
-                        ),
                       ),
 
                       SizedBox(height: 10.h),
 
-                      TextFormField(
+                      _field(
                         controller: controller.nidController,
-                        decoration: const InputDecoration(
-                          labelText: "NID",
-                          border: OutlineInputBorder(),
-                        ),
-                        autovalidateMode: AutovalidateMode.onUserInteraction,
-                        validator: (value)=> AppValidators.Nid(value),
+                        label: "NID",
+                        validator: AppValidators.nid,
                       ),
 
                       SizedBox(height: 10.h),
 
-                      TextFormField(
+                      _field(
                         controller: controller.addressController,
+                        label: "Address",
                         maxLines: 2,
-                        decoration: const InputDecoration(
-                          labelText: "Address",
-                          border: OutlineInputBorder(),
-                        ),
                       ),
 
                       SizedBox(height: 10.h),
-                      TextFormField(
+
+                      _field(
                         controller: controller.bloodController,
-                        decoration: const InputDecoration(
-                          labelText: "Blood Group",
-                          border: OutlineInputBorder(),
-                        ),
-                        autovalidateMode: AutovalidateMode.onUserInteraction,
+                        label: "Blood Group",
                       ),
+
                       SizedBox(height: 10.h),
 
-                      TextFormField(
+                      _field(
                         controller: controller.nomineeNameController,
-                        decoration: const InputDecoration(
-                          labelText: "Nominee Name",
-                          border: OutlineInputBorder(),
-                        ),
-                        autovalidateMode: AutovalidateMode.onUserInteraction,
-                        validator: (value)=> AppValidators.nominee(value),
+                        label: "Nominee Name",
+                        validator: AppValidators.nominee,
                       ),
 
                       SizedBox(height: 10.h),
 
-                      TextFormField(
+                      _field(
                         controller: controller.nomineeRelationController,
-                        decoration: const InputDecoration(
-                          labelText: "Nominee Relation",
-                          border: OutlineInputBorder(),
-                        ),
-                        autovalidateMode: AutovalidateMode.onUserInteraction,
-                        validator: (value)=> AppValidators.nomineeRelation(value),
+                        label: "Nominee Relation",
+                        validator: AppValidators.nomineeRelation,
                       ),
 
                       SizedBox(height: 10.h),
 
                       CustomTextFieldPassword(
                         controller: controller.passwordController,
-                        validator: (value)=> AppValidators.password(value),
+                        validator: AppValidators.password,
                         labelText: 'Password',
                       ),
 
@@ -238,8 +201,8 @@ class RegisterScreen extends GetView<RegisterController> {
 
                       CustomTextFieldPassword(
                         controller: controller.confirmPasswordController,
-                        validator: (value)=> AppValidators.confirmPassword(
-                            value,controller.passwordController.text),
+                        validator: (value) => AppValidators.confirmPassword(
+                            value, controller.passwordController.text),
                         labelText: 'ConfirmPassword',
                       ),
 

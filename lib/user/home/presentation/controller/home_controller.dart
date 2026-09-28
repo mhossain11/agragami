@@ -1,14 +1,12 @@
 import 'dart:async';
 
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 
-import '../../../../core/cachehelper/chechehelper.dart';
 import '../../domain/models/userHomeModel.dart';
 import '../../domain/repository/home_repository.dart';
 
-class HomeController extends GetxController with WidgetsBindingObserver {
+class HomeController extends GetxController {
 
   final HomeRepository repository;
 
@@ -22,7 +20,6 @@ class HomeController extends GetxController with WidgetsBindingObserver {
   @override
   void onInit() {
     super.onInit();
-    WidgetsBinding.instance.addObserver(this);
     _loadInitialData();
   }
 
@@ -57,23 +54,11 @@ class HomeController extends GetxController with WidgetsBindingObserver {
     homeData.value = homeData.value.copyWith(totalTk: total);
   }
 
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    super.didChangeAppLifecycleState(state);
-
-    if (state == AppLifecycleState.detached) {
-      _forceLogoutOnDetach();
-    }
-  }
-
-  Future<void> _forceLogoutOnDetach() async {
-    await FirebaseAuth.instance.signOut();
-    await CacheHelper().setLoggedIn(false);
-  }
+  // NOTE: Session must survive app background/kill — no forced logout on
+  // lifecycle events. Logout happens only via the explicit logout action.
 
   @override
   void onClose() {
-    WidgetsBinding.instance.removeObserver(this);
     _profileImageSub?.cancel();
     super.onClose();
   }

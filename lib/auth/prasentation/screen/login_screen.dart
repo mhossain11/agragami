@@ -6,7 +6,7 @@ import 'package:get/get_state_manager/src/rx_flutter/rx_obx_widget.dart';
 import 'package:get/get_state_manager/src/simple/get_view.dart';
 import '../../../../core/widgets/text_field.dart';
 import '../../../../forgot_password/screen/forgotpassword_screen.dart';
-import '../../binding/auth_binding.dart';
+import '../widgets/appValidators.dart';
 import 'register_screen.dart';
 import '../controller/auth_controller.dart';
 
@@ -175,23 +175,7 @@ class LoginScreen extends GetView<AuthController> {
                       labelText:
                       'Password',
 
-                      validator: (value) {
-
-                        if (value == null ||
-                            value.isEmpty) {
-
-                          return
-                            'Password is required';
-                        }
-
-                        if (value.length < 8) {
-
-                          return
-                            'Password must be at least 8 characters';
-                        }
-
-                        return null;
-                      },
+                      validator: AppValidators.password,
                     ),
 
                     SizedBox(height: 10.h),

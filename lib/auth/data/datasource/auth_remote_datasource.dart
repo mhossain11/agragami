@@ -83,18 +83,57 @@ class AuthRemoteDataSource {
   }
 
 
+  // =========================
+  // Shared auth-registry lookup
+  // =========================
+
+  /// Walks `auth/{authId}/admin|user` looking for [userId] and returns the
+  /// first match together with its role - the role search and the "done"
+  /// update both use this exact traversal (admin before user, per auth doc).
+  Future<
+      ({
+        QueryDocumentSnapshot<Map<String, dynamic>> doc,
+        String role,
+        String authDocId,
+        String userDocId,
+      })?> _findAuthRegistryEntry(String userId) async {
+
+    final authSnapshot = await firestore.auth.get();
+
+    for (final authDoc in authSnapshot.docs) {
+      for (final role in const ['admin', 'user']) {
+
+        final roleSnapshot = await firestore.auth
+            .doc(authDoc.id)
+            .collection(role)
+            .where(
+          'user_id',
+          isEqualTo: userId,
+        )
+            .limit(1)
+            .get();
+
+        if (roleSnapshot.docs.isNotEmpty) {
+          final doc = roleSnapshot.docs.first;
+          return (
+            doc: doc,
+            role: role,
+            authDocId: authDoc.id,
+            userDocId: doc.id,
+          );
+        }
+      }
+    }
+
+    return null;
+  }
+
   // Check User Already Exists
   Future<Map<String, dynamic>?> checkUserRole(
       String inputUserId,
       ) async {
     try {
-      final userSnapshot = await firestore.users
-          .where(
-        'user_id',
-        isEqualTo: inputUserId.trim(),
-      )
-          .limit(1)
-          .get();
+      final userSnapshot = await findUserByUserId(inputUserId.trim());
 
       if (userSnapshot.docs.isNotEmpty) {
         final doc = userSnapshot.docs.first.data();
@@ -121,50 +160,17 @@ class AuthRemoteDataSource {
       String inputUserId,
       ) async {
     try {
-      final authSnapshot =
-      await firestore.auth.get();
+      final entry = await _findAuthRegistryEntry(inputUserId.trim());
 
-      for (final authDoc in authSnapshot.docs) {
-        final docId = authDoc.id;
-
-        final adminSnapshot = await firestore.auth
-            .doc(docId)
-            .collection('admin')
-            .where(
-          'user_id',
-          isEqualTo: inputUserId.trim(),
-        )
-            .limit(1)
-            .get();
-
-        if (adminSnapshot.docs.isNotEmpty) {
-          return {
-            'role': 'admin',
-            'authDocId': docId,
-            'userDocId': adminSnapshot.docs.first.id,
-          };
-        }
-
-        final userSnapshot = await firestore.auth
-            .doc(docId)
-            .collection('user')
-            .where(
-          'user_id',
-          isEqualTo: inputUserId.trim(),
-        )
-            .limit(1)
-            .get();
-
-        if (userSnapshot.docs.isNotEmpty) {
-          return {
-            'role': 'user',
-            'authDocId': docId,
-            'userDocId': userSnapshot.docs.first.id,
-          };
-        }
+      if (entry == null) {
+        return null;
       }
 
-      return null;
+      return {
+        'role': entry.role,
+        'authDocId': entry.authDocId,
+        'userDocId': entry.userDocId,
+      };
     } catch (e) {
       return null;
     }
@@ -174,52 +180,12 @@ class AuthRemoteDataSource {
   Future<void> addUserDoneField(
       String userId,
       ) async {
-    try {
-      final authSnapshot =
-      await firestore.auth.get();
+    final entry = await _findAuthRegistryEntry(userId);
 
-      for (final authDoc in authSnapshot.docs) {
-
-        final adminSnapshot =
-        await firestore.auth
-            .doc(authDoc.id)
-            .collection('admin')
-            .where(
-          'user_id',
-          isEqualTo: userId,
-        )
-            .limit(1)
-            .get();
-
-        if (adminSnapshot.docs.isNotEmpty) {
-          await adminSnapshot.docs.first.reference
-              .update({
-            'user': 'done',
-          });
-          return;
-        }
-
-        final userSnapshot =
-        await firestore.auth
-            .doc(authDoc.id)
-            .collection('user')
-            .where(
-          'user_id',
-          isEqualTo: userId,
-        )
-            .limit(1)
-            .get();
-
-        if (userSnapshot.docs.isNotEmpty) {
-          await userSnapshot.docs.first.reference
-              .update({
-            'user': 'done',
-          });
-          return;
-        }
-      }
-    } catch (e) {
-      rethrow;
+    if (entry != null) {
+      await entry.doc.reference.update({
+        'user': 'done',
+      });
     }
   }
 
@@ -227,22 +193,14 @@ class AuthRemoteDataSource {
     required File imageFile,
     required String userId,
   }) async {
-    try {
 
-      final ref = FirebaseStorage.instance
-          .ref()
-          .child('profile_images')
-          .child('$userId.jpg');
+    final ref = FirebaseStorage.instance
+        .ref()
+        .child('profile_images')
+        .child('$userId.jpg');
 
-      await ref.putFile(imageFile);
+    await ref.putFile(imageFile);
 
-      return await ref.getDownloadURL();
-
-    } catch (e) {
-      rethrow;
-    }
+    return await ref.getDownloadURL();
   }
-
-
-
 }

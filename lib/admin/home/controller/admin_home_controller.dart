@@ -1,13 +1,12 @@
 import 'dart:async';
 
-import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 
 import '../../../core/cachehelper/chechehelper.dart';
 import '../../../core/routes/app_routes.dart';
 import '../data/admin_home_repository.dart';
 
-class AdminHomeController extends GetxController with WidgetsBindingObserver {
+class AdminHomeController extends GetxController {
   AdminHomeController({required AdminHomeRepository repository})
       : _repository = repository;
 
@@ -20,43 +19,48 @@ class AdminHomeController extends GetxController with WidgetsBindingObserver {
   final totalTk = 0.obs;
   final name = ''.obs;
   final docId = ''.obs;
+  final userId = ''.obs;
+  final profileImage = ''.obs;
 
   StreamSubscription<int>? _moneySub;
+  StreamSubscription<String>? _profileSub;
 
   @override
   void onInit() {
     super.onInit();
-    WidgetsBinding.instance.addObserver(this);
-    _loadProfileFromCache();
     _loadCounts();
     _listenToTotalMoney();
+    _loadProfileFromCache();
+    _listenProfileImage();
   }
 
   @override
   void onClose() {
-    WidgetsBinding.instance.removeObserver(this);
     _moneySub?.cancel();
     super.onClose();
   }
 
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) async {
-    if (state == AppLifecycleState.detached) {
-      await _repository.logout();
-      await CacheHelper().setLoggedIn(false);
-    }
-  }
+  // NOTE: Session must survive app background/kill — no forced logout on
+  // lifecycle events. Logout happens only via the explicit logout action.
 
   void _loadProfileFromCache() {
     final cache = CacheHelper();
-    final userName = cache.getString('names');
-    final userDocId = cache.getString('userDocId');
+    final cachedName = cache.getString('names');
+    final cachedDocId = cache.getString('userDocId');
+    final cachedUserId = cache.getString('userId');
 
-    if (userName == null || userName.isEmpty) return;
-    if (userDocId == null || userDocId.isEmpty) return;
 
-    name.value = userName;
-    docId.value = userDocId;
+    if (cachedName != null && cachedName.isNotEmpty) {
+      name.value = cachedName;
+    }
+
+    if (cachedDocId != null && cachedDocId.isNotEmpty) {
+      docId.value = cachedDocId;
+    }
+
+    if (cachedUserId != null && cachedUserId.isNotEmpty) {
+      userId.value = cachedUserId;
+    }
   }
 
   Future<void> _loadCounts() async {
@@ -77,9 +81,13 @@ class AdminHomeController extends GetxController with WidgetsBindingObserver {
   /// live via the stream subscription.
   Future<void> refresh() => _loadCounts();
 
-  Stream<String> profileImageStream() {
-    if (docId.value.isEmpty) return const Stream.empty();
-    return _repository.watchProfileImage(docId.value);
+  void _listenProfileImage() {
+    if (docId.value.isEmpty) return;
+
+    _profileSub =
+        _repository.watchProfileImage(docId.value).listen((image) {
+          profileImage.value = image;
+        });
   }
 
   Future<void> logout() async {

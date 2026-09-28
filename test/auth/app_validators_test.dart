@@ -105,24 +105,24 @@ void main() {
     });
   });
 
-  group('AppValidators.Nid', () {
+  group('AppValidators.nid', () {
     test('empty is rejected', () {
-      expect(AppValidators.Nid(null), 'NID is required');
-      expect(AppValidators.Nid('   '), 'NID is required');
+      expect(AppValidators.nid(null), 'NID is required');
+      expect(AppValidators.nid('   '), 'NID is required');
     });
 
     test('non digit / wrong length is rejected', () {
-      expect(AppValidators.Nid('12345'), 'NID must be 10–17 digits long');
-      expect(AppValidators.Nid('abcdefghij'), 'NID must be 10–17 digits long');
+      expect(AppValidators.nid('12345'), 'NID must be 10–17 digits long');
+      expect(AppValidators.nid('abcdefghij'), 'NID must be 10–17 digits long');
       expect(
-        AppValidators.Nid('1234567890123456789'),
+        AppValidators.nid('1234567890123456789'),
         'NID must be 10–17 digits long',
       );
     });
 
     test('10 to 17 digits pass', () {
-      expect(AppValidators.Nid('1234567890'), isNull);
-      expect(AppValidators.Nid('12345678901234567'), isNull);
+      expect(AppValidators.nid('1234567890'), isNull);
+      expect(AppValidators.nid('12345678901234567'), isNull);
     });
   });
 

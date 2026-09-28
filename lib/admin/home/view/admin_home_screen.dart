@@ -1,5 +1,6 @@
 import 'package:Agragami/admin/monthly_paid&unpaid_report/view/screen/monthlyReport_screen.dart';
 import 'package:Agragami/admin/monthly_report/view/screen/monthlyReport_screen.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -146,13 +147,67 @@ class AdminHomeScreen extends GetView<AdminHomeController> {
         if (controller.docId.value.isEmpty) {
           return const Padding(
             padding: EdgeInsets.all(8),
-            child: CircleAvatar(child: Icon(Icons.person)),
+            child: CircleAvatar(
+              child: Icon(Icons.person),
+            ),
           );
         }
-        return ProfileAvatar(
-          imageStream: controller.profileImageStream(),
-          onTap: () => Get.to(
-            () => ProfileScreen(userId: controller.docId.value),
+
+        return GestureDetector(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => ProfileScreen(
+                  userId: controller.docId.value,
+                ),
+              ),
+            );
+          },
+          child: Padding(
+            padding: const EdgeInsets.all(8),
+            child: Container(
+              padding: const EdgeInsets.all(2),
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: Colors.green,
+                  width: 2,
+                ),
+              ),
+              child: CircleAvatar(
+                radius: 20,
+                backgroundColor: Colors.grey.shade200,
+                child: ClipOval(
+                  child: controller.profileImage.value.isNotEmpty
+                      ? CachedNetworkImage(
+                    imageUrl:
+                    controller.profileImage.value,
+                    width: 40,
+                    height: 40,
+                    fit: BoxFit.cover,
+                    placeholder: (_, __) =>
+                    const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child:
+                      CircularProgressIndicator(
+                        strokeWidth: 2,
+                      ),
+                    ),
+                    errorWidget: (_, __, ___) =>
+                    const Icon(
+                      Icons.person,
+                      color: Colors.greenAccent,
+                    ),
+                  )
+                      : const Icon(
+                    Icons.person,
+                    color: Colors.greenAccent,
+                  ),
+                ),
+              ),
+            ),
           ),
         );
       }),
@@ -188,26 +243,35 @@ class AdminHomeScreen extends GetView<AdminHomeController> {
   Widget _buildGreeting() {
     return SizedBox(
       width: double.infinity,
-      child: Padding(
-        padding: const EdgeInsets.all(10),
-        child: Align(
-          alignment: Alignment.centerLeft,
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
-            decoration: BoxDecoration(
-              color: Colors.green.withOpacity(0.08),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.green.withOpacity(0.3)),
-            ),
-            child: Obx(
-              () => Text(
-                controller.name.value,
-                style: const TextStyle(
-                  fontSize: 22,
-                  color: Colors.green,
-                  fontWeight: FontWeight.bold,
+      child: Align(
+        alignment: Alignment.center,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
+          decoration: BoxDecoration(
+            color: Colors.green.withOpacity(0.08),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.green.withOpacity(0.3)),
+          ),
+          child: Obx(
+            () => Column(
+              children: [
+                Text(
+                  controller.name.value,
+                  style: const TextStyle(
+                    fontSize: 22,
+                    color: Colors.green,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
-              ),
+                Text(
+                  controller.userId.value.toString(),
+                  style: const TextStyle(
+                    fontSize: 22,
+                    color: Colors.green,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
             ),
           ),
         ),
