@@ -111,6 +111,8 @@ void main() {
     when(() => repo.getTotalUserCount(any())).thenAnswer((_) async => 0);
     when(() => repo.watchAllUsersTotalAmount())
         .thenAnswer((_) => const Stream<int>.empty());
+    when(() => repo.watchProfileImage(any()))
+        .thenAnswer((_) => const Stream<String>.empty());
     when(() => repo.logout()).thenAnswer((_) async {});
 
     final controller = AdminHomeController(repository: repo);

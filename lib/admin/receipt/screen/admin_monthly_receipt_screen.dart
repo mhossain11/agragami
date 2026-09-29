@@ -5,6 +5,7 @@ import '../../../core/widgets/text_field.dart';
 import '../../../res/apptextstyle.dart';
 import '../controller/admin_monthly_receipt_controller.dart';
 import '../model/receipt_data.dart';
+import '../service/receipt_print_service.dart';
 import '../service/thermal_printer_service.dart';
 
 /// Admin screen to view a member's monthly money receipt and print it on a
@@ -126,19 +127,31 @@ class AdminMonthlyReceiptScreen extends GetView<AdminMonthlyReceiptController> {
             children: [
               Row(
                 children: [
-                  // YEAR
+                  // YEAR - small text, smaller share of the row
                   Expanded(
+                    flex: 2,
                     child: DropdownButtonFormField<int>(
                       value: controller.selectedYear.value,
+                      // Let the selected item shrink inside the field so a
+                      // narrow screen / big system font never overflows.
+                      isExpanded: true,
                       decoration: const InputDecoration(
                         labelText: 'Year',
                         border: OutlineInputBorder(),
+                        contentPadding: EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 14,
+                        ),
                       ),
                       items: List.generate(10, (index) {
                         final year = now.year - 5 + index;
                         return DropdownMenuItem<int>(
                           value: year,
-                          child: Text('$year'),
+                          child: Text(
+                            '$year',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         );
                       }),
                       onChanged: (value) {
@@ -150,19 +163,27 @@ class AdminMonthlyReceiptScreen extends GetView<AdminMonthlyReceiptController> {
 
                   const SizedBox(width: 12),
 
-                  // MONTH
+                  // MONTH - long names like "September", bigger share
                   Expanded(
+                    flex: 3,
                     child: DropdownButtonFormField<int>(
                       value: controller.selectedMonth.value,
+                      isExpanded: true,
                       decoration: const InputDecoration(
                         labelText: 'Month',
                         border: OutlineInputBorder(),
+                        contentPadding: EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 14,
+                        ),
                       ),
                       items: List.generate(12, (index) {
                         return DropdownMenuItem<int>(
                           value: index + 1,
                           child: Text(
                             AdminMonthlyReceiptController.monthNames[index],
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
                         );
                       }),
@@ -250,100 +271,154 @@ class AdminMonthlyReceiptScreen extends GetView<AdminMonthlyReceiptController> {
     );
   }
 
+  /// Renders the **exact lines the printer receives**
+  /// (see `ReceiptPrintService.buildReceiptLines`), so the preview on
+  /// screen always matches the paper - what you see is what is printed.
+  ///
+  /// Each printed line keeps a screen-friendly, monochrome look:
+  /// * `-----` / `=====` rules become crisp lines
+  /// * `label : value` rows keep one aligned colon column
+  /// * date / amount / method rows keep their columns
+  /// * double-size lines (AGRAGAMI, amount) render big and bold
   Widget _buildReceiptPreview(ReceiptData data) {
-    const bold = TextStyle(fontWeight: FontWeight.bold, fontSize: 14);
-
-    Widget kv(String label, String value) {
-      return Padding(
-        padding: const EdgeInsets.symmetric(vertical: 2),
-        child: Text('$label : $value'),
-      );
-    }
+    final lines = controller.previewLines(data);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        // ----- header -----
-        Center(
-          child: Text(
-            data.organizationName,
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+      children: [for (final line in lines) _previewLine(line)],
+    );
+  }
+
+  /// Screen width (px) of the print service's 16-character label column.
+  static const double _kvLabelWidth = 112;
+
+  /// A printed transaction row starts with a date like `01-09-2026`.
+  static final RegExp _transactionRowStart = RegExp(r'^\d{2}-\d{2}-\d{4}');
+
+  /// Turns one printed [ReceiptLine] into screen widgets.
+  Widget _previewLine(ReceiptLine line) {
+    final text = line.text;
+
+    // 1) blank line -> breathing room between blocks.
+    if (text.isEmpty) return const SizedBox(height: 8);
+
+    // 2) `-----` / `=====` -> crisp monochrome rules.
+    if (_isRule(text)) {
+      final strong = text.startsWith('=');
+      return Container(
+        height: strong ? 2 : 1,
+        margin: const EdgeInsets.symmetric(vertical: 6),
+        color: strong ? Colors.black : Colors.black45,
+      );
+    }
+
+    // 3) `label : value` -> fixed label column, so every colon lines up.
+    //    (The print service pads every label to 16 characters.)
+    const labelColumn = 16;
+    if (line.align == ReceiptAlign.left &&
+        text.length > labelColumn &&
+        text[labelColumn] == ':') {
+      final label = text.substring(0, labelColumn).trimRight();
+      final value = text.length > labelColumn + 1
+          ? text.substring(labelColumn + 2).trimRight()
+          : '';
+      return _kvRow(label, value);
+    }
+
+    // 4) transaction rows keep date / amount / method columns.
+    if (line.align == ReceiptAlign.left &&
+        (text.startsWith('Date') || _transactionRowStart.hasMatch(text))) {
+      return _transactionTableRow(text);
+    }
+
+    // 5) a wrapped value continues under the value column.
+    if (line.align == ReceiptAlign.left && text.startsWith('  ')) {
+      return Padding(
+        padding: EdgeInsets.only(left: _kvLabelWidth + 10, top: 2, bottom: 2),
+        child: Text(text.trim(), style: _previewStyle(line)),
+      );
+    }
+
+    // 6) everything else (title, amount, footer) keeps its alignment.
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 2),
+      child: Text(
+        text.trim(),
+        textAlign: line.align == ReceiptAlign.center
+            ? TextAlign.center
+            : TextAlign.left,
+        style: _previewStyle(line),
+      ),
+    );
+  }
+
+  /// Is [text] a full-width `-----` or `=====` rule?
+  bool _isRule(String text) =>
+      RegExp(r'^-+$').hasMatch(text) || RegExp(r'^=+$').hasMatch(text);
+
+  /// Screen style of a printed line (bold and double size are kept).
+  TextStyle _previewStyle(ReceiptLine line) {
+    final doubleSize = line.size == ReceiptSize.double;
+    return TextStyle(
+      fontSize: doubleSize ? 20 : 13,
+      fontWeight: line.bold || doubleSize ? FontWeight.bold : FontWeight.normal,
+      height: 1.35,
+      color: Colors.black,
+    );
+  }
+
+  /// One `label : value` row with an aligned colon column.
+  Widget _kvRow(String label, String value) {
+    const labelStyle = TextStyle(fontSize: 13, color: Colors.black54);
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 2),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: _kvLabelWidth,
+            child: Text(label, style: labelStyle),
           ),
-        ),
-        const Center(child: Text(monthlyReceiptTitle, style: bold)),
-        const Divider(),
-
-        // ----- member block -----
-        kv('Member Name', data.memberName),
-        kv('Member ID', data.userId),
-        kv('Month', data.monthLabel),
-        const Divider(),
-
-        // ----- transactions -----
-        const Row(
-          children: [
-            Expanded(flex: 4, child: Text('Date', style: bold)),
-            Expanded(
-              flex: 3,
-              child: Text('Amount', textAlign: TextAlign.right, style: bold),
-            ),
-            Expanded(flex: 4, child: Text('Method', style: bold)),
-          ],
-        ),
-        const SizedBox(height: 4),
-        for (final transaction in data.transactions)
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 2),
-            child: Row(
-              children: [
-                Expanded(
-                  flex: 4,
-                  child: Text(controller.formatDate(transaction.date)),
-                ),
-                Expanded(
-                  flex: 3,
-                  child: Text(
-                    controller.formatAmount(transaction.amount),
-                    textAlign: TextAlign.right,
-                  ),
-                ),
-                Expanded(
-                  flex: 4,
-                  child: Text(
-                    transaction.paymentMethod,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-              ],
+          const Text(': ', style: labelStyle),
+          Expanded(
+            child: Text(
+              value,
+              style: const TextStyle(fontSize: 13, color: Colors.black),
             ),
           ),
-        const Divider(),
+        ],
+      ),
+    );
+  }
 
-        // ----- total -----
-        Row(
-          children: [
-            const Expanded(flex: 4, child: Text('TOTAL', style: bold)),
-            Expanded(
-              flex: 3,
-              child: Text(
-                controller.formatAmount(data.total),
-                textAlign: TextAlign.right,
-                style: bold,
-              ),
-            ),
-            const Expanded(flex: 4, child: SizedBox.shrink()),
-          ],
-        ),
-        const Divider(),
+  /// One `01-09-2026     1,000  Cash Money` row (or its header row).
+  Widget _transactionTableRow(String text) {
+    final date = text.length >= 10 ? text.substring(0, 10).trim() : text;
+    final rest = text.length > 12 ? text.substring(12).trim() : '';
+    final parts = rest.split(RegExp(r'\s{2,}'));
+    final amount = parts.isNotEmpty ? parts.first : '';
+    final method = parts.length > 1 ? parts.sublist(1).join(' ') : '';
 
-        // ----- footer -----
-        if (data.receivedBy.isNotEmpty) kv('Received By', data.receivedBy),
-        kv('Date', controller.formatDate(data.generatedAt)),
-        const SizedBox(height: 8),
-        const Center(child: Text('Thank You')),
-        Center(child: Text(data.organizationName)),
-      ],
+    final isHeader = date == 'Date';
+    final style = TextStyle(
+      fontSize: 13,
+      height: 1.35,
+      fontWeight: isHeader ? FontWeight.bold : FontWeight.normal,
+      color: isHeader ? Colors.black54 : Colors.black,
+    );
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 2),
+      child: Row(
+        children: [
+          Expanded(flex: 11, child: Text(date, style: style)),
+          Expanded(
+            flex: 9,
+            child: Text(amount, textAlign: TextAlign.right, style: style),
+          ),
+          Expanded(flex: 12, child: Text(method, style: style)),
+        ],
+      ),
     );
   }
 

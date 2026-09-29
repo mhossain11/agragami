@@ -197,13 +197,23 @@ class AdminMonthlyReceiptController extends GetxController {
 
   ReceiptData _buildReceipt(List<MoneyRecord> data) {
     final fallbackDate = DateTime(selectedYear.value, selectedMonth.value, 1);
+    final generatedAt = DateTime.now();
+    final userId = selectedUser.value?.userid ?? '';
 
     return ReceiptData(
       organizationName: appOrganizationName,
       title: monthlyReceiptTitle,
       memberName: selectedUser.value?.name ?? '',
-      userId: selectedUser.value?.userid ?? '',
+      userId: userId,
       monthLabel: monthLabel,
+      // Receipt metadata - pure derivations from data we already have.
+      receiptNo: buildReceiptNo(userId, generatedAt),
+      instalmentNo: buildInstalmentNo(data.length),
+      collectionType: monthlyCollectionType,
+      paymentMode: buildPaymentMode([
+        for (final record in data) record.paymentMethod,
+      ]),
+      remarks: monthlyReceiptRemarks,
       transactions: [
         for (final record in data)
           ReceiptTransaction(
@@ -214,7 +224,7 @@ class AdminMonthlyReceiptController extends GetxController {
       ],
       total: data.fold<double>(0.0, (sum, record) => sum + record.amount),
       receivedBy: data.last.receivedBy,
-      generatedAt: DateTime.now(),
+      generatedAt: generatedAt,
     );
   }
 
@@ -223,6 +233,11 @@ class AdminMonthlyReceiptController extends GetxController {
 
   /// Shared date formatting (same source the printer uses).
   String formatDate(DateTime date) => _receiptPrintService.formatDate(date);
+
+  /// The exact lines the printer will receive - the screen preview renders
+  /// these, so what you see on screen is what ends up on paper (WYSIWYG).
+  List<ReceiptLine> previewLines(ReceiptData data) =>
+      _receiptPrintService.buildReceiptLines(data);
 
   // ------------------------------------------------------------------
   // Printer

@@ -84,7 +84,11 @@ class AuthController extends GetxController {
         return;
       }
 
-      await CacheHelper().setLoggedIn(false);
+      // Successful login => mark the session as logged in, so the app can
+      // restore it on the next launch (kill app -> reopen -> still logged in).
+      // NOTE: do NOT set this to false here, and do not add any forced
+      // logout on app background/pause - that breaks session persistence.
+      await CacheHelper().setLoggedIn(true);
       await CacheHelper().setString('userId', result.userId); // 👈 Firestore এর real user_id
       await CacheHelper().setString('isRole', result.role);
 

@@ -85,6 +85,13 @@ class BluetoothThermalPrinterService implements ThermalPrinterService {
   @override
   Future<bool> printBytes(List<int> bytes) async {
     try {
+      // Some printers drop the first bytes written right after a fresh
+      // Bluetooth connection - the ticket would then start mid-way and the
+      // header (organisation name) would be missing on the paper. Send two
+      // harmless blank lines first and give the link a moment to settle,
+      // then send the real ticket.
+      await PrintBluetoothThermal.writeBytes(const [0x0A, 0x0A]);
+      await Future<void>.delayed(const Duration(milliseconds: 250));
       return await PrintBluetoothThermal.writeBytes(bytes);
     } catch (_) {
       return false;

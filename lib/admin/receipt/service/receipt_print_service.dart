@@ -4,17 +4,25 @@ import 'thermal_printer_service.dart';
 /// Horizontal position of a receipt line on paper.
 enum ReceiptAlign { left, center }
 
+/// Character size of a receipt line (ESC/POS `GS !`).
+///
+/// [ReceiptSize.double] prints at double width + double height - used for
+/// the organisation name and the amount so they stand out.
+enum ReceiptSize { normal, double }
+
 /// One formatted line of a receipt ticket.
 class ReceiptLine {
   const ReceiptLine(
     this.text, {
     this.align = ReceiptAlign.left,
     this.bold = false,
+    this.size = ReceiptSize.normal,
   });
 
   final String text;
   final ReceiptAlign align;
   final bool bold;
+  final ReceiptSize size;
 }
 
 /// Builds real ESC/POS byte tickets from [ReceiptData] and sends them
@@ -22,12 +30,17 @@ class ReceiptLine {
 ///
 /// All paper-width formatting lives here (single source of truth), so the
 /// controller, widgets and tests share the exact same helpers:
-/// [centerText], [leftRightText], [keyValueText], [separator],
-/// [formatAmount], [formatDate], [transactionRow] and [buildReceipt].
+/// [centerText], [leftRightText], [keyValueText], [keyValueLines],
+/// [separator], [boldText], [doubleText], [formatAmount], [formatDate],
+/// [transactionRow] and [buildReceiptLines].
 class ReceiptPrintService {
   ReceiptPrintService(this._printer);
 
   final ThermalPrinterService _printer;
+
+  /// Label column width: every `label : value` colon lands on column 16,
+  /// so all rows stay aligned no matter how long the label is.
+  static const int _labelColumn = 16;
 
   // ------------------------------------------------------------------
   // ESC/POS commands
@@ -37,6 +50,8 @@ class ReceiptPrintService {
   static const List<int> _cmdAlignCenter = [0x1B, 0x61, 0x01]; // ESC a 1
   static const List<int> _cmdBoldOn = [0x1B, 0x45, 0x01]; // ESC E 1
   static const List<int> _cmdBoldOff = [0x1B, 0x45, 0x00]; // ESC E 0
+  static const List<int> _cmdSizeDouble = [0x1D, 0x21, 0x03]; // GS ! 3  W+H x2
+  static const List<int> _cmdSizeNormal = [0x1D, 0x21, 0x00]; // GS ! 0  normal
   static const List<int> _cmdFeed = [0x1B, 0x64, 0x04]; // ESC d 4  feed 4
   static const List<int> _cmdCut = [0x1D, 0x56, 0x00]; // GS V 0   full cut
 
@@ -89,18 +104,66 @@ class ReceiptPrintService {
   }
 
   /// `Member Name : Faysal Hossain` style row, always exactly [width].
-  /// Labels are padded to 12 chars so every colon lands on one column.
+  /// Labels are padded to 16 chars so every colon lands on one column.
   String keyValueText(String label, String value, int width) {
-    final prefix = '${label.padRight(12)}: ';
+    final prefix = '${label.padRight(_labelColumn)}: ';
     final budget = width - prefix.length;
     if (budget <= 0) return _fit(prefix, width);
     return prefix + _fit(value, budget);
+  }
+
+  /// Same as [keyValueText] but returns one **or two** lines: when the
+  /// value does not fit next to the label it continues on the next line
+  /// (indented), so no information is ever truncated. Long single words
+  /// are still cut to [width] so nothing can overflow the paper.
+  List<String> keyValueLines(String label, String value, int width) {
+    final prefix = '${label.padRight(_labelColumn)}: ';
+    final budget = width - prefix.length;
+
+    if (budget > 0 && value.length <= budget) {
+      return [prefix + value];
+    }
+
+    // Value continues on its own indented line so nothing is lost.
+    const indent = 2;
+    final labelLine = _fit('${label.padRight(_labelColumn)}:'.trimRight(), width);
+    return [labelLine, _fit(' ' * indent + value, width)];
   }
 
   /// A full [width] run of [char] (default `-`).
   String separator(int width, [String char = '-']) {
     if (char.isEmpty || width <= 0) return '';
     return char.substring(0, 1) * width;
+  }
+
+  /// A bold line (ESC/POS emphasis), fitted to [width].
+  ReceiptLine boldText(
+    String text,
+    int width, {
+    ReceiptAlign align = ReceiptAlign.left,
+  }) =>
+      ReceiptLine(_fit(text, width), align: align, bold: true);
+
+  /// A big, bold line (double width + double height, ESC/POS `GS ! 03`).
+  ///
+  /// Double-size characters take two paper cells, so the text is limited to
+  /// `width / 2` characters - longer text falls back to a normal-size bold
+  /// line instead of breaking the layout.
+  ReceiptLine doubleText(
+    String text,
+    int width, {
+    ReceiptAlign align = ReceiptAlign.center,
+  }) {
+    final half = width ~/ 2;
+    if (_fit(text, width).length <= half) {
+      return ReceiptLine(
+        _fit(text, half),
+        align: align,
+        bold: true,
+        size: ReceiptSize.double,
+      );
+    }
+    return ReceiptLine(_fit(text, width), align: align, bold: true);
   }
 
   /// One transaction table row:
@@ -116,26 +179,32 @@ class ReceiptPrintService {
   /// Same row layout but with pre-formatted [date] / [amount] strings
   /// (also used for the `Date  Amount  Method` header row).
   String transactionRowValues(
-    String date,
-    String amount,
-    String method,
-    int width,
-  ) {
-    const gap = 2;
-    // 10 (date) + 2 + 8 (amount) + 2 + 10 (e.g. "Cash Money") = 32 chars
+      String date,
+      String amount,
+      String method,
+      int width,
+      ) {
+    const dateColumn = 10;
     const amountColumn = 8;
+    const methodColumn = 10;
+    const gap = 2;
 
-    final paddedDate = date.padRight(10);
-    final paddedAmount =
-        amount.length >= amountColumn ? amount : amount.padLeft(amountColumn);
+    final paddedDate = date.padRight(dateColumn);
+    final paddedAmount = amount.length >= amountColumn
+        ? amount
+        : amount.padLeft(amountColumn);
 
-    var row = '$paddedDate  $paddedAmount';
-    if (method.isNotEmpty) {
-      final remaining = width - row.length - gap;
-      if (remaining > 0) {
-        row = '$row  ${_fit(method, remaining)}';
-      }
-    }
+    final paddedMethod = method.length >= methodColumn
+        ? _fit(method, methodColumn)
+        : method.padRight(methodColumn);
+
+    final row =
+        '$paddedDate'
+        '${' ' * gap}'
+        '$paddedAmount'
+        '${' ' * gap}'
+        '$paddedMethod';
+
     return _fit(row, width);
   }
 
@@ -143,7 +212,42 @@ class ReceiptPrintService {
   // Receipt building
   // ------------------------------------------------------------------
 
-  /// Every printed line of the receipt (text + alignment + bold).
+  /// Every printed line of the receipt (text + alignment + bold + size).
+  ///
+  /// Structure (58 mm = 32 chars, 80 mm = 48 chars):
+  ///
+  /// ```text
+  ///            AGRAGAMI             <- double size (first line)
+  ///    MONTHLY INSTALMENT RECEIPT   <- bold
+  /// ================================
+  /// Receipt No.     : RC-2609-001   <- receipt info block
+  /// Receipt Date    : 27-09-2026
+  /// --------------------------------
+  /// Member ID       : AG26U001      <- member block
+  /// Member Name     : Faysal Hossain
+  /// --------------------------------
+  /// Instalment Month: September 2026
+  /// Instalment No.  : 01            <- instalment block
+  /// Collection Type :
+  ///   Monthly Instalment
+  /// --------------------------------
+  /// Date        Amount  Method      <- transactions
+  /// 01-09-2026     1,000  Cash
+  /// --------------------------------
+  ///              AMOUNT             <- bold
+  /// TOTAL  Tk. 1,000                <- double size (prominent)
+  /// ================================
+  /// Payment Mode    : Cash          <- payment block
+  /// Received By     : Admin
+  /// Remarks         :
+  ///   Monthly Collection
+  ///
+  ///       Thank You For Your Payment
+  /// --------------------------------
+  ///   System Generated Receipt      <- professional footer
+  ///     No Signature Required
+  /// ================================
+  /// ```
   List<ReceiptLine> buildReceiptLines(
     ReceiptData data, {
     ReceiptPaperSize paperSize = ReceiptPaperSize.mm58,
@@ -159,39 +263,88 @@ class ReceiptPrintService {
       lines.add(ReceiptLine(_fit(text, width), align: align, bold: bold));
     }
 
-    // ----- header -----
-    add(separator(width, '='), align: ReceiptAlign.center);
-    add(data.organizationName, align: ReceiptAlign.center, bold: true);
-    add(data.title, align: ReceiptAlign.center, bold: true);
-    add(separator(width, '='));
+    void addKv(String label, String value) {
+      for (final row in keyValueLines(label, value, width)) {
+        add(row);
+      }
+    }
 
-    // ----- member block -----
-    add('');
-    add(keyValueText('Member Name', data.memberName, width));
-    add(keyValueText('Member ID', data.userId, width));
-    add(keyValueText('Month', data.monthLabel, width));
+    // ----- header: the ticket starts with the organisation name -----
+    lines.add(boldText(data.organizationName.toUpperCase(), width,align: ReceiptAlign.center));
+    print(data.organizationName);
+    lines.add(boldText(data.title, width, align: ReceiptAlign.center));
+    add(separator(width, '='), align: ReceiptAlign.center);
+
+    // ----- receipt info -----
+    if (data.receiptNo.isNotEmpty) {
+      addKv('Receipt No.', data.receiptNo);
+    }
+    addKv('Receipt Date', formatDate(data.generatedAt));
+
+    // ----- member -----
+    add(separator(width));
+    addKv('Member ID', data.userId);
+    addKv('Member Name', data.memberName);
+
+    // ----- instalment -----
+    add(separator(width));
+    addKv('Instalment Month', data.monthLabel);
+    if (data.instalmentNo.isNotEmpty) {
+      addKv('Instalment No.', data.instalmentNo);
+    }
+
 
     // ----- transactions -----
     add(separator(width));
-    add(transactionRowValues('Date', 'Amount', 'Method', width));
+    add(transactionRowValues('Date', 'Amount', ' Method', width));
 
     for (final transaction in data.transactions) {
       add(transactionRow(transaction, width));
     }
 
+    // ----- amount (the hero of the receipt) -----
     add(separator(width));
-    add(leftRightText('TOTAL', formatAmount(data.total), width), bold: true);
-    add(separator(width, '='));
+    lines.add(
+      boldText(centerText('AMOUNT', width), width, align: ReceiptAlign.center),
+    );
+    lines.add(
+      boldText(
+        leftRightText('TOTAL', 'Tk. ${formatAmount(data.total)}', width ~/ 2),
+        width,align: ReceiptAlign.center
+      ),
+    );
+    add(separator(width, '='), align: ReceiptAlign.center);
+
+    // ----- payment info -----
+   /* if (data.paymentMode.isNotEmpty) {
+      addKv('Payment Mode', data.paymentMode);
+    }*/
+    if (data.collectionType.isNotEmpty) {
+      addKv('Collection', data.collectionType);
+    }
+    if (data.receivedBy.isNotEmpty) {
+      addKv('Received By', data.receivedBy);
+    }
+
+    /*if (data.remarks.isNotEmpty) {
+      addKv('Remarks', data.remarks);
+    }*/
 
     // ----- footer -----
     add('');
-    if (data.receivedBy.isNotEmpty) {
-      add(keyValueText('Received By', data.receivedBy, width));
-    }
-    add(keyValueText('Date', formatDate(data.generatedAt), width));
-    add('');
-    add('Thank You', align: ReceiptAlign.center);
-    add(data.organizationName, align: ReceiptAlign.center);
+    add(
+      centerText('Thank You For Your Payment', width),
+      align: ReceiptAlign.center,
+    );
+    add(separator(width));
+    add(
+      centerText('System Generated Receipt', width),
+      align: ReceiptAlign.center,
+    );
+    add(
+      centerText('No Signature Required', width),
+      align: ReceiptAlign.center,
+    );
     add(separator(width, '='), align: ReceiptAlign.center);
 
     return lines;
@@ -211,7 +364,6 @@ class ReceiptPrintService {
   }) {
     final width = paperSize.characters;
     final lines = <ReceiptLine>[
-      ReceiptLine(separator(width, '='), align: ReceiptAlign.center),
       ReceiptLine(organizationName, align: ReceiptAlign.center, bold: true),
       ReceiptLine('TEST PRINT', align: ReceiptAlign.center, bold: true),
       ReceiptLine(separator(width, '=')),
@@ -246,6 +398,7 @@ class ReceiptPrintService {
 
     var align = ReceiptAlign.left;
     var bold = false;
+    var size = ReceiptSize.normal;
 
     for (final line in lines) {
       if (line.align != align) {
@@ -258,10 +411,16 @@ class ReceiptPrintService {
         bold = line.bold;
         bytes.addAll(bold ? _cmdBoldOn : _cmdBoldOff);
       }
+      if (line.size != size) {
+        size = line.size;
+        bytes.addAll(size == ReceiptSize.double ? _cmdSizeDouble : _cmdSizeNormal);
+      }
       bytes.addAll(line.text.codeUnits);
       bytes.add(0x0A); // LF - print the line
     }
 
+    // Always leave the printer in its normal state before feed + cut.
+    if (size != ReceiptSize.normal) bytes.addAll(_cmdSizeNormal);
     if (bold) bytes.addAll(_cmdBoldOff);
     bytes.addAll(_cmdFeed);
     bytes.addAll(_cmdCut);
