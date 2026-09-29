@@ -182,11 +182,17 @@ class AdminMonthlyReceiptController extends GetxController {
         month: month,
       );
 
+      // `Instalment Month: 6 months` - counted from the member's existing
+      // records (distinct months), no extra database field is involved.
+      final instalmentMonths = await _countInstalmentMonths(
+        selectedUserDocId.value,
+      );
+
       records.assignAll(data);
       hasSearchedRecords.value = true;
 
       if (data.isNotEmpty) {
-        receipt.value = _buildReceipt(data);
+        receipt.value = _buildReceipt(data, instalmentMonths);
       }
     } catch (e) {
       Get.snackbar('Error', e.toString());
@@ -195,7 +201,23 @@ class AdminMonthlyReceiptController extends GetxController {
     }
   }
 
-  ReceiptData _buildReceipt(List<MoneyRecord> data) {
+  /// How many months this member has money records for: the distinct
+  /// `year-month` values of the existing `Money` records. Six months with
+  /// records -> `6`, a single month -> `1`.
+  Future<int> _countInstalmentMonths(String userDocId) async {
+    final records = await _moneyRecordRepository
+        .watchMoneyRecords(userDocId)
+        .first;
+
+    final months = <String>{};
+    for (final record in records) {
+      final date = record.dateTime ?? record.collectionDate;
+      if (date != null) months.add('${date.year}-${date.month}');
+    }
+    return months.length;
+  }
+
+  ReceiptData _buildReceipt(List<MoneyRecord> data, int instalmentMonths) {
     final fallbackDate = DateTime(selectedYear.value, selectedMonth.value, 1);
     final generatedAt = DateTime.now();
     final userId = selectedUser.value?.userid ?? '';
@@ -214,6 +236,7 @@ class AdminMonthlyReceiptController extends GetxController {
         for (final record in data) record.paymentMethod,
       ]),
       remarks: monthlyReceiptRemarks,
+      instalmentMonths: instalmentMonths,
       transactions: [
         for (final record in data)
           ReceiptTransaction(

@@ -70,6 +70,7 @@ ReceiptData sampleReceipt() => ReceiptData(
       userId: 'AG26U001',
       monthLabel: 'September 2026',
       receiptNo: buildReceiptNo('AG26U001', DateTime(2026, 9, 27)),
+      instalmentMonths: 6,
       instalmentNo: buildInstalmentNo(3),
       collectionType: monthlyCollectionType,
       paymentMode: buildPaymentMode(const ['Cash Money', 'Bank', 'Bkash']),
@@ -275,6 +276,12 @@ void main() {
       expect(buildInstalmentNo(12), '12');
     });
 
+    test('buildInstalmentMonthsLabel pluralises the count', () {
+      expect(buildInstalmentMonthsLabel(6), '6 months');
+      expect(buildInstalmentMonthsLabel(1), '1 month');
+      expect(buildInstalmentMonthsLabel(0), '0 months');
+    });
+
     test('buildPaymentMode reports the single method or Various', () {
       expect(buildPaymentMode(const []), '');
       expect(buildPaymentMode(const ['', ' ']), '');
@@ -306,7 +313,7 @@ void main() {
       expect(text, contains(monthlyReceiptTitle));
       expect(text, contains('Faysal Hossain'));
       expect(text, contains('AG26U001'));
-      expect(text, contains('September 2026'));
+      expect(text, contains('Instalment Month: 6 months'));
       expect(text, contains('01-09-2026'));
       expect(text, contains('10-09-2026'));
       expect(text, contains('20-09-2026'));
@@ -325,10 +332,10 @@ void main() {
       expect(text, contains('Receipt No.     : RC-2609-001'));
       expect(text, contains('Receipt Date    : 27-09-2026'));
       expect(text, contains('Instalment No.  : 03'));
-      expect(text, contains('Collection Type :'));
+      expect(text, contains('Collection      :'));
       expect(text, contains('Monthly Instalment'));
-      expect(text, contains('Payment Mode    : Various'));
-      expect(text, contains('Monthly Collection'));
+      expect(text, isNot(contains('Payment Mode')));
+      expect(text, isNot(contains('Monthly Collection')));
       expect(text, contains('AMOUNT'));
       expect(text, contains('Thank You For Your Payment'));
       expect(text, contains('System Generated Receipt'));
@@ -355,7 +362,7 @@ void main() {
           .firstWhere((l) => l.text == appOrganizationName.toUpperCase());
       expect(orgLine.bold, isTrue);
       expect(orgLine.align, ReceiptAlign.center);
-      expect(orgLine.size, ReceiptSize.double);
+      expect(orgLine.size, ReceiptSize.normal);
 
       final titleLine =
           lines.firstWhere((l) => l.text == monthlyReceiptTitle);
@@ -369,22 +376,16 @@ void main() {
       final totalLine = lines.firstWhere((l) => l.text.startsWith('TOTAL'));
       expect(totalLine.bold, isTrue);
       expect(totalLine.text, endsWith('3,500'));
-      expect(totalLine.size, ReceiptSize.double);
+      expect(totalLine.size, ReceiptSize.normal);
     });
 
-    test('uses GS ! double-size around the big lines only', () {
+    test('never changes the character size (no GS ! commands)', () {
       final bytes = service.buildReceipt(sampleReceipt());
 
-      // GS ! 03 = double width + height ... GS ! 00 = back to normal.
-      expect(containsSequence(bytes, [0x1D, 0x21, 0x03]), isTrue);
-      expect(containsSequence(bytes, [0x1D, 0x21, 0x00]), isTrue);
-
-      // Size is always reset to normal before feed (ESC d 4).
-      final resetIndex =
-          indexOfSeq(bytes, const [0x1D, 0x21, 0x00], fromEnd: true);
-      final feedIndex = indexOfSeq(bytes, const [0x1B, 0x64, 0x04]);
-      expect(resetIndex, greaterThanOrEqualTo(0));
-      expect(resetIndex, lessThan(feedIndex));
+      // The whole ticket - organisation name included - prints at the
+      // normal character size: no GS ! 03 (double) and no GS ! 00.
+      expect(containsSequence(bytes, const [0x1D, 0x21, 0x03]), isFalse);
+      expect(containsSequence(bytes, const [0x1D, 0x21, 0x00]), isFalse);
     });
 
     test('starts with ESC @ reset and ends with feed + cut', () {
@@ -399,15 +400,15 @@ void main() {
       );
     });
 
-    test('prints the organisation name as a double-size line', () {
+    test('prints the organisation name as a bold line', () {
       final bytes = service.buildReceipt(sampleReceipt());
 
-      // GS ! 03 (double size) immediately followed by the organisation
+      // ESC E 01 (bold on) immediately followed by the organisation
       // name and LF - this is what appears at the top of the paper.
       final expected = <int>[
-        0x1D,
-        0x21,
-        0x03,
+        0x1B,
+        0x45,
+        0x01,
         ...appOrganizationName.toUpperCase().codeUnits,
         0x0A,
       ];
@@ -422,7 +423,7 @@ void main() {
       final lines = service.buildReceiptLines(sampleReceipt());
 
       expect(lines.first.text, appOrganizationName.toUpperCase());
-      expect(lines.first.size, ReceiptSize.double);
+      expect(lines.first.size, ReceiptSize.normal);
       expect(lines.first.align, ReceiptAlign.center);
 
       // The title follows directly, then the strong rule.

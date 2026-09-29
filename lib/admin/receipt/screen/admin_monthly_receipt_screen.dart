@@ -322,7 +322,9 @@ class AdminMonthlyReceiptScreen extends GetView<AdminMonthlyReceiptController> {
       final value = text.length > labelColumn + 1
           ? text.substring(labelColumn + 2).trimRight()
           : '';
-      return _kvRow(label, value);
+      // This line carries the full month count - render it slightly
+      // smaller so the complete value always fits on one line.
+      return _kvRow(label, value, small: label == 'Instalment Month');
     }
 
     // 4) transaction rows keep date / amount / method columns.
@@ -368,8 +370,11 @@ class AdminMonthlyReceiptScreen extends GetView<AdminMonthlyReceiptController> {
   }
 
   /// One `label : value` row with an aligned colon column.
-  Widget _kvRow(String label, String value) {
-    const labelStyle = TextStyle(fontSize: 13, color: Colors.black54);
+  /// [small] renders the row slightly smaller (the instalment month line).
+  Widget _kvRow(String label, String value, {bool small = false}) {
+    final fontSize = small ? 12.0 : 13.0;
+    final labelStyle = TextStyle(fontSize: fontSize, color: Colors.black54);
+    final valueStyle = TextStyle(fontSize: fontSize, color: Colors.black);
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 2),
       child: Row(
@@ -379,13 +384,8 @@ class AdminMonthlyReceiptScreen extends GetView<AdminMonthlyReceiptController> {
             width: _kvLabelWidth,
             child: Text(label, style: labelStyle),
           ),
-          const Text(': ', style: labelStyle),
-          Expanded(
-            child: Text(
-              value,
-              style: const TextStyle(fontSize: 13, color: Colors.black),
-            ),
-          ),
+          Text(': ', style: labelStyle),
+          Expanded(child: Text(value, style: valueStyle)),
         ],
       ),
     );

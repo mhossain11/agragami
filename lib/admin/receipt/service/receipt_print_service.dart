@@ -226,7 +226,7 @@ class ReceiptPrintService {
   /// Member ID       : AG26U001      <- member block
   /// Member Name     : Faysal Hossain
   /// --------------------------------
-  /// Instalment Month: September 2026
+  /// Instalment Month: 6 months    <- distinct months with records
   /// Instalment No.  : 01            <- instalment block
   /// Collection Type :
   ///   Monthly Instalment
@@ -270,8 +270,7 @@ class ReceiptPrintService {
     }
 
     // ----- header: the ticket starts with the organisation name -----
-    lines.add(boldText(data.organizationName.toUpperCase(), width,align: ReceiptAlign.center));
-    print(data.organizationName);
+    lines.add(boldText(data.organizationName.toUpperCase(), width, align: ReceiptAlign.center));
     lines.add(boldText(data.title, width, align: ReceiptAlign.center));
     add(separator(width, '='), align: ReceiptAlign.center);
 
@@ -288,10 +287,11 @@ class ReceiptPrintService {
 
     // ----- instalment -----
     add(separator(width));
-    addKv('Instalment Month', data.monthLabel);
     if (data.instalmentNo.isNotEmpty) {
-      addKv('Instalment No.', data.instalmentNo);
+      addKv('Instalment No.', buildInstalmentMonthsLabel(data.instalmentMonths));
     }
+    addKv('Month', data.monthLabel);
+
 
 
     // ----- transactions -----

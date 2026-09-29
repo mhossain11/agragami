@@ -57,6 +57,7 @@ class ReceiptData {
     this.collectionType = '',
     this.paymentMode = '',
     this.remarks = '',
+    this.instalmentMonths = 0,
   });
 
   final String organizationName;
@@ -83,6 +84,12 @@ class ReceiptData {
 
   /// `Monthly Collection` - [monthlyReceiptRemarks].
   final String remarks;
+
+  /// Total instalment months, calculated from the member's existing money
+  /// records (distinct months with at least one record). Never stored in
+  /// the database - printed as `Instalment Month: 6 months` via
+  /// [buildInstalmentMonthsLabel].
+  final int instalmentMonths;
 }
 
 // --------------------------------------------------------------------------
@@ -112,6 +119,11 @@ String buildReceiptNo(String userId, DateTime issuedAt) {
 /// Instalment number: how many instalments were recorded this month.
 String buildInstalmentNo(int instalmentCount) =>
     instalmentCount.toString().padLeft(2, '0');
+
+/// Instalment month count label: `6 months`, `1 month` (singular) or
+/// `0 months` - the value shown for `Instalment Month`.
+String buildInstalmentMonthsLabel(int months) =>
+    '$months month${months == 1 ? '' : 's'}';
 
 /// Payment mode: the single method used this month, or `Various` when the
 /// member paid with more than one method. Empty methods are ignored.
