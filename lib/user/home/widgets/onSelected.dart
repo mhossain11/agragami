@@ -34,5 +34,9 @@ void onSelected(int item, BuildContext context) async {
             builder: (context)=>DeveloperScreen(color: Colors.red,)));
       }
       break;
+
+    case 3:
+      Get.toNamed(AppRoutes.myTransactions);
+      break;
   }
 }

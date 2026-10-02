@@ -76,6 +76,7 @@ class AuthController extends GetxController {
       //TextInput.finishAuto fillContext();
 
       if (result == null) {
+        TextInput.finishAutofillContext();
         Get.snackbar(
           'Login Failed',
           'Something went wrong',
@@ -88,7 +89,7 @@ class AuthController extends GetxController {
       // restore it on the next launch (kill app -> reopen -> still logged in).
       // NOTE: do NOT set this to false here, and do not add any forced
       // logout on app background/pause - that breaks session persistence.
-      await CacheHelper().setLoggedIn(true);
+     // await CacheHelper().setLoggedIn(true);
       await CacheHelper().setString('userId', result.userId); // 👈 Firestore এর real user_id
       await CacheHelper().setString('isRole', result.role);
 

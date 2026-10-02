@@ -64,7 +64,9 @@ class CustomTextFieldPassword extends StatefulWidget {
     this.keyboardType,
     this.validator,
     this.isRequired = false,
-    this.autofillHints
+    this.textInputAction = TextInputAction.done,
+    this.autofillHints,
+    this.onFieldSubmitted,
   });
 
   final TextEditingController controller;
@@ -72,7 +74,9 @@ class CustomTextFieldPassword extends StatefulWidget {
   final TextInputType? keyboardType;
   final String? Function(String?)? validator;
   final bool isRequired;
+  final TextInputAction textInputAction;
   final Iterable<String>? autofillHints;
+  final ValueChanged<String>? onFieldSubmitted;
 
   @override
   State<CustomTextFieldPassword> createState() => _CustomTextFieldPasswordState();
@@ -88,6 +92,10 @@ class _CustomTextFieldPasswordState extends State<CustomTextFieldPassword> {
       controller: widget.controller,
       autofillHints: widget.autofillHints,
       validator: widget.validator,
+      keyboardType: widget.keyboardType,
+      obscureText: isObscure,
+      textInputAction: widget.textInputAction,
+      onFieldSubmitted: widget.onFieldSubmitted,
       decoration: InputDecoration(
         label: RichText(
           text: TextSpan(
@@ -111,8 +119,6 @@ class _CustomTextFieldPasswordState extends State<CustomTextFieldPassword> {
             icon:Icon(isObscure? Icons.visibility_off: Icons.visibility)
       ),
     ),
-      keyboardType: widget.keyboardType,
-      obscureText: isObscureText,
     );
   }
 }

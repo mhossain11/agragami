@@ -6,6 +6,7 @@ import '../../../about_us/screen/aboutus_screen.dart';
 import '../../../profile/screen/profile_screen.dart';
 import '../../../userlist/screen/userlist_screen.dart';
 import '../../widgets/buildCardRow.dart';
+import '../../widgets/homeCard.dart';
 import '../../widgets/notificationBadgeWidget.dart';
 import '../../widgets/onSelected.dart';
 import '../controller/home_controller.dart';
@@ -76,6 +77,14 @@ class HomeScreen extends GetView<HomeController> {
           PopupMenuButton<int>(
             onSelected: (item) => onSelected(item, context),
             itemBuilder: (context) => [
+              PopupMenuItem(
+                value: 3,
+                child: Row(children: const [
+                  Icon(Icons.picture_as_pdf, color: Colors.black),
+                  SizedBox(width: 10),
+                  Text('My Transactions'),
+                ]),
+              ),
               PopupMenuItem(
                 value: 0,
                 child: Row(children: const [
@@ -210,6 +219,23 @@ class HomeScreen extends GetView<HomeController> {
                   ],
                 );
               }),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8.0),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: HomeCard(
+                      HomeCardData(
+                        title: 'My Transactions',
+                        imagePath: 'assets/images/pdf.png',
+                        color: Colors.red,
+                        onTap: () => Get.toNamed(AppRoutes.myTransactions),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ],
         ),

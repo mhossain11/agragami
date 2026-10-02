@@ -112,7 +112,6 @@ class LoginScreen extends GetView<AuthController> {
                       autofillHints: const [
                         AutofillHints.email,
                       ],
-
                       labelText:
                       'ID/Email',
 
@@ -171,6 +170,8 @@ class LoginScreen extends GetView<AuthController> {
                       autofillHints: const [
                         AutofillHints.password,
                       ],
+                      textInputAction: TextInputAction.done,
+                      isRequired: true,
 
                       labelText:
                       'Password',

@@ -287,8 +287,9 @@ class ReceiptPrintService {
 
     // ----- instalment -----
     add(separator(width));
+    addKv('Instalment Month', buildInstalmentMonthsLabel(data.instalmentMonths));
     if (data.instalmentNo.isNotEmpty) {
-      addKv('Instalment No.', buildInstalmentMonthsLabel(data.instalmentMonths));
+      addKv('Instalment No.', data.instalmentNo);
     }
     addKv('Month', data.monthLabel);
 

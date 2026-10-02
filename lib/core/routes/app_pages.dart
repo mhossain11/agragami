@@ -15,16 +15,17 @@ import '../../auth/prasentation/screen/login_screen.dart';
 import '../../user/home/presentation/screen/home_screen.dart';
 import '../../user/money record/binding/moneyRecordBinding.dart';
 import '../../user/money record/presentation/screen/user_money_record_screen.dart';
+import '../../user/transactions/binding/my_transactions_binding.dart';
+import '../../user/transactions/screen/my_transactions_screen.dart';
 import '../cachehelper/chechehelper.dart';
 import 'app_routes.dart';
 
 class AppPages {
 
   static String getInitialRoute() {
-    final isLoggedIn = CacheHelper().getLoggedIn();
+   // final isLoggedIn = CacheHelper().getLoggedIn();
     final role = CacheHelper().getString('isRole');
-
-    if (isLoggedIn) {
+     
       if (role == 'admin') {
         return AppRoutes.adminHome;
       }
@@ -32,7 +33,7 @@ class AppPages {
       if (role == 'user') {
         return AppRoutes.home;
       }
-    }
+
 
     return AppRoutes.login;
   }
@@ -85,6 +86,13 @@ class AppPages {
       name: AppRoutes.adminMonthlyReceipt,
       page: () => const AdminMonthlyReceiptScreen(),
       binding: AdminMonthlyReceiptBinding(),
+      transition: Transition.fadeIn,
+    ),
+
+    GetPage(
+      name: AppRoutes.myTransactions,
+      page: () => const MyTransactionsScreen(),
+      binding: MyTransactionsBinding(),
       transition: Transition.fadeIn,
     ),
 

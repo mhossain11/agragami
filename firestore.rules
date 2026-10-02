@@ -1,0 +1,140 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // =====================================================================
+    // Helper functions
+    // =====================================================================
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    // users/{userId} belongs to the signed-in Firebase Auth account.
+    function isOwner(userId) {
+      return signedIn() && request.auth.uid == userId;
+    }
+
+    // Is the signed-in account an admin? (role is stored on users/{uid})
+    function isAdmin() {
+      return signedIn() &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    // Is the OWNER of users/{userId} an admin? Members stream the
+    // notification folder of admin accounts (their notification inbox).
+    function ownerIsAdmin(userId) {
+      return signedIn() &&
+        get(/databases/$(database)/documents/users/$(userId)).data.role == 'admin';
+    }
+
+    // A member may edit their own profile but must never change their
+    // role / uid / user_id (no self-promotion to admin, no identity swap).
+    function safeProfileUpdate() {
+      return request.resource.data.diff(resource.data).affectedKeys()
+        .hasAny(['role', 'uid', 'user_id']) == false;
+    }
+
+    // =====================================================================
+    // users/{userId}
+    //
+    // READS stay open for profiles only: this app performs profile
+    // lookups BEFORE login (login by user id, forgot password,
+    // registration duplicate check) and the member area lists member/admin
+    // profiles (Members List, notification inbox). Firestore rules cannot
+    // inspect query filters, so those existing flows need profile reads.
+    // To close profile reads fully, first move the pre-login lookups to a
+    // Cloud Function / backend endpoint.
+    //
+    // The SECURITY-CRITICAL DATA - each member's Money (transactions) -
+    // is locked down in the Money rule below: ONLY the owner and admins
+    // can read it, even from a modified client.
+    // =====================================================================
+    match /users/{userId} {
+
+      allow get, list: if true;
+
+      // Registration creates users/{uid} right after Firebase Auth
+      // sign-up; admins may also create profiles.
+      allow create: if isOwner(userId) || isAdmin();
+
+      // Members edit their own profile (name, phone, photo, ...) but
+      // cannot touch role/uid/user_id; admins may change anything.
+      allow update: if isAdmin() || (isOwner(userId) && safeProfileUpdate());
+
+      // Own account (registration rollback) or admin.
+      allow delete: if isOwner(userId) || isAdmin();
+
+      // -----------------------------------------------------------------
+      // Money = the member's transaction ledger (amount, date&time,
+      // payment_method, total_amount, ...). ONLY the owner and admins may
+      // read it; ONLY admins may write it. This is the rule that stops a
+      // tampered Flutter client or a direct Firestore request from
+      // reading another member's transactions.
+      // -----------------------------------------------------------------
+      match /Money/{moneyId} {
+        allow read: if isOwner(userId) || isAdmin();
+        allow write: if isAdmin();
+      }
+
+      // Notifications: a member reads/updates/deletes notifications in
+      // their own folder and in an admin account's folder (inbox);
+      // admins may send notifications into any member's folder.
+      match /notification/{noteId} {
+        allow read, update, delete:
+          isOwner(userId) || isAdmin() || ownerIsAdmin(userId);
+        allow create: if isOwner(userId) || isAdmin();
+      }
+
+      // Audit log written and read by the admin Log screen only.
+      match /Log/{logId} {
+        allow read, write: if isAdmin();
+      }
+    }
+
+    // collectionGroup('Money') queries - used by the admin home totals
+    // screen. (A member's own-folder access is granted by the nested
+    // Money rule above; this block additionally allows admins to query
+    // the whole collection group.)
+    match /{path=**}/Money/{moneyId} {
+      allow read: if isAdmin();
+      allow write: if false;
+    }
+
+    // =====================================================================
+    // auth = id registry created by admins (auth/{docId}/admin|user).
+    //
+    // READS: also happen before login (registration checks "does this
+    // user id exist", login maps user id -> email) and again right after
+    // sign-up when the member marks their own entry as done - so reads
+    // must stay available. The registry contains only user ids/roles
+    // (no secrets, no money), and all WRITES stay admin-controlled.
+    // =====================================================================
+    match /auth/{authDocId} {
+      allow read: if true;
+      allow write: if isAdmin();
+
+      match /{role}/{entryId} {
+        allow read: if true;
+
+        // Admins manage entries. A signed-in member may only flip their
+        // OWN entry's `user` flag to 'done' during registration -
+        // nothing else in the registry can be changed by members.
+        allow update: if isAdmin() ||
+          (signedIn() &&
+            resource.data.user_id ==
+              get(/databases/$(database)/documents/users/$(request.auth.uid)).data.user_id &&
+            request.resource.data.diff(resource.data).affectedKeys()
+              .hasOnly(['user']));
+
+        allow create, delete: if isAdmin();
+      }
+    }
+
+    // Everything else (delete_users, future collections, ...) is denied.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
