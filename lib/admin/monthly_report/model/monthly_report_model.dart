@@ -28,14 +28,14 @@ class MonthlyMoneyModel {
   }) {
     final data = moneyDoc.data() ?? {};
 
-    final createTime = data['date&time'];
+    final dateTime = data['date&time'];
 
     return MonthlyMoneyModel(
       userId: userId,
       userName: userName,
       moneyId: moneyDoc.id,
-      date: createTime is Timestamp
-          ? createTime.toDate()
+      date: dateTime is Timestamp
+          ? dateTime.toDate()
           : DateTime.now(),
       amount: (data['amount'] ?? 0).toDouble(),
       paymentMethod: data['payment_method'] ?? '',
