@@ -54,8 +54,9 @@ class HomeController extends GetxController {
     homeData.value = homeData.value.copyWith(totalTk: total);
   }
 
-  // NOTE: Session must survive app background/kill — no forced logout on
-  // lifecycle events. Logout happens only via the explicit logout action.
+  // NOTE: No forced logout on lifecycle events — backgrounding must keep
+  // the session. Cold start (kill/swipe-away) lands on the Login screen by
+  // design (see core/session/session_guard.dart); logout is explicit only.
 
   @override
   void onClose() {

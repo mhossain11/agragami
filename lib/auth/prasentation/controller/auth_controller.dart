@@ -6,13 +6,12 @@ import 'package:get/get.dart';
 
 import '../../../../user/home/presentation/screen/home_screen.dart';
 import '../../../core/cachehelper/chechehelper.dart';
-import '../../../core/routes/app_pages.dart';
 import '../../../core/routes/app_routes.dart';
 import '../../domain/model/register_model.dart';
 import '../../domain/repository/auth_repository.dart';
 import '../screen/login_screen.dart';
 
-class AuthController extends GetxController {
+class AuthController extends GetxController{
 
   final AuthRepository repository;
 
@@ -85,11 +84,13 @@ class AuthController extends GetxController {
         return;
       }
 
-      // Successful login => mark the session as logged in, so the app can
-      // restore it on the next launch (kill app -> reopen -> still logged in).
-      // NOTE: do NOT set this to false here, and do not add any forced
-      // logout on app background/pause - that breaks session persistence.
-     // await CacheHelper().setLoggedIn(true);
+      // Save this run's session: userId (prefills the login form), role
+      // (bookkeeping) and the logged-in flag.
+      // NOTE: backgrounding the app (home button / other app) must never
+      // clear this or call logout — the session stays valid while the
+      // process is alive. The next COLD START (kill / swipe-away) lands on
+      // the Login screen anyway (SessionGuard + AppPages.getInitialRoute).
+      await CacheHelper().setLoggedIn(true);
       await CacheHelper().setString('userId', result.userId); // 👈 Firestore এর real user_id
       await CacheHelper().setString('isRole', result.role);
 
@@ -137,8 +138,11 @@ class AuthController extends GetxController {
   }
 
 
-  // NOTE: Session must survive app background/kill — no forced auto-logout
-  // on lifecycle events. Logout happens only via the explicit logout action.
+  // NOTE: No logout on lifecycle events (paused / inactive / hidden /
+  // resumed / detached). Backgrounding keeps the session; only the explicit
+  // logout action ends it. A new process (kill / swipe-away from Recents)
+  // is handled at launch by SessionGuard + AppPages.getInitialRoute.
+
 
   @override
   void onClose() {

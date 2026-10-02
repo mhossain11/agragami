@@ -194,7 +194,13 @@ class PdfService {
 
   static pw.Widget _buildMoneyTable(List<QueryDocumentSnapshot> moneyData) {
     // Updated headers to include Transaction ID
-    final headers = ['Transaction ID', 'Date', 'Amount', 'Payment Method'];
+    final headers = [
+      'Transaction ID',
+      'Date',
+      'Amount',
+      'Received By',
+      'Payment Method',
+    ];
 
     return pw.Column(
       children: [
@@ -213,7 +219,8 @@ class PdfService {
             0: pw.FlexColumnWidth(1.5), // Transaction ID - wider
             1: pw.FlexColumnWidth(1.2), // Date
             2: pw.FlexColumnWidth(1.0), // Amount
-            3: pw.FlexColumnWidth(1.3), // Payment Method
+            3: pw.FlexColumnWidth(1.3), // Received By
+            4: pw.FlexColumnWidth(1.3), // Payment Method
           },
           children: [
             // Header row
@@ -241,10 +248,12 @@ class PdfService {
                   ? DateFormat('yyyy-MM-dd').format((data['date&time'] as Timestamp).toDate())
                   : 'N/A';
               final amount = data['amount']?.toString() ?? '0';
+              final receivedBy = data['received_by']?.toString() ?? 'N/A';
               final paymentMethod = data['payment_method'] ?? 'N/A';
 
               return pw.TableRow(
                 children: [
+                  // Transaction ID
                   pw.Padding(
                     padding: pw.EdgeInsets.all(6),
                     child: pw.Text(
@@ -253,6 +262,7 @@ class PdfService {
                       textAlign: pw.TextAlign.center,
                     ),
                   ),
+                  // Date
                   pw.Padding(
                     padding: pw.EdgeInsets.all(6),
                     child: pw.Text(
@@ -261,14 +271,27 @@ class PdfService {
                       textAlign: pw.TextAlign.center,
                     ),
                   ),
+                  // Amount
                   pw.Padding(
                     padding: pw.EdgeInsets.all(6),
                     child: pw.Text(
-                      '\$$amount',
+                      amount,
                       style: pw.TextStyle(fontSize: 9),
                       textAlign: pw.TextAlign.center,
                     ),
                   ),
+
+                  // Received By
+                  pw.Padding(
+                    padding: pw.EdgeInsets.all(6),
+                    child: pw.Text(
+                      receivedBy,
+                      style: pw.TextStyle(fontSize: 9),
+                      textAlign: pw.TextAlign.center,
+                    ),
+                  ),
+
+                  // Payment Method
                   pw.Padding(
                     padding: pw.EdgeInsets.all(6),
                     child: pw.Text(
@@ -286,13 +309,6 @@ class PdfService {
     );
   }
 
-  // Helper method to format transaction ID (shorten if too long)
-  static String _formatTransactionId(String transactionId) {
-    if (transactionId.length > 12) {
-      return '${transactionId.substring(0, 8)}...';
-    }
-    return transactionId;
-  }
 
   static pw.Widget _buildSummary(List<QueryDocumentSnapshot> moneyData) {
     final totalAmount = moneyData.fold<double>(0, (sum, doc) {
@@ -305,30 +321,7 @@ class PdfService {
 
     return pw.Column(
       children: [
-      /*  // Total Transactions
-        pw.Container(
-          padding: pw.EdgeInsets.all(15),
-          decoration: pw.BoxDecoration(
-            color: PdfColors.grey100,
-            border: pw.Border.all(color: PdfColors.grey300),
-            borderRadius: pw.BorderRadius.circular(5),
-          ),
-          child: pw.Row(
-            mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-            children: [
-              pw.Text(
-                'Total Transactions:',
-                style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
-              ),
-              pw.Text(
-                totalTransactions.toString(),
-                style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
-              ),
-            ],
-          ),
-        ),
-        pw.SizedBox(height: 10),*/
-        // Total Amount
+        // Total Transactions
         pw.Container(
           padding: pw.EdgeInsets.all(5),
           decoration: pw.BoxDecoration(
@@ -336,30 +329,61 @@ class PdfService {
             border: pw.Border.all(color: PdfColors.green300),
             borderRadius: pw.BorderRadius.circular(5),
           ),
-          child: pw.Row(
-            mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+          child: pw.Column(
             children: [
-              pw.Text(
-                'Total Amount:',
-                style: pw.TextStyle(
-                  fontSize: 16,
-                  fontWeight: pw.FontWeight.bold,
-                  color: PdfColors.black,
-                ),
+              // Total Transactions Row
+              pw.Row(
+                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                children: [
+                  pw.Text(
+                    'Total Transactions:',
+                    style: pw.TextStyle(
+                      fontSize: 16,
+                      fontWeight: pw.FontWeight.bold,
+                      color: PdfColors.black,
+                    ),
+                  ),
+                  pw.Text(
+                    totalTransactions.toString(),
+                    style: pw.TextStyle(
+                      fontSize: 16,
+                      fontWeight: pw.FontWeight.bold,
+                      color: PdfColors.black,
+                    ),
+                  ),
+                ],
               ),
-              pw.Text(
-                '\$${totalAmount.toStringAsFixed(2)}',
-                style: pw.TextStyle(
-                  fontSize: 16,
-                  fontWeight: pw.FontWeight.bold,
-                  color: PdfColors.black,
-                ),
+
+              pw.SizedBox(height: 5),
+
+              // Total Transaction Amount Row
+              pw.Row(
+                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                children: [
+                  pw.Text(
+                    'Total Transaction Amount:',
+                    style: pw.TextStyle(
+                      fontSize: 16,
+                      fontWeight: pw.FontWeight.bold,
+                      color: PdfColors.black,
+                    ),
+                  ),
+                  pw.Text(
+                    '\$${totalAmount.toStringAsFixed(2)}',
+                    style: pw.TextStyle(
+                      fontSize: 16,
+                      fontWeight: pw.FontWeight.bold,
+                      color: PdfColors.black,
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
         ),
       ],
     );
+
   }
 
   static pw.Widget _buildSignatureSpace() {

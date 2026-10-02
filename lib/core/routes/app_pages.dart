@@ -17,24 +17,25 @@ import '../../user/money record/binding/moneyRecordBinding.dart';
 import '../../user/money record/presentation/screen/user_money_record_screen.dart';
 import '../../user/transactions/binding/my_transactions_binding.dart';
 import '../../user/transactions/screen/my_transactions_screen.dart';
-import '../cachehelper/chechehelper.dart';
 import 'app_routes.dart';
 
 class AppPages {
 
+  /// Cold start always lands on the Login screen.
+  ///
+  /// This is evaluated exactly once per process (from `main()` /
+  /// `MyApp.build`), i.e. only after a **fresh app launch**. Therefore:
+  ///
+  ///   * swipe-away / OOM kill / crash / force stop / reboot → next launch
+  ///     starts a new process → Login (previous session already dropped by
+  ///     `SessionGuard.invalidatePreviousSession()`);
+  ///   * Home button / app switcher → same process keeps running → this is
+  ///     never re-evaluated → the user stays exactly where they were.
+  ///
+  /// The cached `isRole` is deliberately *not* consulted here: a stale role
+  /// must never auto-enter Home/Admin, and not reading the cache removes
+  /// any startup race between `CacheHelper.init()` and routing.
   static String getInitialRoute() {
-   // final isLoggedIn = CacheHelper().getLoggedIn();
-    final role = CacheHelper().getString('isRole');
-     
-      if (role == 'admin') {
-        return AppRoutes.adminHome;
-      }
-
-      if (role == 'user') {
-        return AppRoutes.home;
-      }
-
-
     return AppRoutes.login;
   }
 

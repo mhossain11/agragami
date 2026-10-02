@@ -4,6 +4,7 @@ import 'package:Agragami/auth/prasentation/controller/auth_controller.dart';
 import 'package:Agragami/core/cachehelper/chechehelper.dart';
 import 'package:Agragami/core/routes/app_pages.dart';
 import 'package:Agragami/core/routes/app_routes.dart';
+import 'package:Agragami/core/session/session_guard.dart';
 import 'package:Agragami/user/home/domain/models/userHomeModel.dart';
 import 'package:Agragami/user/home/domain/repository/home_repository.dart';
 import 'package:Agragami/user/home/presentation/controller/home_controller.dart';
@@ -15,13 +16,22 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../auth/fake_auth_repository.dart';
 
-/// Session persistence checks.
+/// Session behaviour — launch-time session validation.
 ///
-/// Scenario: login once → do NOT log out → app goes to background / is
-/// destroyed → next launch must still be logged in (straight to home).
+/// Spec:
+///  1. Login succeeds -> session saved (userId, role, isLoggedIn) and the
+///     user is taken to Home/Admin.
+///  2. Background / foreground (paused, inactive, hidden, resumed, even
+///     `detached`) -> NEVER logout, NEVER clear the session: same process,
+///     the user returns exactly where they were.
+///  3. Process death (swipe-away from Recent Apps, OOM kill, crash, reboot)
+///     -> Android delivers no reliable callback, so validation happens at
+///     LAUNCH: `SessionGuard.invalidatePreviousSession()` drops the cached
+///     session (+ best-effort Firebase sign-out) and
+///     `AppPages.getInitialRoute()` always returns the Login screen.
 ///
-/// Forced logout on lifecycle events (`paused` / `detached`) used to wipe
-/// the session; these tests pin the fixed behaviour.
+/// Nothing logs out from a lifecycle event — only the explicit logout
+/// action or a fresh launch ends the session.
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -53,20 +63,58 @@ void main() {
   Future<void> resetLifecycle() =>
       sendLifecycle('AppLifecycleState.resumed');
 
-  group('restart routing', () {
-    test('logged-in admin session restarts straight into admin home', () async {
+  group('launch-time session validation (kill / swipe-away -> Login)', () {
+    test('cold start lands on Login even with a seeded admin session',
+        () async {
       await seedSession(role: 'admin');
-      expect(AppPages.getInitialRoute(), AppRoutes.adminHome);
+      expect(AppPages.getInitialRoute(), AppRoutes.login);
     });
 
-    test('logged-in user session restarts straight into user home', () async {
+    test('cold start lands on Login even with a seeded user session',
+        () async {
       await seedSession(role: 'user');
-      expect(AppPages.getInitialRoute(), AppRoutes.home);
+      expect(AppPages.getInitialRoute(), AppRoutes.login);
     });
 
     test('without a session restart lands on the login screen', () async {
       SharedPreferences.setMockInitialValues({});
       await CacheHelper.init();
+      expect(AppPages.getInitialRoute(), AppRoutes.login);
+    });
+
+    test(
+        'invalidatePreviousSession clears the app session but keeps userId '
+        'for login prefill', () async {
+      await seedSession(role: 'user');
+
+      await SessionGuard.invalidatePreviousSession();
+
+      expect(CacheHelper().getLoggedIn(), isFalse,
+          reason: 'stale login flag must not survive a cold start');
+      expect(CacheHelper().getString('isRole'), isNull,
+          reason: 'stale role must never auto-enter Home/Admin');
+      expect(CacheHelper().getString('userId'), 'AG26M001',
+          reason: 'userId is kept to prefill the login form');
+      expect(CacheHelper().getString('userDocId'), 'doc-1',
+          reason: 'userDocId is rewritten by the next login anyway');
+    });
+
+    test(
+        'full flow: session survives while running, is dropped on next launch',
+        () async {
+      await seedSession(role: 'admin');
+      await resetLifecycle();
+
+      // Process still alive: background / destroy must keep everything.
+      await sendLifecycle('AppLifecycleState.paused');
+      await sendLifecycle('AppLifecycleState.detached');
+      expect(CacheHelper().getLoggedIn(), isTrue,
+          reason: 'while the process lives, the session stays valid');
+      expect(CacheHelper().getString('isRole'), 'admin');
+
+      // Next launch = fresh process = launch-time invalidation -> Login.
+      await SessionGuard.invalidatePreviousSession();
+      expect(CacheHelper().getLoggedIn(), isFalse);
       expect(AppPages.getInitialRoute(), AppRoutes.login);
     });
   });
@@ -97,7 +145,8 @@ void main() {
     expect(repo.logoutCallCount, 0,
         reason: 'backgrounding must never force a logout');
     expect(CacheHelper().getLoggedIn(), isTrue);
-    expect(AppPages.getInitialRoute(), AppRoutes.adminHome);
+    expect(CacheHelper().getString('isRole'), 'admin',
+        reason: 'session data must stay untouched while running');
 
     controller.onClose();
   });
@@ -123,8 +172,8 @@ void main() {
 
     verifyNever(() => repo.logout());
     expect(CacheHelper().getLoggedIn(), isTrue,
-        reason: 'destroying the app must keep the session for next launch');
-    expect(AppPages.getInitialRoute(), AppRoutes.adminHome);
+        reason: 'a lifecycle event must never clear the session');
+    expect(CacheHelper().getString('isRole'), 'admin');
 
     controller.onClose();
   });
@@ -140,7 +189,7 @@ void main() {
     await sendLifecycle('AppLifecycleState.detached');
 
     expect(CacheHelper().getLoggedIn(), isTrue);
-    expect(AppPages.getInitialRoute(), AppRoutes.home);
+    expect(CacheHelper().getString('isRole'), 'user');
 
     controller.onClose();
   });

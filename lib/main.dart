@@ -10,6 +10,7 @@ import 'core/cachehelper/chechehelper.dart';
 import 'core/cachehelper/theme.dart';
 import 'core/routes/app_pages.dart';
 import 'core/services/CacheService.dart';
+import 'core/session/session_guard.dart';
 
 Future main() async{
   WidgetsFlutterBinding.ensureInitialized();
@@ -22,6 +23,14 @@ Future main() async{
   await CacheHelper.init();
   // Register CacheService
   await Get.putAsync<CacheService>(() => CacheService().init(),);
+
+  // Launch-time session validation. This runs only on a cold start (fresh
+  // process) — never on background/foreground — so:
+  //   * backgrounding the app never logs the user out;
+  //   * process death (swipe-away from Recent Apps, OOM kill, crash,
+  //     reboot) invalidates the previous session -> next route is Login.
+  // (Android has no reliable "app was destroyed" callback; see SessionGuard.)
+  await SessionGuard.invalidatePreviousSession();
 
   runApp(ScreenUtilInit(
     designSize: Size(360, 690),

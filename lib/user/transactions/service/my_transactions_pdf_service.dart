@@ -316,11 +316,11 @@ class MyTransactionsPdfService {
           summaryRow('Total Transactions:', '${data.totalTransactionCount}'),
           pw.SizedBox(height: 6),
           summaryRow('Total Transaction Amount:', total),
-          pw.SizedBox(height: 6),
-          summaryRow(
+          /* pw.SizedBox(height: 6),
+            summaryRow(
             'Total Collected Amount:',
             'Tk ${amountFormat.format(data.totalCollectedAmount)}',
-          ),
+          ),*/
         ],
       ),
     );
