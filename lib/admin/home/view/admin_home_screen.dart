@@ -9,10 +9,10 @@ import '../../../admin/id_create/screen/create_id_screen.dart';
 import '../../../contact/screen/contact_screen.dart';
 import '../../../core/routes/app_routes.dart';
 import '../../../developer/developer_screen.dart';
-import '../../delete_User/screen/deleteid_screen.dart';
+import '../../delete_All_Money_records/screen/deleteid_screen.dart';
+import '../../delete_record/screen/moneydelete_screen.dart';
 import '../../id_list/screen/id_list_screen.dart';
 import '../../log/screen/log_screen.dart';
-import '../../moneydelete/screen/moneydelete_screen.dart';
 import '../../notification/screen/note_screen.dart';
 import '../../notification/service/note_service.dart';
 import '../../pdf/screen/pdf_generate_screen.dart';
@@ -106,14 +106,6 @@ class AdminHomeScreen extends GetView<AdminHomeController> {
                   onTap: () => Get.to(() => IdListScreen()),
                 ),
               ),
-              DashboardMenuCard(
-                assetPath: 'assets/images/delete_id.png',
-                label: 'Delete All Money Records',
-                maxLines: 2,
-                width: 150.w,
-                height: 150.h,
-                onTap: () => Get.to(() => DeleteUserScreen()),
-              ),
               const SizedBox(height: 10),
               DashboardMenuCard(
                 assetPath: 'assets/images/pdf.png',
@@ -132,6 +124,21 @@ class AdminHomeScreen extends GetView<AdminHomeController> {
                 maxLines: 2,
                 onTap: () => Get.toNamed(AppRoutes.adminMonthlyReceipt),
               ),
+              const SizedBox(height: 10),
+              Obx(() {
+                if (!controller.showDeleteAllMoneyButton.value) {
+                  return const SizedBox.shrink();
+                }
+
+                return DashboardMenuCard(
+                  assetPath: 'assets/images/delete_id.png',
+                  label: 'Delete All Money Records',
+                  maxLines: 2,
+                  width: 200.w,
+                  height: 150.h,
+                  onTap: () => Get.to(() => DeleteUserScreen()),
+                );
+              }),
             ],
           ),
         ),

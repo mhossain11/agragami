@@ -20,7 +20,7 @@ class _MoneyDeleteSimpleScreenState extends State<MoneyDeleteSimpleScreen> {
   String adminName='';
   String adminDocId='';
   String adminId='';
-  String adminEmail='';
+  String  adminEmail='';
   bool _isLoading = false;
   @override
   void initState() {

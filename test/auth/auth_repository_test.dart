@@ -117,6 +117,10 @@ void main() {
       expect(prefs.getString('isRole'), 'user');
       expect(prefs.getString('names'), 'Rahim');
       expect(prefs.getString('userDocId'), 'doc-uid-1');
+      // Audit Log: screens ke getName() ko chahiye ye dono keys warna
+      // Log entry me email/user_id blank jaata tha.
+      expect(prefs.getString('email'), 'rahim@mail.com');
+      expect(prefs.getString('adminId'), validId);
     });
 
     test('with user id: resolves the email first, then logs in', () async {
@@ -216,6 +220,36 @@ void main() {
       expect(prefs.getString('isRole'), isNull);
       expect(prefs.getString('names'), isNull);
       expect(prefs.getString('userDocId'), 'doc-uid-4');
+      // email/user_id present in the doc -> still cached even when
+      // role/name are missing (guards only skip absent/empty fields).
+      expect(prefs.getString('email'), 'rahim@mail.com');
+      expect(prefs.getString('adminId'), validId);
+    });
+
+    test('user doc without email: caches without crashing, email stays unset',
+        () async {
+      final credential = stubAuthenticatedUser(uid: 'uid-5');
+      when(() => remote.login(email: 'rahim@mail.com', password: loginPassword))
+          .thenAnswer((_) async => credential);
+      stubUserDoc(
+        uid: 'uid-5',
+        data: {
+          'user_id': validId,
+          'name': 'NoMail',
+        },
+      );
+
+      final result = await repository.login(
+        email: 'rahim@mail.com',
+        password: loginPassword,
+      );
+
+      expect(result, isNotNull);
+
+      final prefs = await SharedPreferences.getInstance();
+      expect(prefs.getString('email'), isNull);
+      expect(prefs.getString('adminId'), validId);
+      expect(prefs.getString('names'), 'NoMail');
     });
 
     test('firebase auth failure is propagated', () async {

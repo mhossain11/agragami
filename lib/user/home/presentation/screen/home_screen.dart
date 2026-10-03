@@ -164,11 +164,19 @@ class HomeScreen extends GetView<HomeController> {
                     child: Obx(() => Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Text(
-                          '${controller.homeData.value.totalTk} Tk',
-                          style: const TextStyle(
-                              color: Colors.red, fontSize: 25, fontWeight: FontWeight.bold),
-                        ),
+                        if (controller.isBalanceLoading.value)
+                          const SizedBox(
+                            height: 30,
+                            width: 30,
+                            child: CircularProgressIndicator(
+                                strokeWidth: 3, color: Colors.red),
+                          )
+                        else
+                          Text(
+                            '${controller.homeData.value.totalTk} Tk',
+                            style: const TextStyle(
+                                color: Colors.red, fontSize: 25, fontWeight: FontWeight.bold),
+                          ),
                         const Text('Balance',
                             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                       ],

@@ -22,6 +22,12 @@ class AdminHomeController extends GetxController {
   final userId = ''.obs;
   final profileImage = ''.obs;
 
+  /// Hidden Developer Screen unlock: after 3 taps on the ADMIN's
+  /// Developer Screen the "Delete All Money Records" button appears on
+  /// Admin Home. Starts false; once true it stays true for the rest of
+  /// the app run (nothing is persisted). The user side never sets it.
+  final showDeleteAllMoneyButton = false.obs;
+
   StreamSubscription<int>? _moneySub;
   StreamSubscription<String>? _profileSub;
 
@@ -80,6 +86,35 @@ class AdminHomeController extends GetxController {
   /// Pull-to-refresh handler — re-reads counts; the money total stays
   /// live via the stream subscription.
   Future<void> refresh() => _loadCounts();
+
+  /// Tap counter for the hidden 3-tap unlock on the Developer Screen.
+  /// Resets after every unlock - the flag itself never goes back.
+  int _developerSecretTaps = 0;
+
+  /// Called by the Developer Screen's secret tap area (admin session
+  /// only). Returns the progress message to show:
+  /// 'click 1' / 'click 2' on the first two taps, and 'delete button
+  /// open' on the 3rd - which also sets [showDeleteAllMoneyButton] to
+  /// true and resets the counter (the flag never goes back to false).
+  String onDeveloperSecretTap() {
+    _developerSecretTaps++;
+
+    if (_developerSecretTaps >= 3) {
+      _developerSecretTaps = 0;
+      showDeleteAllMoneyButton.value = true;
+      return 'delete button open';
+    }
+
+    return 'click $_developerSecretTaps';
+  }
+
+  /// Hides the "Delete All Money Records" button on Admin Home again
+  /// (called from the Delete User screen). Also resets the tap counter,
+  /// so the next unlock starts from a clean 3-tap cycle.
+  void hideDeleteAllMoneyButton() {
+    _developerSecretTaps = 0;
+    showDeleteAllMoneyButton.value = false;
+  }
 
   void _listenProfileImage() {
     if (docId.value.isEmpty) return;

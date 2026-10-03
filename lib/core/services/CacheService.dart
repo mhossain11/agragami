@@ -27,6 +27,24 @@ class CacheService {
       await CacheHelper().setString('names', name);
     }
 
+    // Audit Log ke liye zaroori: admin screens (Create/Edit ID, Save Money,
+    // Money Delete, Note, Notification) getName() me 'email' aur 'adminId'
+    // padhti hain. Ye dono key kabhi login par cached nahi thi (email sirf
+    // profile-save par jaata tha, adminId key to ek commit me delete hi kar
+    // di gayi thi) - isliye getName() wahi crash/return karta tha aur Log me
+    // email/user_id hamesha blank jaate the. Email Firestore doc se lo
+    // (login field me user ID bhi type hoti hai), adminId = userDoc['user_id']
+    // (jo pehle yahin cache hoti thi).
+    final email = user['email']?.toString();
+    if (email != null && email.isNotEmpty) {
+      await CacheHelper().setString('email', email);
+    }
+
+    final adminId = user['user_id']?.toString();
+    if (adminId != null && adminId.isNotEmpty) {
+      await CacheHelper().setString('adminId', adminId);
+    }
+
     await CacheHelper().setString(
       'userDocId',
       docId,

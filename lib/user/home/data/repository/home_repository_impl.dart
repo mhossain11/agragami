@@ -23,18 +23,20 @@ class HomeRepositoryImpl implements HomeRepository{
   Future<int> getAllUsersTotalAmount() async{
     int total = 0;
     try{
-      final userSnapshot = await firestoreService.users.get();
-      for(final userDoc in userSnapshot.docs){
-        final moneySnapshot = await firestoreService.users.doc(userDoc.id).collection('Money').get();
+      // ONE round trip instead of 1 + N serial queries: every Money doc
+      // app-wide via a single collection-group read (the exact doc set
+      // the old per-user loop walked) - and the user documents are never
+      // downloaded at all. No filters/order, so no extra index needed.
+      final moneySnapshot =
+          await firestoreService.firestore.collectionGroup('Money').get();
 
-        for(final moneyDoc in moneySnapshot.docs){
-          final amount = moneyDoc.data()['amount'];
+      for(final moneyDoc in moneySnapshot.docs){
+        final amount = moneyDoc.data()['amount'];
 
-          if(amount is num){
-            total += amount.toInt();
-          }else if(amount is String){
-            total += int.tryParse(amount)??0;
-          }
+        if(amount is num){
+          total += amount.toInt();
+        }else if(amount is String){
+          total += int.tryParse(amount)??0;
         }
       }
     }catch(e){
