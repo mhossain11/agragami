@@ -35,10 +35,10 @@ class _MoneyDeleteSimpleScreenState extends State<MoneyDeleteSimpleScreen> {
     super.dispose();
   }
   Future<String?> getName() async {
-    final userName =  await CacheHelper().getString('names');
-    final userDocId =  await CacheHelper().getString('userDocId');
-    var Id =  await CacheHelper().getString('adminId');
-    final email =  await CacheHelper().getString('email');
+    final userName =  CacheHelper().getString('names');
+    final userDocId =  CacheHelper().getString('userDocId');
+    var Id =  CacheHelper().getString('adminId');
+    final email =  CacheHelper().getString('email');
 
 
     if (userName == null || userName.isEmpty) {
