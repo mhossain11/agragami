@@ -27,7 +27,7 @@ class _EditIdScreenState extends State<EditIdScreen> {
   TextEditingController roleController = TextEditingController();
 
   final CreateIdService _createIdService = CreateIdService();
-  final LogService _logService = LogService();
+  final LogService _logService = LogService.instance;
   bool isLoadingId = false;
   String DocId ='';
   String name='';
@@ -79,7 +79,7 @@ class _EditIdScreenState extends State<EditIdScreen> {
     await _logService.addLog(
         name:  name,
         email: email,
-        userid:  adminId,
+        userId:  widget.userId,
         oldData:  widget.userId,
         newData: useridController.text,
         note: 'Edit User Id:${useridController.text}'

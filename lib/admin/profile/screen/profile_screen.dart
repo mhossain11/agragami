@@ -1,8 +1,12 @@
 import 'dart:io';
 
+import 'package:get/get_core/src/get_main.dart';
+import 'package:get/get_navigation/src/extension_navigation.dart';
+
 import '../../../auth/prasentation/screen/login_screen.dart';
 import '../../../core/cachehelper/chechehelper.dart';
 import '../../../core/cachehelper/toast.dart';
+import '../../../core/routes/app_routes.dart';
 import '../../../core/widgets/text_field.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -76,18 +80,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
       await FirebaseAuth.instance.signOut();
 
       // Local data clear
-      await CacheHelper().clear();
+     // await CacheHelper().clear();
 
       if (!context.mounted) return;
 
       // Login screen
-      Navigator.pushAndRemoveUntil(
-        context,
-        MaterialPageRoute(
-          builder: (_) => const LoginScreen(),
-        ),
-            (route) => false,
-      );
+      Get.offAllNamed(AppRoutes.login);
+      await CacheHelper().setLoggedIn(false);
     } catch (e) {
       debugPrint('Logout Error: $e');
     }

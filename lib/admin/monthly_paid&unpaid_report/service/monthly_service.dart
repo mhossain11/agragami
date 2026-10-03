@@ -1,112 +1,37 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-
 import '../../../core/services/firestore_service.dart';
-import '../model/monthly_report_model.dart';
+import '../../monthly_report/model/monthly_report_model.dart';
+import '../../monthly_report/service/monthly_service.dart' as report;
 
 class MonthlyService {
   MonthlyService();
 
-  static final MonthlyService instance =
-  MonthlyService();
+  static final MonthlyService instance = MonthlyService();
 
-  final FirestoreService firestoreService =
-      FirestoreService.instance;
+  final FirestoreService firestoreService = FirestoreService.instance;
 
   // =====================================================
   // PAID REPORT
+  //
+  // Delegates to the shared monthly_report implementation:
+  // ONE collectionGroup('Money') query, month filtered and sorted
+  // server-side. There is deliberately no second copy of that logic.
   // =====================================================
 
   Future<List<MonthlyMoneyModel>> getMonthlyReport({
     required int year,
     required int month,
-  }) async {
-    final List<MonthlyMoneyModel> result = [];
-
-    final startDate = DateTime(year, month, 1);
-
-    final endDate = DateTime(
-      year,
-      month + 1,
-      1,
+  }) {
+    return report.MonthlyService.instance.getMonthlyReport(
+      year: year,
+      month: month,
     );
-
-    final usersSnapshot =
-    await firestoreService.users.get();
-
-    for (final userDoc in usersSnapshot.docs) {
-      final userData = userDoc.data();
-
-      final userId =
-          userData['user_id']?.toString() ??
-              userDoc.id;
-
-      final userName =
-          userData['name']?.toString() ?? '';
-
-      final moneySnapshot =
-      await firestoreService
-          .users
-          .doc(userDoc.id)
-          .collection('Money')
-          .get();
-
-      for (final moneyDoc in moneySnapshot.docs) {
-        final data = moneyDoc.data();
-
-        // date&time is Timestamp
-        final timestamp =
-        data['date&time'];
-
-        if (timestamp is! Timestamp) {
-          continue;
-        }
-
-        final date = timestamp.toDate();
-
-        // Selected month check
-        if (date.isBefore(startDate) ||
-            !date.isBefore(endDate)) {
-          continue;
-        }
-
-        result.add(
-          MonthlyMoneyModel(
-            userId: userId,
-            userName: userName,
-            moneyId: moneyDoc.id,
-            date: date,
-
-            amount: _toDouble(
-              data['amount'],
-            ),
-
-            paymentMethod:
-            data['payment_method']
-                ?.toString() ??
-                '',
-
-            receivedBy:
-            data['received_by']
-                ?.toString() ??
-                '',
-
-            totalAmount: _toDouble(
-              data['total_amount'],
-            ),
-          ),
-        );
-      }
-    }
-
-    result.sort(
-          (a, b) => b.date.compareTo(a.date),
-    );
-
-    return result;
   }
 
   // =====================================================
   // UNPAID MEMBERS
+  //
+  // payment_status lives on the user documents, so one users scan is
+  // inherent to this list (it never touches Money documents).
   // =====================================================
 
   Future<List<Map<String, dynamic>>> getUnpaidMembers({
@@ -116,7 +41,7 @@ class MonthlyService {
     final List<Map<String, dynamic>> result = [];
 
     final paymentMonth =
-        '${year}-${month.toString().padLeft(2, '0')}';
+        '$year-${month.toString().padLeft(2, '0')}';
 
     final usersSnapshot =
     await firestoreService.users.get();
@@ -155,20 +80,5 @@ class MonthlyService {
     }
 
     return result;
-  }
-
-  // =====================================================
-  // DOUBLE CONVERTER
-  // =====================================================
-
-  double _toDouble(dynamic value) {
-    if (value is num) {
-      return value.toDouble();
-    }
-
-    return double.tryParse(
-      value?.toString() ?? '',
-    ) ??
-        0;
   }
 }

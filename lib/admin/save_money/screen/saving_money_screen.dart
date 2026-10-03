@@ -30,8 +30,9 @@ class _SavingMoneyScreenState extends State<SavingMoneyScreen> {
   //final AdminHomeService _adminHomeService = AdminHomeService();
   String _selectedMethod ='Cash Money'; // dropdown value
   final List<String> _methods = ['Nogod', 'Bkash', 'Cash Money', 'cheque','Upay','Bank'];
-  final LogService _logService = LogService();
+  final LogService _logService = LogService.instance;
   UserModel? _userData;
+  DocumentReference<Map<String, dynamic>>? _userRef;
   String? currentAmount ;
   String adminName='';
   String adminDocId='';
@@ -94,13 +95,17 @@ class _SavingMoneyScreenState extends State<SavingMoneyScreen> {
       _isLoading = true;
       _error = null;
       _userData = null;
+      _userRef = null;
     });
 
     try {
-      final user = await _savingMoneyService.searchUserById(userId);
+      final result = await _savingMoneyService.searchUserWithDocId(userId);
       setState(() {
-        if (user != null) {
-          _userData = user;
+        if (result != null) {
+          _userData = result.user;
+          // Reuse the ACTUAL user document's reference — dynamic id,
+          // no second query.
+          _userRef = result.userRef;
         } else {
           _error = "No user found with ID: $userId";
         }
@@ -169,6 +174,12 @@ class _SavingMoneyScreenState extends State<SavingMoneyScreen> {
   Future<void> _handleAddMoney() async {
     if (_amountController.text.isEmpty) return;
 
+    final userRef = _userRef;
+    if (userRef == null) {
+      CustomToast().showToast(context, 'Search the member first', Colors.red);
+      return;
+    }
+
     setState(() => _isLoading = true);
 
     try {
@@ -188,13 +199,26 @@ class _SavingMoneyScreenState extends State<SavingMoneyScreen> {
           .parse(_dateController.text);
 
       await _savingMoneyService.addMoney(
-        userId: _searchController.text,
+        userRef: userRef,
+        userId: _userData?.userid ?? _searchController.text,
+        userName: _userData?.name ?? '',
         paymentMethod: _selectedMethod,
         amount: double.parse(_amountController.text),
         datetime: selectedDate,
         createTime:DateTime.now(),
         receivedBy: _receivedByController.text,
         totalAmount: totalAmount.toString(),
+      );
+
+      // Audit log — only AFTER the money is actually saved.
+      // name/email = admin (from cache), userId = TARGET paying member.
+      await _logService.addLog(
+        name: adminName,
+        email: adminEmail,
+        userId: _userData?.userid ?? _searchController.text,
+        oldData: currentAmount ?? '0',
+        newData: _amountController.text,
+        note: 'Add Money',
       );
 
       setState(() {
@@ -368,14 +392,6 @@ class _SavingMoneyScreenState extends State<SavingMoneyScreen> {
                         child: ElevatedButton(
                             onPressed: ()async{
                           _handleAddMoney();
-                          await _logService.addLog(
-                              name: adminName ?? 'Unknown',
-                              email: adminEmail ?? 'N/A',
-                              userid: adminId ?? 'N/A',
-                              oldData: currentAmount ?? '0',
-                              newData: _amountController.text,
-                                note: 'Add Money'
-                          );
                           setState(() {
                             visibleData=true;
                             editVisible = true;

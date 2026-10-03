@@ -19,7 +19,7 @@ class _DeleteIdScreenState extends State<DeleteIdScreen> {
   final TextEditingController _moneyIdController =
   TextEditingController();
 
-  final LogService _logService = LogService();
+  final LogService _logService = LogService.instance;
   final DeleteIdService _deleteIdService =
   DeleteIdService();
 
@@ -159,7 +159,7 @@ class _DeleteIdScreenState extends State<DeleteIdScreen> {
       await _logService.addLog(
         name: name,
         email: email,
-        userid: adminId,
+        userId: userId,
         oldData: 'N/A',
         newData: userId,
         note: 'User Id:$userId deleted',
@@ -275,7 +275,7 @@ class DeleteUserScreen extends StatefulWidget {
 
 class _DeleteUserScreenState extends State<DeleteUserScreen> {
   final TextEditingController _userIdController = TextEditingController();
-  final LogService _logService = LogService();
+  final LogService _logService = LogService.instance;
   bool _isLoading = false;
   String name='';
   String DocId='';
@@ -384,7 +384,7 @@ class _DeleteUserScreenState extends State<DeleteUserScreen> {
       await _logService.addLog(
         name: name,
         email: email,
-        userid: adminId,
+        userId: userId,
         oldData: 'N/A',
         newData: userId,
         note: 'User ID: $userId deleted All money record',

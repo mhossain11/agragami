@@ -87,9 +87,16 @@ class AuthRemoteDataSource {
   // Shared auth-registry lookup
   // =========================
 
-  /// Walks `auth/{authId}/admin|user` looking for [userId] and returns the
-  /// first match together with its role - the role search and the "done"
-  /// update both use this exact traversal (admin before user, per auth doc).
+  /// Finds the auth-registry entry for [userId] in `auth/{authId}/admin|user`
+  /// and returns it together with its role (admin is searched first).
+  ///
+  /// COLLECTION-GROUP queries replace the old walk that first downloaded the
+  /// WHOLE `auth` collection and then ran 2 queries per auth doc, serially
+  /// (1 + 2*A requests per lookup). Now: at most 2 requests, each `limit(1)`
+  /// - only these tiny registry entries are read. Single equality filter ->
+  /// the automatic collection-group single-field index is enough; no
+  /// composite index needed. Errors PROPAGATE (a failed lookup must never
+  /// be read as "not found").
   Future<
       ({
         QueryDocumentSnapshot<Map<String, dynamic>> doc,
@@ -98,30 +105,28 @@ class AuthRemoteDataSource {
         String userDocId,
       })?> _findAuthRegistryEntry(String userId) async {
 
-    final authSnapshot = await firestore.auth.get();
+    for (final role in const ['admin', 'user']) {
+      final snapshot = await firestore.firestore
+          .collectionGroup(role)
+          .where(
+        'user_id',
+        isEqualTo: userId,
+      )
+          .limit(1)
+          .get();
 
-    for (final authDoc in authSnapshot.docs) {
-      for (final role in const ['admin', 'user']) {
+      if (snapshot.docs.isNotEmpty) {
+        final doc = snapshot.docs.first;
 
-        final roleSnapshot = await firestore.auth
-            .doc(authDoc.id)
-            .collection(role)
-            .where(
-          'user_id',
-          isEqualTo: userId,
-        )
-            .limit(1)
-            .get();
+        // Path: auth/{authDocId}/{role}/{entryId}
+        final segments = doc.reference.path.split('/');
 
-        if (roleSnapshot.docs.isNotEmpty) {
-          final doc = roleSnapshot.docs.first;
-          return (
-            doc: doc,
-            role: role,
-            authDocId: authDoc.id,
-            userDocId: doc.id,
-          );
-        }
+        return (
+          doc: doc,
+          role: role,
+          authDocId: segments.length >= 2 ? segments[1] : '',
+          userDocId: doc.id,
+        );
       }
     }
 
@@ -129,51 +134,50 @@ class AuthRemoteDataSource {
   }
 
   // Check User Already Exists
+  //
+  // NOTE: pehle yahan `catch { return null; }` tha - ek failed query ko
+  // "user exists nahi" padha jaata tha aur registration waise bhi chalu
+  // rehti thi. Ab error propagate hoti hai (controller snackbar dikhata hai).
   Future<Map<String, dynamic>?> checkUserRole(
       String inputUserId,
       ) async {
-    try {
-      final userSnapshot = await findUserByUserId(inputUserId.trim());
+    final userSnapshot = await findUserByUserId(inputUserId.trim());
 
-      if (userSnapshot.docs.isNotEmpty) {
-        final doc = userSnapshot.docs.first.data();
-
-        return {
-          'user_id': inputUserId,
-          'exists': true,
-          'role': doc['role'],
-          'userDocId': userSnapshot.docs.first.id,
-        };
-      }
+    if (userSnapshot.docs.isNotEmpty) {
+      final doc = userSnapshot.docs.first.data();
 
       return {
-        'exists': false,
-        'role': null,
+        'user_id': inputUserId,
+        'exists': true,
+        'role': doc['role'],
+        'userDocId': userSnapshot.docs.first.id,
       };
-    } catch (e) {
-      return null;
     }
+
+    return {
+      'exists': false,
+      'role': null,
+    };
   }
 
   // Find Role From Auth Collection
+  //
+  // null = genuinely NOT found. A lookup failure (network/permission) now
+  // propagates instead of masquerading as "no such user id".
   Future<Map<String, dynamic>?> checkUserAdminRole(
       String inputUserId,
       ) async {
-    try {
-      final entry = await _findAuthRegistryEntry(inputUserId.trim());
+    final entry = await _findAuthRegistryEntry(inputUserId.trim());
 
-      if (entry == null) {
-        return null;
-      }
-
-      return {
-        'role': entry.role,
-        'authDocId': entry.authDocId,
-        'userDocId': entry.userDocId,
-      };
-    } catch (e) {
+    if (entry == null) {
       return null;
     }
+
+    return {
+      'role': entry.role,
+      'authDocId': entry.authDocId,
+      'userDocId': entry.userDocId,
+    };
   }
 
   // Update user : done

@@ -17,10 +17,18 @@ class MyTransactionsPdfService {
 
   final MyTransactionsRepository _repository;
 
-  /// Loads the signed-in member's data and renders the statement PDF.
-  Future<pw.Document> generateUserMoneyPDF() async {
-    final data = await _repository.loadMyTransactions();
+  /// Loads the signed-in member's data (profile + Money records).
+  ///
+  /// Exposed so the controller can check for at least one transaction
+  /// BEFORE any PDF work happens - and so the data is read from Firestore
+  /// only once per "Generate PDF" tap (no duplicate query).
+  Future<MyTransactionsData> loadMyTransactions() {
+    return _repository.loadMyTransactions();
+  }
 
+  /// Renders the statement from already-loaded [data]. Pure PDF work -
+  /// no Firestore call; layout and content are identical to before.
+  Future<pw.Document> renderUserMoneyPDF(MyTransactionsData data) async {
     final doc = pw.Document();
     final logo = await _tryLoadLogo();
 
@@ -43,6 +51,12 @@ class MyTransactionsPdfService {
     );
 
     return doc;
+  }
+
+  /// One-shot entry point kept for callers that simply want the PDF:
+  /// load + render in a single call (same behaviour as always).
+  Future<pw.Document> generateUserMoneyPDF() async {
+    return renderUserMoneyPDF(await _repository.loadMyTransactions());
   }
 
   // ------------------------------------------------------------------

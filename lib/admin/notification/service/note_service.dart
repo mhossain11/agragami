@@ -1,5 +1,7 @@
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
+
 import '../../../core/cachehelper/chechehelper.dart';
 
 class NoteService{
@@ -23,8 +25,8 @@ class NoteService{
         'datetime': Timestamp.now(),
         'seen':false,
       });
-      await CacheHelper().setString('moneyDocRef', docRef.id);
-      print('Money added successfully!');
+      await CacheHelper().setString('noteDocRef', docRef.id);
+      debugPrint('Note added: ${docRef.id}');
     } catch (e) {
       print('Error adding money: $e');
       rethrow; // চাইলে UI তেও catch করা যায়

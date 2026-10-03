@@ -7,6 +7,16 @@ import '../controller/auth_register_controller.dart';
 import '../widgets/appValidators.dart';
 import '../widgets/image_picker.dart';
 
+/// UI only — no Firebase here. Every state change is isolated in its own
+/// Obx so one small change never rebuilds the whole form:
+///
+/// * Obx 1 -> the ID field's `enabled` flag (showForm)
+/// * Obx 2 -> the Find ID button slot (showForm) + its inner spinner Obx
+/// * Obx 3 -> the registration form section (showForm)
+/// * Obx 4 -> the full-screen loading overlay (isLoading)
+/// * inner Obx in [_imagePicker] -> only the avatar (profileImage)
+///
+/// The text fields themselves are plain widgets - they need no Obx.
 class RegisterScreen extends GetView<RegisterController> {
   const RegisterScreen({super.key});
 
@@ -57,180 +67,201 @@ class RegisterScreen extends GetView<RegisterController> {
     );
   }
 
+  /// Everything below the ID field once Find ID succeeded. Extracted so
+  /// its Obx rebuilds this section ONLY when showForm flips - never when
+  /// a spinner or the avatar changes.
+  Widget _registrationForm() {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        /// Image
+        _imagePicker(),
+
+        SizedBox(height: 20.h),
+
+        _field(
+          controller: controller.nameController,
+          label: "Name",
+          validator: (value) => AppValidators.requiredField(value, 'Name'),
+        ),
+
+        SizedBox(height: 10.h),
+
+        _field(
+          controller: controller.emailController,
+          label: "Email",
+          validator: AppValidators.email,
+        ),
+
+        SizedBox(height: 10.h),
+
+        _field(
+          controller: controller.motherNameController,
+          label: "Mother Name",
+        ),
+
+        SizedBox(height: 10.h),
+
+        _field(
+          controller: controller.fatherNameController,
+          label: "Father Name",
+        ),
+
+        SizedBox(height: 10.h),
+
+        _field(
+          controller: controller.phoneController,
+          label: "Phone",
+          keyboardType: TextInputType.phone,
+          validator: AppValidators.phone,
+        ),
+
+        SizedBox(height: 10.h),
+
+        _field(
+          controller: controller.birthdateController,
+          label: "Birth Date",
+          keyboardType: TextInputType.datetime,
+        ),
+
+        SizedBox(height: 10.h),
+
+        _field(
+          controller: controller.nidController,
+          label: "NID",
+          validator: AppValidators.nid,
+        ),
+
+        SizedBox(height: 10.h),
+
+        _field(
+          controller: controller.addressController,
+          label: "Address",
+          maxLines: 2,
+        ),
+
+        SizedBox(height: 10.h),
+
+        _field(
+          controller: controller.bloodController,
+          label: "Blood Group",
+        ),
+
+        SizedBox(height: 10.h),
+
+        _field(
+          controller: controller.nomineeNameController,
+          label: "Nominee Name",
+          validator: AppValidators.nominee,
+        ),
+
+        SizedBox(height: 10.h),
+
+        _field(
+          controller: controller.nomineeRelationController,
+          label: "Nominee Relation",
+          validator: AppValidators.nomineeRelation,
+        ),
+
+        SizedBox(height: 10.h),
+
+        CustomTextFieldPassword(
+          controller: controller.passwordController,
+          validator: AppValidators.password,
+          labelText: 'Password',
+        ),
+
+        SizedBox(height: 10.h),
+
+        CustomTextFieldPassword(
+          controller: controller.confirmPasswordController,
+          validator: (value) => AppValidators.confirmPassword(
+              value, controller.passwordController.text),
+          labelText: 'ConfirmPassword',
+        ),
+
+        SizedBox(height: 20.h),
+
+        SizedBox(
+          width: double.infinity,
+          height: 50.h,
+          child: ElevatedButton(
+            onPressed: controller.register,
+            child: const Text("Sign Up"),
+          ),
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(),
-      // This Obx only reacts to showForm (form layout) and isLoading
-      // (overlay) - everything else is isolated below.
-      body: Obx(
-        () => Stack(
-          children: [
-            SingleChildScrollView(
-              padding: EdgeInsets.all(16.r),
-              child: Form(
-                key: controller.registerFormKey,
-                child: Column(
-                  children: [
-
-                    Text(
-                      "Register",
-                      style: TextStyle(
-                        fontSize: 32.sp,
-                        fontWeight: FontWeight.bold,
-                      ),
+      body: Stack(
+        children: [
+          SingleChildScrollView(
+            padding: EdgeInsets.all(16.r),
+            child: Form(
+              key: controller.registerFormKey,
+              child: Column(
+                children: [
+                  Text(
+                    "Register",
+                    style: TextStyle(
+                      fontSize: 32.sp,
+                      fontWeight: FontWeight.bold,
                     ),
+                  ),
 
-                    SizedBox(height: 20.h),
+                  SizedBox(height: 20.h),
 
-                    /// User ID
-                    _field(
+                  // Obx 1: ID field - sirf `enabled` toggle rebuild karta hai.
+                  Obx(
+                    () => _field(
                       controller: controller.userIdController,
                       label: "ID",
                       enabled: !controller.showForm.value,
                       validator: AppValidators.userId,
                     ),
+                  ),
 
-                    SizedBox(height: 10.h),
+                  SizedBox(height: 10.h),
 
-                    if (!controller.showForm.value) _findIdButton(),
+                  // Obx 2: Find ID button slot - form khulte hi gayab.
+                  Obx(
+                    () => controller.showForm.value
+                        ? const SizedBox.shrink()
+                        : _findIdButton(),
+                  ),
 
-                    SizedBox(height: 20.h),
+                  SizedBox(height: 20.h),
 
-                    if (controller.showForm.value) ...[
-
-                      /// Image
-                      _imagePicker(),
-
-                      SizedBox(height: 20.h),
-
-                      _field(
-                        controller: controller.nameController,
-                        label: "Name",
-                        validator: (value) =>
-                            AppValidators.requiredField(value, 'Name'),
-                      ),
-
-                      SizedBox(height: 10.h),
-
-                      _field(
-                        controller: controller.emailController,
-                        label: "Email",
-                        validator: AppValidators.email,
-                      ),
-
-                      SizedBox(height: 10.h),
-
-                      _field(
-                        controller: controller.motherNameController,
-                        label: "Mother Name",
-                      ),
-
-                      SizedBox(height: 10.h),
-
-                      _field(
-                        controller: controller.fatherNameController,
-                        label: "Father Name",
-                      ),
-
-                      SizedBox(height: 10.h),
-
-                      _field(
-                        controller: controller.phoneController,
-                        label: "Phone",
-                        keyboardType: TextInputType.phone,
-                        validator: AppValidators.phone,
-                      ),
-
-                      SizedBox(height: 10.h),
-
-                      _field(
-                        controller: controller.birthdateController,
-                        label: "Birth Date",
-                        keyboardType: TextInputType.datetime,
-                      ),
-
-                      SizedBox(height: 10.h),
-
-                      _field(
-                        controller: controller.nidController,
-                        label: "NID",
-                        validator: AppValidators.nid,
-                      ),
-
-                      SizedBox(height: 10.h),
-
-                      _field(
-                        controller: controller.addressController,
-                        label: "Address",
-                        maxLines: 2,
-                      ),
-
-                      SizedBox(height: 10.h),
-
-                      _field(
-                        controller: controller.bloodController,
-                        label: "Blood Group",
-                      ),
-
-                      SizedBox(height: 10.h),
-
-                      _field(
-                        controller: controller.nomineeNameController,
-                        label: "Nominee Name",
-                        validator: AppValidators.nominee,
-                      ),
-
-                      SizedBox(height: 10.h),
-
-                      _field(
-                        controller: controller.nomineeRelationController,
-                        label: "Nominee Relation",
-                        validator: AppValidators.nomineeRelation,
-                      ),
-
-                      SizedBox(height: 10.h),
-
-                      CustomTextFieldPassword(
-                        controller: controller.passwordController,
-                        validator: AppValidators.password,
-                        labelText: 'Password',
-                      ),
-
-                      SizedBox(height: 10.h),
-
-                      CustomTextFieldPassword(
-                        controller: controller.confirmPasswordController,
-                        validator: (value) => AppValidators.confirmPassword(
-                            value, controller.passwordController.text),
-                        labelText: 'ConfirmPassword',
-                      ),
-
-                      SizedBox(height: 20.h),
-
-                      SizedBox(
-                        width: double.infinity,
-                        height: 50.h,
-                        child: ElevatedButton(
-                          onPressed: controller.register,
-                          child: const Text("Sign Up"),
-                        ),
-                      ),
-                    ]
-                  ],
-                ),
+                  // Obx 3: registration form - sirf showForm flip par rebuild.
+                  Obx(
+                    () => controller.showForm.value
+                        ? _registrationForm()
+                        : const SizedBox.shrink(),
+                  ),
+                ],
               ),
             ),
+          ),
 
-            if (controller.isLoading.value)
-              Container(
-                color: Colors.black54,
-                child: const Center(
-                  child: CircularProgressIndicator(),
-                ),
-              ),
-          ],
-        ),
+          // Obx 4: loading overlay - sirf isLoading par rebuild. ModalBarrier
+          // saari taps/scroll absorb karta hai: loading ke dauran form par
+          // kuch bhi interact nahi ho sakta (duplicate register impossible).
+          Obx(
+            () => controller.isLoading.value
+                ? const Stack(
+                    children: [
+                      ModalBarrier(dismissible: false, color: Colors.black54),
+                      Center(child: CircularProgressIndicator()),
+                    ],
+                  )
+                : const SizedBox.shrink(),
+          ),
+        ],
       ),
     );
   }

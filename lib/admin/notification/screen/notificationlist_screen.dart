@@ -20,7 +20,7 @@ class _NotificationListScreenState extends State<NotificationListScreen> {
   final NoteService _noteService = NoteService();
   final TextEditingController titleController = TextEditingController();
   final TextEditingController messageController = TextEditingController();
-  final LogService _logService = LogService();
+  final LogService _logService = LogService.instance;
   String name='';
   String DocId='';
   String email='';
@@ -82,7 +82,7 @@ class _NotificationListScreenState extends State<NotificationListScreen> {
       await _logService.addLog(
           name:  name,
           email: email,
-          userid:  adminId,
+          userId:  '', // notification — no single target user
           oldData:  widget.adminDocId,
           newData: docId,
           note: 'Notification deleted'
@@ -143,7 +143,7 @@ class _NotificationListScreenState extends State<NotificationListScreen> {
                     await _logService.addLog(
                       name: name,
                       email: email,
-                      userid: adminId,
+                      userId: '', // notification — no single target user
                       oldData: oldTitle,
                       newData: titleController.text.trim(),
                       note: 'Notification Updated',

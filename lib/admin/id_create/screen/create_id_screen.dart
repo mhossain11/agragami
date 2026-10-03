@@ -18,7 +18,7 @@ class CreateIdScreen extends StatefulWidget {
 class _CreateIdScreenState extends State<CreateIdScreen> {
   TextEditingController useridController = TextEditingController();
   final CreateIdService _createIdService = CreateIdService();
-  final LogService _logService = LogService();
+  final LogService _logService = LogService.instance;
   bool isLoadingId = false;
   String selectedRole = 'user';
   bool editView = false;
@@ -81,7 +81,7 @@ class _CreateIdScreenState extends State<CreateIdScreen> {
     await _logService.addLog(
       name: name,
       email: email,
-      userid: adminId,
+      userId: userId,
       oldData: 'Create user id',
       newData: userId,
       note: 'User Id: $selectedRole Create',

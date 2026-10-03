@@ -32,12 +32,36 @@ class MyTransactionsController extends GetxController {
   String? _fileName;
 
   /// Generates the signed-in member's own transaction statement.
+  ///
+  /// Flow: load data (button shows the loading state) -> transactions
+  /// empty? friendly message + STOP (no PDF, the generator is never
+  /// called) -> otherwise render from the SAME loaded data, so the
+  /// Firestore read happens exactly once per tap.
   Future<void> generatePdf() async {
+    // Duplicate-tap prevention: ek time me ek hi generate.
     if (isGenerating.value) return;
     isGenerating.value = true;
 
     try {
-      final document = await _pdfService.generateUserMoneyPDF();
+      // 1) Load FIRST - emptiness is only judged after this resolves, so
+      //    a slow load can never show "No Transactions Yet" too early.
+      final data = await _pdfService.loadMyTransactions();
+
+      // 2) Case 1 - zero transactions: message only. No PDF is created,
+      //    no empty document, generateUserMoneyPDF() is never reached.
+      if (data.transactions.isEmpty) {
+        Get.snackbar(
+          'No Transactions Yet',
+          'You don\'t have any transactions yet. A PDF report can be '
+              'generated once a transaction is available.',
+          snackPosition: SnackPosition.BOTTOM,
+        );
+        return;
+      }
+
+      // 3) Case 2 - has transactions: render from the already-loaded
+      //    data (layout/content unchanged).
+      final document = await _pdfService.renderUserMoneyPDF(data);
       _pdfBytes = await document.save();
       _fileName =
           'Agragami_Transactions_${DateFormat('yyyyMMdd_HHmm').format(DateTime.now())}.pdf';

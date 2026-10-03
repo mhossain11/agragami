@@ -18,7 +18,7 @@ class _NoteScreenState extends State<NoteScreen> {
   TextEditingController titleController = TextEditingController();
   TextEditingController messageController = TextEditingController();
   final NoteService _noteService = NoteService();
-  final LogService _logService = LogService();
+  final LogService _logService = LogService.instance;
   bool _isLoading = false;
   bool successful = false;
   String name='';
@@ -77,7 +77,7 @@ class _NoteScreenState extends State<NoteScreen> {
       await _logService.addLog(
           name:  name,
           email: email,
-          userid:  adminId,
+          userId:  '', // notice board — no single target user
           oldData:  titleController.text,
           newData: messageController.text,
           note: 'Admin Note create'

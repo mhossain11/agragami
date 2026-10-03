@@ -13,10 +13,15 @@ class SavingMoneyService {
     return result?.user;
   }
 
-  /// 🔍 Search user by user_id and also return its Firestore document id.
-  /// The doc id is cached under 'userDocId' (same side effect as before,
-  /// `addMoney` reads it back from there).
-  Future<({UserModel user, String userDocId})?> searchUserWithDocId(
+  /// Search user by user_id and also return its Firestore document id
+  /// and document reference (callers reuse it — no second query).
+  /// The doc id is still cached under 'userDocId' (other screens read it).
+  Future<
+      ({
+        UserModel user,
+        String userDocId,
+        DocumentReference<Map<String, dynamic>> userRef,
+      })?> searchUserWithDocId(
     String userId,
   ) async {
     try {
@@ -31,7 +36,11 @@ class SavingMoneyService {
         final String userDocId = doc.id;
         await CacheHelper().setString('userDocId', userDocId);
 
-        return (user: UserModel.fromJson(doc.data()), userDocId: userDocId);
+        return (
+          user: UserModel.fromJson(doc.data()),
+          userDocId: userDocId,
+          userRef: doc.reference,
+        );
       } else {
         return null;
       }
@@ -43,7 +52,9 @@ class SavingMoneyService {
 
   // userId দিয়ে Money add করার method
   Future<void> addMoney({
+    required DocumentReference<Map<String, dynamic>> userRef,
     required String userId,
+    required String userName,
     required double amount,
     required String paymentMethod,
     required DateTime datetime,
@@ -52,24 +63,16 @@ class SavingMoneyService {
     required String totalAmount,
   }) async {
     try {
-      final String? userDocId = CacheHelper().getString('userDocId');
-
-      if (userDocId == null || userDocId.isEmpty) {
-        throw Exception('User document ID not found');
-      }
+      // The caller already resolved the actual user document — reuse ITS
+      // reference (no extra query, never a hard-coded id).
 
       // Step 2: Money subcollection এ add কর
-
-      final docRef = _firestore
-          .collection('users')
-          .doc(userDocId);
-
 
       // ==========================================
       // MONEY COLLECTION
       // ==========================================
 
-      final moneyCollection = docRef.collection('Money');
+      final moneyCollection = userRef.collection('Money');
 
       // ==========================================
       // CURRENT MONTH
@@ -121,6 +124,13 @@ class SavingMoneyService {
       monthlyTotal += amount;
 
       final moneyDoc = await moneyCollection.add({
+        // Dynamic owner — always taken from the ACTUAL user document the
+        // caller resolved (`userDoc.reference`): reference + member code
+        // + display name. The monthly report reads these straight from
+        // the Money doc (zero extra user reads). NEVER hard-code an id.
+        'user': userRef,
+        'user_id': userId,
+        'user_name': userName,
         'amount': amount,
         'payment_method': paymentMethod,
         'date&time': datetime,
@@ -131,7 +141,7 @@ class SavingMoneyService {
         'total_amount': monthlyTotal,
       });
 
-      await docRef.update({
+      await userRef.update({
         'payment_status.$paymentMonth': true,
         'total_amount': monthlyTotal,
       });

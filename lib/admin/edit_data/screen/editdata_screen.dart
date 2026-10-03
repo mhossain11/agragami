@@ -51,7 +51,7 @@ class _EditDataScreenState
   EditDataService();
 
   final LogService logService =
-  LogService();
+  LogService.instance;
 
   bool isLoading = false;
 
@@ -168,7 +168,7 @@ class _EditDataScreenState
       await logService.addLog(
         name: widget.name,
         email: widget.email,
-        userid: widget.userId,
+        userId: widget.userId,
         oldData:
         'Amount: ${widget.money}\n'
             'Payment Method: ${widget.paymentMethod}\n'

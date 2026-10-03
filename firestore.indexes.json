@@ -1,0 +1,15 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "Money",
+      "queryScope": "COLLECTION_GROUP",
+      "fields": [
+        {
+          "fieldPath": "date&time",
+          "order": "DESCENDING"
+        }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

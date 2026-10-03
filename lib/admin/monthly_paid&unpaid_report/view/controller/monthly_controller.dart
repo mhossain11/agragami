@@ -1,8 +1,8 @@
 
 import 'package:get/get.dart';
 
-import '../../model/monthly_report_model.dart';
 import '../../service/monthly_service.dart';
+import '../../../monthly_report/model/monthly_report_model.dart';
 
 class MonthlyPaidUnpaidController extends GetxController {
   final MonthlyService service =

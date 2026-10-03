@@ -187,5 +187,47 @@ void main() {
       // Exactly one repository load - and nobody passed it a user id.
       expect(repository.loadCallCount, 1);
     });
+
+    testWidgets('empty transactions: friendly message, no PDF, one load',
+        (tester) async {
+      final repository = FakeMyTransactionsRepository(sampleData([]));
+      Get.put(
+        MyTransactionsController(
+          pdfService: MyTransactionsPdfService(repository),
+        ),
+      );
+      addTearDown(Get.reset);
+
+      await tester.pumpWidget(
+        const GetMaterialApp(home: MyTransactionsScreen()),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Generate PDF'));
+      await tester.pumpAndSettle();
+
+      // Case 1 (zero transactions): the polished message appears...
+      expect(find.text('No Transactions Yet'), findsOneWidget);
+      expect(
+        find.text(
+          'You don\'t have any transactions yet. A PDF report can be '
+          'generated once a transaction is available.',
+        ),
+        findsOneWidget,
+      );
+
+      // ...and NO empty PDF was produced: the actions never show.
+      expect(find.text('View PDF'), findsNothing);
+      expect(find.text('Download PDF'), findsNothing);
+      expect(find.text('Share PDF'), findsNothing);
+
+      // Exactly one load - the PDF renderer was never reached.
+      expect(repository.loadCallCount, 1);
+
+      // Flush the snackbar's 3s auto-dismiss timer so no Timer is left
+      // pending when the widget tree is disposed (flutter_test invariant).
+      await tester.pump(const Duration(seconds: 4));
+      await tester.pumpAndSettle();
+    });
   });
 }

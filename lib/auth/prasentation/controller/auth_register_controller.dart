@@ -74,33 +74,33 @@ class RegisterController extends GetxController {
   // =========================
 
   Future<void> searchUserId() async {
+    // Duplicate-request prevention: ek time me sirf ek hi check.
+    if (isLoadingId.value) return;
 
     final userId = userIdController.text.trim();
 
     if (userId.isEmpty) {
-      _snackbar("Error", "Please enter User ID");
+      _showMessage("Error", "Please enter User ID");
       return;
     }
 
     try {
-
       isLoadingId.value = true;
 
       final result = await repository.checkUserId(userId);
 
-      if (result != null) {
-
-        selectedRole.value = result['role'] ?? 'user';
-
-        showForm.value = true;
-
+      if (result == null) {
+        showForm.value = false;
+        _showMessage("Failed", "User ID not found");
       } else {
-
-        _snackbar("Failed", "User ID not found");
+        // Missing / wrong-typed role must never crash the flow.
+        selectedRole.value = result['role']?.toString() ?? 'user';
+        showForm.value = true;
       }
-
+    } catch (e) {
+      _showMessage("Error", _cleanMessage(e));
     } finally {
-
+      // Exception par bhi loading stuck nahi rehni chahiye.
       isLoadingId.value = false;
     }
   }
@@ -110,11 +110,14 @@ class RegisterController extends GetxController {
   // =========================
 
   Future<void> pickProfileImage() async {
+    try {
+      final image = await repository.pickImage();
 
-    final image = await repository.pickImage();
-
-    if (image != null) {
-      profileImage.value = image;
+      if (image != null) {
+        profileImage.value = image;
+      }
+    } catch (e) {
+      _showMessage("Error", _cleanMessage(e));
     }
   }
 
@@ -123,18 +126,21 @@ class RegisterController extends GetxController {
   // =========================
 
   Future<void> register() async {
+    // Duplicate-request prevention: dobara Sign Up dabane par dobara
+    // Firebase request nahi jaayegi.
+    if (isLoading.value) return;
 
-    if (!registerFormKey.currentState!.validate()) {
+    // Safe validate: currentState null par crash nahi hoga.
+    if (registerFormKey.currentState?.validate() != true) {
       return;
     }
 
     if (profileImage.value == null) {
-      _snackbar("Image Required", "Please select profile image");
+      _showMessage("Image Required", "Please select profile image");
       return;
     }
 
     try {
-
       isLoading.value = true;
 
       final request = _buildRegisterRequest();
@@ -144,15 +150,11 @@ class RegisterController extends GetxController {
       if (result == "success") {
         await _onRegistrationSuccess(request.userId);
       } else {
-        _snackbar("Failed", result);
+        _showMessage("Failed", result);
       }
-
     } catch (e) {
-
-      _snackbar("Error", e.toString());
-
+      _showMessage("Error", _cleanMessage(e));
     } finally {
-
       isLoading.value = false;
     }
   }
@@ -179,14 +181,13 @@ class RegisterController extends GetxController {
   }
 
   Future<void> _onRegistrationSuccess(String userId) async {
-
     // Save the fresh user id: LoginScreen's ID/Email field prefills from
     // this key (AuthController.loadUserId reads it).
     await CacheHelper().setString('userId', userId);
 
     // Get.back() PEHLE: GetX ka back() agar koi snackbar khula dekhta hai
-    // toh woh use close karke return ho jaata tha - route pop hi nahi hota
-    // tha aur success snackbar turant gayab ho jata tha.
+    // toh woh use close karke return ho jaata tha - route pop hi nahi
+    // hota tha aur success snackbar turant gayab ho jata tha.
     Get.back();
 
     // Login route neeche zinda hai - uska prefill abhi refresh kar do
@@ -195,7 +196,27 @@ class RegisterController extends GetxController {
       Get.find<AuthController>().loadUserId();
     }
 
-    _snackbar("Success", "Registration Successful");
+    _showMessage("Success", "Registration Successful");
+  }
+
+  // =========================
+  // Reset
+  // =========================
+
+  /// Clears every field and the form state (image + role + visibility).
+  ///
+  /// NOTE: successful registration ke baad call KARNE KI ZARURAT NAHI —
+  /// register route pop hote hi GetX is controller ko dispose kar deta
+  /// hai (AuthBinding me `fenix: true` sirf factory ko zinda rakhta hai).
+  /// Useful only jab screen dobara isi session me khuli rahe.
+  void resetForm() {
+    for (final controller in _textControllers) {
+      controller.clear();
+    }
+
+    profileImage.value = null;
+    selectedRole.value = 'user';
+    showForm.value = false;
   }
 
   // =========================
@@ -203,8 +224,23 @@ class RegisterController extends GetxController {
   // =========================
 
   /// One place for the register flow's snackbars (title + message).
-  void _snackbar(String title, String message) {
+  void _showMessage(String title, String message) {
     Get.snackbar(title, message);
+  }
+
+  /// User-facing message from any thrown object: strips the wrappers
+  /// "Exception: ...", "FirebaseException[code]: ..." so the snackbar
+  /// never shows "Exception: Exception: ...".
+  String _cleanMessage(Object error) {
+    var message = error.toString();
+    final wrapper = RegExp(r'^\w*Exception(?:\[[^\]]+\])?:\s*');
+
+    while (wrapper.hasMatch(message)) {
+      message = message.replaceFirst(wrapper, '');
+    }
+
+    message = message.trim();
+    return message.isEmpty ? 'Something went wrong. Please try again.' : message;
   }
 
   String _text(TextEditingController controller) => controller.text.trim();
@@ -215,7 +251,6 @@ class RegisterController extends GetxController {
 
   @override
   void onClose() {
-
     for (final controller in _textControllers) {
       controller.dispose();
     }

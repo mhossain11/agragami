@@ -132,7 +132,19 @@ service cloud.firestore {
       }
     }
 
-    // Everything else (delete_users, future collections, ...) is denied.
+    // delete_users = admin "delete user" flow: deleteid_service MOVES a
+    // member's profile + Money ledger here before cleanup. Without this
+    // block the feature dies with permission-denied (the catch-all below
+    // would deny it). Admin-controlled only.
+    match /delete_users/{userId} {
+      allow read, write: if isAdmin();
+
+      match /Money/{moneyId} {
+        allow read, write: if isAdmin();
+      }
+    }
+
+    // Everything else (future collections, ...) is denied.
     match /{document=**} {
       allow read, write: if false;
     }

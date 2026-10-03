@@ -16,7 +16,7 @@ class _MoneyDeleteSimpleScreenState extends State<MoneyDeleteSimpleScreen> {
   final TextEditingController _userIdController = TextEditingController();
   final TextEditingController _moneyDocIdController = TextEditingController();
   final MoneyDeleteService _deleteService = MoneyDeleteService();
-  final LogService _logService = LogService();
+  final LogService _logService = LogService.instance;
   String adminName='';
   String adminDocId='';
   String adminId='';
@@ -91,7 +91,7 @@ class _MoneyDeleteSimpleScreenState extends State<MoneyDeleteSimpleScreen> {
       await _logService.addLog(
           name: adminName ,
           email: adminEmail ,
-          userid: adminId,
+          userId: userId,
           oldData: userId,
           newData: moneyDocId,
           note: 'Money Record Delete'
